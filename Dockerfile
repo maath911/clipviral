@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create required directories
-RUN mkdir -p uploads outputs
+RUN mkdir -p uploads outputs || true
 
 EXPOSE 8000
 
