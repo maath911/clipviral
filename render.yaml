@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: clipviral
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
