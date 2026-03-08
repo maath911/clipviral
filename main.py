@@ -67,24 +67,40 @@ def set_job(job_id: str, **kwargs):
 # 1. TÉLÉCHARGEMENT YOUTUBE
 # ─────────────────────────────────────────────────────────────
 def _download_youtube(url: str, job_id: str) -> str:
+    """Télécharge la vidéo YouTube — 4 stratégies anti-bot en cascade."""
     out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
-    cmd = [
-        "yt-dlp",
-        "--no-playlist",
-        "-f", "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-        "--merge-output-format", "mp4",
-        "--no-warnings",
-        "--extractor-args", "youtube:player_client=android",
-        "--add-header", "User-Agent:Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36",
-        "-o", out_path,
-        url
+
+    strategies = [
+        # 1 — Android (le plus efficace contre le bot-check)
+        ["yt-dlp", "--no-playlist", "-f", "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+         "--merge-output-format", "mp4", "--extractor-args", "youtube:player_client=android",
+         "--no-warnings", "-o", out_path, url],
+        # 2 — iOS
+        ["yt-dlp", "--no-playlist", "-f", "best[ext=mp4]/best",
+         "--extractor-args", "youtube:player_client=ios",
+         "--no-warnings", "-o", out_path, url],
+        # 3 — TV embedded
+        ["yt-dlp", "--no-playlist", "-f", "best[ext=mp4]/best",
+         "--extractor-args", "youtube:player_client=tv_embedded",
+         "--no-warnings", "-o", out_path, url],
+        # 4 — User-Agent Chrome + no cert check
+        ["yt-dlp", "--no-playlist", "-f", "best[ext=mp4]/best",
+         "--no-check-certificates",
+         "--add-header", "User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+         "--no-warnings", "-o", out_path, url],
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-    if result.returncode != 0:
-        raise Exception(f"Téléchargement échoué : {result.stderr[:200]}")
-    if not Path(out_path).exists():
-        raise Exception("Fichier téléchargé introuvable.")
-    return out_path
+
+    last_error = ""
+    for cmd in strategies:
+        if Path(out_path).exists():
+            try: os.remove(out_path)
+            except: pass
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        if result.returncode == 0 and Path(out_path).exists() and Path(out_path).stat().st_size > 10000:
+            return out_path
+        last_error = (result.stderr or result.stdout)[:300]
+
+    raise Exception(f"Téléchargement impossible : {last_error[:200]}")
 
 def _get_video_title(url: str) -> str:
     """Récupère le titre de la vidéo YouTube."""
