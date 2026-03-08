@@ -4,13 +4,14 @@ import shutil
 import subprocess
 import numpy as np
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import time
-import re
+import asyncio
+import random
 
 app = FastAPI(title="ClipViral API")
 
@@ -27,36 +28,59 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 jobs = {}
+ws_connections: dict[str, list[WebSocket]] = {}
 
 MIN_DURATION = 61
 MAX_DURATION = 180
 
 # ─────────────────────────────────────────────────────────────
-# MOTS VIRAUX — détection sémantique
+# MOTS VIRAUX
 # ─────────────────────────────────────────────────────────────
 VIRAL_WORDS = {
-    # Choc / surprise
     "incroyable": 1.0, "choquant": 1.0, "unbelievable": 1.0, "shocking": 1.0,
     "jamais vu": 1.0, "never seen": 1.0, "impossible": 0.9, "insane": 1.0,
     "fou": 0.8, "crazy": 0.8, "wtf": 1.0, "omg": 1.0,
-    # Émotion forte
     "incroyablement": 0.9, "tellement": 0.7, "vraiment": 0.6,
     "literally": 0.7, "actually": 0.6, "honestly": 0.7,
-    # Révélation / secret
     "secret": 0.9, "révélation": 1.0, "vérité": 0.8, "truth": 0.8,
     "personne ne sait": 1.0, "nobody knows": 1.0, "finally": 0.8,
-    # Humour / réaction
     "lol": 0.7, "haha": 0.7, "mort de rire": 0.9, "hilarant": 0.9,
-    # Urgence / attention
     "attention": 0.8, "important": 0.7, "écoute": 0.7, "listen": 0.7,
     "stop": 0.7, "wait": 0.8, "attends": 0.8,
-    # Superlatifs
     "meilleur": 0.8, "pire": 0.8, "best": 0.8, "worst": 0.8,
     "plus grand": 0.8, "biggest": 0.8, "premier": 0.7, "first ever": 1.0,
+    "waouh": 1.0, "wow": 1.0, "putain": 0.9, "merde": 0.8,
+    "regarde": 0.7, "look": 0.7, "watch": 0.7, "incredible": 1.0,
 }
 
 # ─────────────────────────────────────────────────────────────
-# 1. ÉNERGIE AUDIO
+# WEBSOCKET HELPERS
+# ─────────────────────────────────────────────────────────────
+async def notify_job(job_id: str, data: dict):
+    """Envoie une mise à jour aux clients WebSocket connectés."""
+    if job_id in ws_connections:
+        dead = []
+        for ws in ws_connections[job_id]:
+            try:
+                await ws.send_json(data)
+            except:
+                dead.append(ws)
+        for ws in dead:
+            ws_connections[job_id].remove(ws)
+
+def update_job(job_id: str, **kwargs):
+    """Met à jour le job et notifie via WebSocket."""
+    jobs[job_id].update(kwargs)
+    # Schedule async notification (fire and forget)
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.ensure_future(notify_job(job_id, jobs[job_id]))
+    except:
+        pass
+
+# ─────────────────────────────────────────────────────────────
+# 1. ÉNERGIE AUDIO + ÉMOTIONS
 # ─────────────────────────────────────────────────────────────
 def extract_audio_energy(video_path: str, segment_duration: float = 2.0):
     cmd = [
@@ -66,8 +90,11 @@ def extract_audio_energy(video_path: str, segment_duration: float = 2.0):
         str(video_path)
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
-    info = json.loads(result.stdout)
-    duration = float(info["format"]["duration"])
+    try:
+        info = json.loads(result.stdout)
+        duration = float(info["format"]["duration"])
+    except:
+        duration = 300.0
 
     cmd_audio = [
         "ffmpeg", "-y", "-i", str(video_path),
@@ -82,7 +109,6 @@ def extract_audio_energy(video_path: str, segment_duration: float = 2.0):
     samples = np.frombuffer(result_audio.stdout, dtype=np.float32)
     sr = 22050
     hop = int(segment_duration * sr)
-
     times, energies, emotions = [], [], []
 
     for i in range(0, len(samples) - hop, hop):
@@ -90,8 +116,6 @@ def extract_audio_energy(video_path: str, segment_duration: float = 2.0):
         rms = np.sqrt(np.mean(chunk**2))
         energies.append(float(rms))
         times.append(i / sr)
-
-        # Détection émotionnelle : variance + zero-crossing rate
         zcr = np.mean(np.abs(np.diff(np.sign(chunk)))) / 2
         variance = np.var(chunk)
         emotion_score = float(np.clip(zcr * 3 + variance * 10, 0, 1))
@@ -109,11 +133,9 @@ def extract_scene_changes(video_path: str) -> dict:
         "-vf", "select='gt(scene,0.3)',metadata=print:file=-",
         "-an", "-f", "null", "-"
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
     scene_scores = {}
     current_time = None
-
     for line in result.stderr.split("\n"):
         if "pts_time:" in line:
             try:
@@ -126,31 +148,36 @@ def extract_scene_changes(video_path: str) -> dict:
                 scene_scores[current_time] = score
             except:
                 pass
-
     return scene_scores
 
 
 # ─────────────────────────────────────────────────────────────
-# 3. WHISPER — transcription + score sémantique
+# 3. WHISPER AI
 # ─────────────────────────────────────────────────────────────
 def transcribe_with_whisper(video_path: str) -> list:
-    """
-    Transcrit la vidéo avec Whisper (tiny = rapide, gratuit).
-    Retourne une liste de segments [{start, end, text, viral_score}]
-    """
     try:
         import whisper
-        model = whisper.load_model("tiny")
-        result = model.transcribe(str(video_path), word_timestamps=True, language=None)
+        # Utilise 'base' pour meilleure précision, 'tiny' si mémoire insuffisante
+        try:
+            model = whisper.load_model("base")
+        except:
+            model = whisper.load_model("tiny")
 
+        result = model.transcribe(
+            str(video_path),
+            word_timestamps=True,
+            language=None,
+            fp16=False,  # CPU compatibility
+            verbose=False,
+        )
         segments = []
         for seg in result.get("segments", []):
-            text = seg.get("text", "").lower().strip()
-            score = compute_semantic_score(text)
+            text = seg.get("text", "").strip()
+            score = compute_semantic_score(text.lower())
             segments.append({
                 "start": float(seg["start"]),
                 "end":   float(seg["end"]),
-                "text":  seg.get("text", "").strip(),
+                "text":  text,
                 "viral_score": score,
             })
         return segments
@@ -160,24 +187,21 @@ def transcribe_with_whisper(video_path: str) -> list:
 
 
 def compute_semantic_score(text: str) -> float:
-    """Score viral basé sur les mots clés émotionnels."""
-    text = text.lower()
     score = 0.0
     for word, weight in VIRAL_WORDS.items():
         if word in text:
             score += weight
-    # Ponctuation forte = émotion
     score += text.count("!") * 0.3
     score += text.count("?") * 0.15
     return min(score, 1.0)
 
 
 def whisper_to_timeline(segments: list, times: np.ndarray) -> np.ndarray:
-    """Mappe les scores Whisper sur la timeline audio."""
     whisper_scores = np.zeros(len(times))
     for seg in segments:
         mask = (times >= seg["start"]) & (times <= seg["end"])
-        whisper_scores[mask] = max(whisper_scores[mask].max(), seg["viral_score"])
+        if mask.any():
+            whisper_scores[mask] = max(whisper_scores[mask].max(), seg["viral_score"])
     return whisper_scores
 
 
@@ -185,13 +209,9 @@ def whisper_to_timeline(segments: list, times: np.ndarray) -> np.ndarray:
 # 4. SCORE VIRAL COMBINÉ (40/30/20/10)
 # ─────────────────────────────────────────────────────────────
 def compute_viral_score(times, audio_energies, emotions, scene_scores, whisper_segments, duration):
-    # Normalise audio
     norm_audio = audio_energies / audio_energies.max() if audio_energies.max() > 0 else np.ones_like(audio_energies) * 0.5
-
-    # Normalise émotions
     norm_emotions = emotions / emotions.max() if emotions.max() > 0 else np.zeros_like(emotions)
 
-    # Scènes → timeline
     scene_boost = np.zeros(len(times))
     for scene_time, scene_score in scene_scores.items():
         idx = np.argmin(np.abs(times - scene_time))
@@ -200,10 +220,8 @@ def compute_viral_score(times, audio_energies, emotions, scene_scores, whisper_s
     if scene_boost.max() > 0:
         scene_boost = scene_boost / scene_boost.max()
 
-    # Whisper → timeline
     whisper_scores = whisper_to_timeline(whisper_segments, times)
 
-    # Score combiné : 40% Whisper + 30% audio + 20% scènes + 10% émotions
     if whisper_scores.max() > 0:
         combined = (
             whisper_scores * 0.40 +
@@ -212,15 +230,14 @@ def compute_viral_score(times, audio_energies, emotions, scene_scores, whisper_s
             norm_emotions  * 0.10
         )
     else:
-        # Fallback sans Whisper : 70% audio + 20% scènes + 10% émotions
         combined = (
-            norm_audio   * 0.70 +
-            scene_boost  * 0.20 +
+            norm_audio    * 0.70 +
+            scene_boost   * 0.20 +
             norm_emotions * 0.10
         )
 
     window   = 7
-    smoothed = np.convolve(combined, np.ones(window)/window, mode='same')
+    smoothed = np.convolve(combined, np.ones(window) / window, mode='same')
     return smoothed
 
 
@@ -267,11 +284,10 @@ def find_viral_clips(times, smoothed, duration):
                 else:
                     break
 
-        start_t  = float(times[left])
-        end_t    = float(times[right])
-        dur      = end_t - start_t
+        start_t = float(times[left])
+        end_t   = float(times[right])
 
-        if dur < MIN_DURATION:
+        if end_t - start_t < MIN_DURATION:
             end_t = min(start_t + MIN_DURATION, duration)
         if end_t > duration:
             end_t = duration
@@ -281,9 +297,9 @@ def find_viral_clips(times, smoothed, duration):
         viral_score = float(smoothed[mask].mean()) if mask.any() else 0.5
 
         clips.append({
-            "start": round(start_t, 1),
-            "end":   round(end_t, 1),
-            "duration": round(end_t - start_t, 1),
+            "start":       round(start_t, 1),
+            "end":         round(end_t, 1),
+            "duration":    round(end_t - start_t, 1),
             "viral_score": round(viral_score, 3),
         })
 
@@ -292,17 +308,13 @@ def find_viral_clips(times, smoothed, duration):
 
 
 # ─────────────────────────────────────────────────────────────
-# 6. GÉNÉRATION CAPTION TIKTOK
+# 6. CAPTION TIKTOK
 # ─────────────────────────────────────────────────────────────
 def generate_tiktok_caption(clip: dict, whisper_segments: list) -> str:
-    """Génère une caption TikTok accrocheuse basée sur le contenu du clip."""
-    # Trouver les segments Whisper dans la fenêtre du clip
     clip_texts = [
         s["text"] for s in whisper_segments
         if s["start"] >= clip["start"] and s["end"] <= clip["end"]
     ]
-
-    # Trouver les mots viraux présents
     found_viral = []
     for text in clip_texts:
         for word in VIRAL_WORDS:
@@ -311,13 +323,13 @@ def generate_tiktok_caption(clip: dict, whisper_segments: list) -> str:
 
     score_pct = int(clip["viral_score"] * 100)
 
-    # Templates de captions selon le score
     if score_pct >= 80:
         templates = [
             "POV : tu tombes sur le moment le plus fou 🔥",
             "Ce moment va te laisser sans voix 😱",
             "Ils ont pas coupé ça au montage... 👀",
             "Le moment que tout le monde attendait 💥",
+            "Je peux pas croire qu'ils ont dit ça 😳",
         ]
     elif score_pct >= 60:
         templates = [
@@ -333,11 +345,8 @@ def generate_tiktok_caption(clip: dict, whisper_segments: list) -> str:
             "Ce passage change tout 💡",
         ]
 
-    import random
     caption = random.choice(templates)
-
-    # Ajoute hashtags automatiques
-    hashtags = "#viral #tiktok #fyp #pourtoi"
+    hashtags = "#viral #tiktok #fyp #pourtoi #clipviral"
     if found_viral:
         hashtags += " #" + found_viral[0].replace(" ", "")
 
@@ -345,46 +354,69 @@ def generate_tiktok_caption(clip: dict, whisper_segments: list) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
-# 7. EXPORT CLIP AVEC SOUS-TITRES
+# 7. SOUS-TITRES SRT
 # ─────────────────────────────────────────────────────────────
-def create_srt(whisper_segments: list, start: float, end: float, out_path: str):
-    """Crée un fichier SRT pour les sous-titres du clip."""
+def create_srt(whisper_segments: list, start: float, end: float, out_path: str) -> bool:
     srt_lines = []
     idx = 1
+
+    def fmt(s):
+        h = int(s // 3600)
+        m = int((s % 3600) // 60)
+        sec = int(s % 60)
+        ms = int((s % 1) * 1000)
+        return f"{h:02d}:{m:02d}:{sec:02d},{ms:03d}"
+
     for seg in whisper_segments:
         if seg["end"] < start or seg["start"] > end:
             continue
         seg_start = max(seg["start"] - start, 0)
         seg_end   = min(seg["end"] - start, end - start)
-
-        def fmt(s):
-            h = int(s // 3600)
-            m = int((s % 3600) // 60)
-            sec = int(s % 60)
-            ms = int((s % 1) * 1000)
-            return f"{h:02d}:{m:02d}:{sec:02d},{ms:03d}"
-
+        if seg_end <= seg_start:
+            continue
         srt_lines.append(f"{idx}\n{fmt(seg_start)} --> {fmt(seg_end)}\n{seg['text'].strip()}\n")
         idx += 1
 
+    if not srt_lines:
+        return False
+
     with open(out_path, "w", encoding="utf-8") as f:
         f.write("\n".join(srt_lines))
+    return True
 
-    return len(srt_lines) > 0
+
+# ─────────────────────────────────────────────────────────────
+# 8. COMPRESSION AVANT TRAITEMENT (accélère Whisper)
+# ─────────────────────────────────────────────────────────────
+def compress_for_analysis(video_path: str) -> str:
+    """Compresse la vidéo à 720p pour accélérer l'analyse Whisper."""
+    out_path = str(video_path).replace(".mp4", "_compressed.mp4").replace(".mov", "_compressed.mp4").replace(".mkv", "_compressed.mp4")
+    cmd = [
+        "ffmpeg", "-y", "-i", str(video_path),
+        "-vf", "scale=-2:720",
+        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28",
+        "-c:a", "aac", "-b:a", "128k",
+        "-movflags", "+faststart",
+        out_path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if result.returncode == 0 and Path(out_path).exists():
+        return out_path
+    return str(video_path)  # fallback sur l'original
 
 
-def export_clip_tiktok(input_path: str, start: float, end: float, out_path: str,
-                        srt_path: str = None):
+# ─────────────────────────────────────────────────────────────
+# 9. EXPORT CLIP TIKTOK AVEC SOUS-TITRES
+# ─────────────────────────────────────────────────────────────
+def export_clip_tiktok(input_path: str, start: float, end: float, out_path: str, srt_path: str = None) -> bool:
     duration   = end - start
     fade_start = max(0, duration - 2.0)
 
-    # Sous-titres brûlés dans la vidéo si SRT disponible
     subtitle_filter = ""
     if srt_path and Path(srt_path).exists() and Path(srt_path).stat().st_size > 10:
-        # Escape le chemin pour FFmpeg
         srt_escaped = str(srt_path).replace("\\", "/").replace(":", "\\:")
         subtitle_filter = (
-            f",subtitles={srt_escaped}:force_style='"
+            f",subtitles='{srt_escaped}':force_style='"
             f"FontName=Arial,FontSize=14,Bold=1,"
             f"PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
             f"BackColour=&H80000000,Outline=2,Shadow=1,"
@@ -416,118 +448,133 @@ def export_clip_tiktok(input_path: str, start: float, end: float, out_path: str,
         str(out_path)
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     return result.returncode == 0
 
 
 # ─────────────────────────────────────────────────────────────
-# 8. PIPELINE PRINCIPAL
+# 10. PIPELINE PRINCIPAL
 # ─────────────────────────────────────────────────────────────
 def process_video_job(job_id: str, video_path: str):
     job_dir = OUTPUT_DIR / job_id
     job_dir.mkdir(exist_ok=True)
+    compressed_path = None
 
     try:
-        # ÉTAPE 1 — Énergie audio + émotions
-        jobs[job_id]["status"]   = "analyzing"
-        jobs[job_id]["progress"] = 8
-        jobs[job_id]["message"]  = "🎵 Analyse de l'énergie audio..."
+        # ÉTAPE 1 — Compression pour accélérer l'analyse
+        update_job(job_id, status="analyzing", progress=5, message="⚡ Compression de la vidéo pour analyse rapide...")
+        compressed_path = compress_for_analysis(video_path)
 
-        times, energies, emotions, duration = extract_audio_energy(video_path)
+        # ÉTAPE 2 — Énergie audio
+        update_job(job_id, progress=12, message="🎵 Analyse de l'énergie audio...")
+        times, energies, emotions, duration = extract_audio_energy(compressed_path)
 
-        # ÉTAPE 2 — Changements de scène
-        jobs[job_id]["progress"] = 20
-        jobs[job_id]["message"]  = "🎬 Détection des changements de scène..."
+        # ÉTAPE 3 — Changements de scène
+        update_job(job_id, progress=22, message="🎬 Détection des changements de scène...")
+        scene_scores = extract_scene_changes(compressed_path)
 
-        scene_scores = extract_scene_changes(video_path)
+        # ÉTAPE 4 — Whisper
+        update_job(job_id, progress=35, message="🧠 Transcription Whisper AI... (peut prendre 1-3 min)")
+        whisper_segments = transcribe_with_whisper(compressed_path)
+        nb_segments = len(whisper_segments)
 
-        # ÉTAPE 3 — Whisper transcription
-        jobs[job_id]["progress"] = 32
-        jobs[job_id]["message"]  = "🧠 Transcription Whisper AI en cours..."
-
-        whisper_segments = transcribe_with_whisper(video_path)
-
-        jobs[job_id]["progress"] = 50
-        jobs[job_id]["message"]  = f"✍️ {len(whisper_segments)} segments transcrits. Calcul du score viral..."
-
-        # ÉTAPE 4 — Score viral combiné
+        # ÉTAPE 5 — Score viral
+        update_job(job_id, progress=55, message=f"📊 {nb_segments} segments analysés. Calcul du score viral...")
         smoothed = compute_viral_score(times, energies, emotions, scene_scores, whisper_segments, duration)
         clips    = find_viral_clips(times, smoothed, duration)
 
         if not clips:
-            jobs[job_id]["status"]  = "error"
-            jobs[job_id]["message"] = "Aucun clip viral détecté."
+            update_job(job_id, status="error", message="❌ Aucun clip viral détecté. Essaie avec une vidéo plus longue.")
             return
 
-        jobs[job_id]["clips_meta"] = clips
-        jobs[job_id]["progress"]   = 55
-        jobs[job_id]["message"]    = f"✅ {len(clips)} clips détectés. Export TikTok..."
-        jobs[job_id]["status"]     = "exporting"
+        update_job(job_id, progress=58, message=f"✅ {len(clips)} clips détectés ! Export TikTok en cours...")
+        update_job(job_id, status="exporting")
 
         exported = []
         for idx, clip in enumerate(clips):
             out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
             srt_path = job_dir / f"Clip_Elite_{idx+1}.srt"
 
-            # Génère les sous-titres
+            # Sous-titres — exporter depuis la vidéo ORIGINALE (meilleure qualité)
             has_subs = create_srt(whisper_segments, clip["start"], clip["end"], str(srt_path))
 
-            # Génère la caption TikTok
+            # Caption TikTok
             caption = generate_tiktok_caption(clip, whisper_segments)
 
-            # Export avec sous-titres
+            # Export depuis vidéo ORIGINALE (pas compressée)
             success = export_clip_tiktok(
-                video_path, clip["start"], clip["end"], str(out_path),
+                video_path,
+                clip["start"], clip["end"],
+                str(out_path),
                 srt_path=str(srt_path) if has_subs else None
             )
 
             if success:
                 exported.append({
                     **clip,
-                    "filename": f"Clip_Elite_{idx+1}.mp4",
-                    "url":      f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
-                    "rank":     idx + 1,
-                    "caption":  caption,
+                    "filename":      f"Clip_Elite_{idx+1}.mp4",
+                    "url":           f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "preview_url":   f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "rank":          idx + 1,
+                    "caption":       caption,
                     "has_subtitles": has_subs,
                 })
 
-            progress = 55 + int(((idx + 1) / len(clips)) * 42)
-            jobs[job_id]["progress"] = progress
-            jobs[job_id]["message"]  = f"Export clip {idx+1}/{len(clips)}..."
+            progress = 58 + int(((idx + 1) / len(clips)) * 40)
+            update_job(job_id, progress=progress, message=f"🎬 Export clip {idx+1}/{len(clips)}...")
 
-        jobs[job_id]["status"]   = "done"
-        jobs[job_id]["progress"] = 100
-        jobs[job_id]["clips"]    = exported
-        jobs[job_id]["message"]  = f"🎉 {len(exported)} clips prêts !"
+        update_job(job_id, status="done", progress=100, clips=exported,
+                   message=f"🎉 {len(exported)} clips prêts à poster !")
 
     except Exception as e:
-        jobs[job_id]["status"]  = "error"
-        jobs[job_id]["message"] = str(e)
+        update_job(job_id, status="error", message=f"❌ Erreur : {str(e)}")
     finally:
         try:
             os.remove(video_path)
         except:
             pass
+        if compressed_path and compressed_path != video_path:
+            try:
+                os.remove(compressed_path)
+            except:
+                pass
 
 
 # ─────────────────────────────────────────────────────────────
 # API ROUTES
 # ─────────────────────────────────────────────────────────────
+
 @app.post("/api/upload")
-async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    if not file.content_type.startswith("video/"):
-        raise HTTPException(400, "Fichier vidéo requis.")
-
+async def upload_video(request: Request, background_tasks: BackgroundTasks):
+    """
+    Upload sans limite de taille — lit le body en streaming chunks.
+    Pas de limite FastAPI/Starlette grâce à la lecture manuelle.
+    """
     job_id     = str(uuid.uuid4())[:8]
-    video_path = UPLOAD_DIR / f"{job_id}_{file.filename}"
+    
+    # Récupère le nom du fichier depuis les headers
+    content_disposition = request.headers.get("content-disposition", "")
+    filename = "video.mp4"
+    if "filename=" in content_disposition:
+        filename = content_disposition.split("filename=")[-1].strip('"')
 
-    with open(video_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    video_path = UPLOAD_DIR / f"{job_id}_{filename}"
+
+    # Lecture en streaming — pas de limite mémoire
+    try:
+        with open(video_path, "wb") as f:
+            async for chunk in request.stream():
+                f.write(chunk)
+    except Exception as e:
+        raise HTTPException(500, f"Erreur upload : {e}")
+
+    if not video_path.exists() or video_path.stat().st_size < 1000:
+        raise HTTPException(400, "Fichier vide ou invalide.")
 
     jobs[job_id] = {
         "status":     "queued",
         "progress":   0,
-        "message":    "En attente...",
+        "message":    "✅ Vidéo reçue, analyse en cours...",
         "clips":      [],
         "created_at": time.time(),
     }
@@ -543,16 +590,53 @@ async def get_status(job_id: str):
     return jobs[job_id]
 
 
+@app.websocket("/ws/{job_id}")
+async def websocket_endpoint(websocket: WebSocket, job_id: str):
+    """WebSocket pour mises à jour en temps réel sans timeout HTTP."""
+    await websocket.accept()
+
+    if job_id not in ws_connections:
+        ws_connections[job_id] = []
+    ws_connections[job_id].append(websocket)
+
+    # Envoie l'état actuel immédiatement
+    if job_id in jobs:
+        await websocket.send_json(jobs[job_id])
+
+    try:
+        while True:
+            # Keepalive ping toutes les 20s
+            await asyncio.sleep(20)
+            try:
+                await websocket.send_json({"ping": True})
+            except:
+                break
+            # Si job terminé, ferme proprement
+            if job_id in jobs and jobs[job_id].get("status") in ("done", "error"):
+                await asyncio.sleep(2)
+                break
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if job_id in ws_connections and websocket in ws_connections[job_id]:
+            ws_connections[job_id].remove(websocket)
+
+
 @app.get("/outputs/{job_id}/{filename}")
 async def download_clip(job_id: str, filename: str):
     file_path = OUTPUT_DIR / job_id / filename
     if not file_path.exists():
         raise HTTPException(404, "Clip introuvable.")
+    
+    # Support Range requests pour la preview vidéo dans le navigateur
     return FileResponse(
         str(file_path),
         media_type="video/mp4",
         filename=filename,
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={
+            "Accept-Ranges": "bytes",
+            "Content-Disposition": f"inline; filename={filename}",
+        }
     )
 
 
