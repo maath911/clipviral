@@ -366,4 +366,6 @@ async def download_clip(job_id: str, filename: str):
 # Serve frontend
 import os
 os.makedirs("static", exist_ok=True)
+import os
+os.makedirs("static", exist_ok=True)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
