@@ -1,675 +1,519 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>ClipViral</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#0a0a0f;
-  --card:#13131f;
-  --card2:#1a1a28;
-  --border:#252535;
-  --orange:#ff6b2b;
-  --orange2:#ffad00;
-  --pink:#ff2d78;
-  --white:#f5f5ff;
-  --grey:#6b6b85;
-  --grey2:#3a3a50;
-  --green:#00e0a0;
-  --font:'Outfit',sans-serif;
-  --r:16px;
-}
-html{height:100%;overflow-x:hidden}
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--white);
-  min-height:100vh;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
+import os
+import uuid
+import subprocess
+import numpy as np
+from pathlib import Path
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import json
+import time
+import asyncio
+import random
+from concurrent.futures import ThreadPoolExecutor
+
+app = FastAPI(title="ClipViral API")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+UPLOAD_DIR = Path("uploads")
+OUTPUT_DIR = Path("outputs")
+UPLOAD_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+jobs: dict = {}
+ws_connections: dict[str, list] = {}
+executor = ThreadPoolExecutor(max_workers=2)
+
+MIN_DURATION = 61
+MAX_DURATION = 180
+MIN_GAP      = 120
+
+VIRAL_WORDS = {
+    "incroyable": 1.0, "choquant": 1.0, "unbelievable": 1.0, "shocking": 1.0,
+    "jamais vu": 1.0, "never seen": 1.0, "impossible": 0.9, "insane": 1.0,
+    "fou": 0.8, "crazy": 0.8, "wtf": 1.0, "omg": 1.0, "waouh": 1.0, "wow": 1.0,
+    "incroyablement": 0.9, "literally": 0.7, "honestly": 0.7,
+    "secret": 0.9, "révélation": 1.0, "vérité": 0.8, "truth": 0.8,
+    "personne ne sait": 1.0, "nobody knows": 1.0, "finally": 0.8,
+    "lol": 0.7, "haha": 0.7, "mort de rire": 0.9, "hilarant": 0.9,
+    "attention": 0.8, "stop": 0.7, "wait": 0.8, "attends": 0.8,
+    "meilleur": 0.8, "pire": 0.8, "best": 0.8, "worst": 0.8,
+    "first ever": 1.0, "putain": 0.9, "incredible": 1.0, "amazing": 0.9,
+    "never": 0.7, "jamais": 0.7, "regarde": 0.7, "look": 0.7,
 }
 
-/* GRADIENT BG */
-.bg-gradient{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 80% 50% at 10% 10%, rgba(255,107,43,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(255,45,120,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,173,0,0.05) 0%, transparent 70%);
-}
+# ─────────────────────────────────────────────────────────────
+# WEBSOCKET
+# ─────────────────────────────────────────────────────────────
+async def notify_ws(job_id: str):
+    if job_id not in ws_connections:
+        return
+    data = jobs.get(job_id, {})
+    dead = []
+    for ws in ws_connections[job_id]:
+        try:
+            await ws.send_json(data)
+        except:
+            dead.append(ws)
+    for ws in dead:
+        ws_connections[job_id].remove(ws)
 
-/* LAYOUT — tout sur une page, centré */
-.app{
-  position:relative;z-index:1;
-  max-width:480px;margin:0 auto;
-  padding:24px 16px 40px;
-  min-height:100vh;
-  display:flex;flex-direction:column;gap:20px;
-}
+def set_job(job_id: str, **kwargs):
+    jobs[job_id].update(kwargs)
 
-/* HEADER */
-.header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:8px;
-}
-.logo{
-  font-size:22px;font-weight:900;letter-spacing:-0.5px;
-  background:linear-gradient(135deg,var(--orange),var(--orange2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.live-badge{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(0,224,160,0.1);border:1px solid rgba(0,224,160,0.2);
-  border-radius:100px;padding:5px 12px;
-  font-size:11px;font-weight:500;color:var(--green);
-}
-.live-dot{
-  width:6px;height:6px;border-radius:50%;background:var(--green);
-  box-shadow:0 0 6px var(--green);
-  animation:pulse 1.8s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+# ─────────────────────────────────────────────────────────────
+# 1. TÉLÉCHARGEMENT YOUTUBE
+# ─────────────────────────────────────────────────────────────
+COOKIES_PATH = Path("cookies.txt")
 
-/* HERO */
-.hero{text-align:center;padding:8px 0 4px;}
-.hero h1{
-  font-size:clamp(32px,9vw,42px);font-weight:900;line-height:1.1;
-  letter-spacing:-1px;margin-bottom:10px;
-}
-.hero h1 .grad{
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.hero p{font-size:14px;color:var(--grey);line-height:1.6;font-weight:400;max-width:340px;margin:0 auto;}
+def _download_youtube(url: str, job_id: str) -> str:
+    """
+    Télécharge avec yt-dlp + cookies.txt (100% fiable sur IP datacenter).
+    cookies.txt doit etre a la racine du repo GitHub (format Netscape).
+    """
+    out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
 
-/* STATS ROW */
-.stats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  overflow:hidden;
-}
-.stat{
-  padding:14px 10px;text-align:center;
-  border-right:1px solid var(--border);
-}
-.stat:last-child{border-right:none;}
-.stat-v{font-size:17px;font-weight:800;color:var(--orange);}
-.stat-l{font-size:10px;color:var(--grey);margin-top:2px;font-weight:500;}
+    def try_cmd(cmd):
+        if Path(out_path).exists():
+            try: os.remove(out_path)
+            except: pass
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        ok = r.returncode == 0 and Path(out_path).exists() and Path(out_path).stat().st_size > 10000
+        return ok, (r.stderr or r.stdout)[:200]
 
-/* SEARCH CARD */
-.search-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);padding:18px;
-}
-.search-label{font-size:12px;color:var(--grey);font-weight:600;margin-bottom:10px;letter-spacing:0.3px;}
-.search-row{
-  display:flex;align-items:center;gap:10px;
-  background:var(--bg);border:1.5px solid var(--border);
-  border-radius:12px;padding:8px 8px 8px 14px;
-  transition:border-color 0.2s,box-shadow 0.2s;
-}
-.search-row:focus-within{
-  border-color:var(--orange);
-  box-shadow:0 0 0 3px rgba(255,107,43,0.12);
-}
-.yt-logo{width:20px;height:20px;flex-shrink:0;}
-#url-input{
-  flex:1;background:none;border:none;outline:none;
-  color:var(--white);font-family:var(--font);font-size:14px;
-  font-weight:400;min-width:0;padding:4px 0;
-}
-#url-input::placeholder{color:var(--grey2);}
-.btn-go{
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  color:#fff;border:none;border-radius:9px;
-  padding:10px 18px;font-family:var(--font);
-  font-size:14px;font-weight:700;cursor:pointer;
-  white-space:nowrap;flex-shrink:0;
-  transition:opacity 0.2s,transform 0.15s;
-  box-shadow:0 4px 16px rgba(255,107,43,0.3);
-}
-.btn-go:hover:not(:disabled){opacity:0.9;transform:translateY(-1px);}
-.btn-go:active:not(:disabled){transform:scale(0.97);}
-.btn-go:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+    base = ["yt-dlp", "--no-playlist",
+            "-f", "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "--merge-output-format", "mp4", "--no-warnings",
+            "--socket-timeout", "30", "-o", out_path]
 
-.examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.ex-tag{
-  background:var(--card2);border:1px solid var(--border);
-  border-radius:8px;padding:5px 10px;font-size:11px;
-  color:var(--grey);cursor:pointer;transition:all 0.15s;font-weight:500;
-}
-.ex-tag:hover{border-color:var(--orange);color:var(--orange);}
+    err = "unknown"
+    # 1 — Cookies (solution la plus fiable sur datacenter)
+    if COOKIES_PATH.exists():
+        ok, err = try_cmd(base + ["--cookies", str(COOKIES_PATH), url])
+        if ok: return out_path
 
-/* ERROR */
-.error{
-  background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.25);
-  border-radius:12px;padding:12px 16px;font-size:13px;color:#ff7099;
-  display:none;font-weight:500;line-height:1.5;
-}
+    # 2 — Clients alternatifs moins bloques
+    for client in ["android_vr", "android_creator", "android", "ios", "tv_embedded"]:
+        ok, err = try_cmd(base + ["--extractor-args", f"youtube:player_client={client}", url])
+        if ok: return out_path
 
-/* PROGRESS CARD */
-#progress-section{display:none;}
-.prog-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);overflow:hidden;
-}
-.prog-top{padding:20px 18px 16px;}
-.prog-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;}
-.prog-left{flex:1;min-width:0;}
-.prog-tag{
-  display:inline-flex;align-items:center;gap:5px;
-  background:rgba(255,107,43,0.12);border:1px solid rgba(255,107,43,0.25);
-  border-radius:100px;padding:3px 10px;
-  font-size:10px;font-weight:700;color:var(--orange);
-  letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;
-}
-.prog-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange);animation:pulse 1.5s infinite;}
-.prog-title{
-  font-size:16px;font-weight:700;line-height:1.3;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:220px;
-}
-.prog-msg{font-size:12px;color:var(--grey);margin-top:6px;line-height:1.4;min-height:16px;}
-.prog-pct{
-  font-size:44px;font-weight:900;line-height:1;
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  flex-shrink:0;
-}
-.prog-bar-bg{height:4px;background:var(--border);border-radius:100px;overflow:hidden;margin:0 18px 16px;}
-.prog-bar-fill{
-  height:100%;border-radius:100px;
-  background:linear-gradient(90deg,var(--orange),var(--pink));
-  transition:width 0.5s ease;width:0%;
-  box-shadow:0 0 10px rgba(255,107,43,0.4);
-}
-.prog-steps{
-  display:flex;border-top:1px solid var(--border);
-}
-.prog-step{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  gap:5px;padding:12px 4px;
-  border-right:1px solid var(--border);
-}
-.prog-step:last-child{border-right:none;}
-.step-icon{font-size:16px;line-height:1;}
-.step-name{font-size:9px;color:var(--grey2);font-weight:600;letter-spacing:0.3px;text-transform:uppercase;}
-.prog-step.active .step-name{color:var(--orange);}
-.prog-step.done .step-name{color:var(--green);}
-.prog-step.done .step-icon{filter:grayscale(0);}
-.prog-step:not(.active):not(.done) .step-icon{filter:grayscale(1);opacity:0.4;}
+    raise Exception(f"Telechargement echoue. Ajoute cookies.txt au repo GitHub. Detail: {err[:120]}")
 
-.timer{
-  display:flex;justify-content:center;align-items:center;gap:6px;
-  padding:10px;background:var(--card2);
-  font-size:12px;color:var(--grey);font-weight:500;
-}
+def _get_video_title(url: str) -> str:
+    """Récupère le titre de la vidéo YouTube."""
+    try:
+        cmd = ["yt-dlp", "--get-title", "--no-warnings", url]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        return r.stdout.strip()[:80] if r.returncode == 0 else ""
+    except:
+        return ""
 
-/* RESULTS */
-#results-section{display:none;}
-.results-header{
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:8px;
-}
-.results-h{font-size:22px;font-weight:800;}
-.results-h span{
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.results-sub{font-size:12px;color:var(--grey);margin-top:4px;font-weight:500;}
-.btn-new{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:10px;padding:8px 14px;color:var(--grey);
-  font-family:var(--font);font-size:12px;font-weight:600;
-  cursor:pointer;transition:all 0.15s;
-}
-.btn-new:hover{border-color:var(--orange);color:var(--orange);}
+# ─────────────────────────────────────────────────────────────
+# 2. ANALYSE AUDIO
+# ─────────────────────────────────────────────────────────────
+def _get_duration(video_path: str) -> float:
+    cmd = ["ffprobe", "-v", "quiet", "-print_format", "json",
+           "-show_format", str(video_path)]
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    try:
+        return float(json.loads(r.stdout)["format"]["duration"])
+    except:
+        return 300.0
 
-/* CLIP CARD */
-.clip-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);overflow:hidden;
-  transition:border-color 0.2s;
-}
-.clip-card:hover{border-color:var(--border);}
-.clip-header{
-  display:flex;align-items:center;gap:12px;
-  padding:16px 16px 14px;
-}
-.clip-rank{
-  width:40px;height:40px;border-radius:10px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:900;color:#fff;
-}
-.clip-info{flex:1;min-width:0;}
-.clip-name{font-size:14px;font-weight:700;margin-bottom:4px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.clip-meta{display:flex;gap:6px;flex-wrap:wrap;}
-.meta-tag{
-  background:var(--card2);border:1px solid var(--border);
-  border-radius:6px;padding:2px 8px;font-size:10px;
-  color:var(--grey);font-weight:600;
-}
-.meta-tag.hot{
-  background:rgba(255,107,43,0.1);border-color:rgba(255,107,43,0.3);
-  color:var(--orange);
-}
+def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
+    duration = _get_duration(video_path)
+    cmd = ["ffmpeg", "-y", "-i", str(video_path),
+           "-vn", "-ac", "1", "-ar", "16000", "-f", "f32le", "-"]
+    r = subprocess.run(cmd, capture_output=True, timeout=600)
+    if len(r.stdout) < 100:
+        n = max(10, int(duration / segment_duration))
+        return np.linspace(0, duration, n), np.ones(n)*0.5, np.ones(n)*0.5, duration
 
-/* SCORE BAR */
-.score-wrap{padding:0 16px 14px;display:flex;align-items:center;gap:10px;}
-.score-lbl{font-size:11px;color:var(--grey);font-weight:600;white-space:nowrap;}
-.score-bar{flex:1;height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
-.score-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--orange),var(--orange2));}
-.score-val{font-size:12px;font-weight:800;color:var(--orange);white-space:nowrap;}
+    samples = np.frombuffer(r.stdout, dtype=np.float32)
+    sr, hop = 16000, int(segment_duration * 16000)
+    times, energies, emotions = [], [], []
+    for i in range(0, len(samples) - hop, hop):
+        chunk = samples[i:i+hop]
+        times.append(i / sr)
+        energies.append(float(np.sqrt(np.mean(chunk**2))))
+        zcr = float(np.mean(np.abs(np.diff(np.sign(chunk)))) / 2)
+        emotions.append(float(np.clip(zcr * 3 + float(np.var(chunk)) * 10, 0, 1)))
+    return np.array(times), np.array(energies), np.array(emotions), duration
 
-/* CLIP ACTIONS */
-.clip-btns{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;
-  padding:0 16px 16px;
-}
-.clip-btns .btn-dl{grid-column:1/-1;}
-.btn-dl{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  color:#fff;border:none;border-radius:10px;
-  padding:12px;font-family:var(--font);font-size:13px;font-weight:700;
-  cursor:pointer;text-decoration:none;
-  transition:opacity 0.15s,transform 0.15s;
-  box-shadow:0 4px 16px rgba(255,107,43,0.25);
-}
-.btn-dl:hover{opacity:0.92;transform:translateY(-1px);}
-.btn-dl:active{transform:scale(0.97);}
-.btn-secondary{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  background:var(--card2);color:var(--grey);
-  border:1px solid var(--border);border-radius:10px;
-  padding:11px;font-family:var(--font);font-size:12px;font-weight:600;
-  cursor:pointer;text-decoration:none;transition:all 0.15s;
-}
-.btn-secondary:hover{border-color:var(--orange);color:var(--orange);}
+# ─────────────────────────────────────────────────────────────
+# 3. DÉTECTION SCÈNES
+# ─────────────────────────────────────────────────────────────
+def _compress_for_scenes(video_path: str, job_id: str) -> str:
+    out = str(UPLOAD_DIR / f"sc_{job_id}.mp4")
+    cmd = ["ffmpeg", "-y", "-i", str(video_path),
+           "-vf", "scale=-2:360,fps=2",
+           "-c:v", "libx264", "-preset", "ultrafast", "-crf", "35", "-an", out]
+    r = subprocess.run(cmd, capture_output=True, timeout=300)
+    return out if r.returncode == 0 and Path(out).exists() else str(video_path)
 
-/* PREVIEW */
-.clip-preview{display:none;border-top:1px solid var(--border);}
-.clip-preview video{width:100%;max-height:260px;background:#000;display:block;}
+def _extract_scenes(video_path: str) -> dict:
+    cmd = ["ffmpeg", "-i", str(video_path),
+           "-vf", "select='gt(scene,0.25)',metadata=print:file=-",
+           "-an", "-f", "null", "-"]
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    scores, t = {}, None
+    for line in r.stderr.split("\n"):
+        if "pts_time:" in line:
+            try: t = float(line.split("pts_time:")[1].split()[0])
+            except: pass
+        if "lavfi.scene_score=" in line and t is not None:
+            try: scores[t] = float(line.split("lavfi.scene_score=")[1].strip())
+            except: pass
+    return scores
 
-/* CAPTION */
-.clip-caption{
-  border-top:1px solid var(--border);padding:12px 16px;
-  display:flex;align-items:flex-start;gap:10px;
-}
-.caption-ico{font-size:14px;flex-shrink:0;margin-top:1px;}
-.caption-txt{flex:1;font-size:12px;color:var(--grey);line-height:1.6;font-weight:400;}
-.btn-copy{
-  background:var(--card2);border:1px solid var(--border);
-  border-radius:8px;padding:5px 10px;color:var(--grey);
-  font-size:11px;font-weight:600;cursor:pointer;
-  white-space:nowrap;transition:all 0.15s;flex-shrink:0;
-  font-family:var(--font);
-}
-.btn-copy:hover{border-color:var(--orange);color:var(--orange);}
-.btn-copy.ok{border-color:var(--green);color:var(--green);}
+# ─────────────────────────────────────────────────────────────
+# 4. ZONES CHAUDES
+# ─────────────────────────────────────────────────────────────
+def _find_hot_zones(times, energies, emotions, scene_scores, duration, zone=210):
+    norm_a = energies / energies.max() if energies.max() > 0 else np.ones_like(energies)
+    norm_e = emotions / emotions.max() if emotions.max() > 0 else np.zeros_like(emotions)
+    boost  = np.zeros(len(times))
+    for st, sc in scene_scores.items():
+        idx = np.argmin(np.abs(times - st))
+        if idx < len(boost): boost[idx] += sc
+    if boost.max() > 0: boost /= boost.max()
 
-/* HOW IT WORKS — compact, sur la même page */
-.how{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);padding:18px;
-}
-.how-title{font-size:15px;font-weight:800;margin-bottom:14px;
-  display:flex;align-items:center;gap:8px;
-}
-.how-title::before{content:'⚡';font-size:16px;}
-.how-steps{display:flex;flex-direction:column;gap:10px;}
-.how-step{
-  display:flex;align-items:flex-start;gap:12px;
-  background:var(--card2);border-radius:10px;padding:12px;
-}
-.how-num{
-  width:28px;height:28px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--orange),var(--pink));
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:800;color:#fff;
-}
-.how-step-body{}
-.how-step-t{font-size:13px;font-weight:700;margin-bottom:2px;}
-.how-step-d{font-size:11px;color:var(--grey);line-height:1.5;}
+    combined = norm_a * 0.65 + boost * 0.25 + norm_e * 0.10
+    w = max(5, min(20, int(len(times) / 40)))
+    smoothed = np.convolve(combined, np.ones(w)/w, mode='same')
 
-/* FOOTER */
-.footer{text-align:center;padding-top:8px;}
-.footer p{font-size:11px;color:var(--grey2);font-weight:500;}
-</style>
-</head>
-<body>
-<div class="bg-gradient"></div>
+    blocks = []
+    for b in range(max(1, int(duration / zone))):
+        bs, be = b * zone, min((b+1)*zone, duration)
+        mask = (times >= bs) & (times < be)
+        if mask.any():
+            blocks.append((bs, be, float(smoothed[mask].mean())))
 
-<div class="app">
+    if not blocks:
+        return [(0, min(zone, duration))], smoothed
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">ClipViral ✦</div>
-    <div class="live-badge"><span class="live-dot"></span>IA Active</div>
-  </div>
+    thr = np.percentile([b[2] for b in blocks], 40)
+    hot = sorted([(s, e) for s, e, sc in blocks if sc >= thr], key=lambda x: x[0])
+    return (hot if hot else [(0, min(zone, duration))]), smoothed
 
-  <!-- HERO -->
-  <div class="hero">
-    <h1>Tes clips TikTok<br/><span class="grad">en automatique</span></h1>
-    <p>Colle un lien YouTube. L'IA extrait tous les passages hype et exporte des clips prêts à poster.</p>
-  </div>
+# ─────────────────────────────────────────────────────────────
+# 5. WHISPER SUR ZONES CHAUDES
+# ─────────────────────────────────────────────────────────────
+def _transcribe_zones(video_path: str, hot_zones: list, job_id: str) -> list:
+    try:
+        import whisper
+        model = whisper.load_model("tiny")
+    except:
+        return []
 
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-v">61–180s</div>
-      <div class="stat-l">Durée clip</div>
-    </div>
-    <div class="stat">
-      <div class="stat-v">1080p</div>
-      <div class="stat-l">Format TikTok</div>
-    </div>
-    <div class="stat">
-      <div class="stat-v">100%</div>
-      <div class="stat-l">Gratuit</div>
-    </div>
-  </div>
+    all_segs = []
+    for i, (zs, ze) in enumerate(hot_zones):
+        set_job(job_id,
+                progress=38 + int((i / len(hot_zones)) * 17),
+                message=f"🧠 Whisper zone {i+1}/{len(hot_zones)} ({int(zs//60)}min → {int(ze//60)}min)...")
 
-  <!-- SEARCH -->
-  <div class="search-card">
-    <div class="search-label">🔗 Lien YouTube</div>
-    <div class="search-row">
-      <svg class="yt-logo" viewBox="0 0 24 24" fill="#ff0000">
-        <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4L15.8 12l-6.3 3.6z"/>
-      </svg>
-      <input type="url" id="url-input" placeholder="https://youtube.com/watch?v=..." autocomplete="off" spellcheck="false"/>
-      <button class="btn-go" id="btn-go" onclick="startAnalysis()">Go ✦</button>
-    </div>
-    <div class="examples">
-      <span class="ex-tag" onclick="setEx('https://www.youtube.com/watch?v=dQw4w9WgXcQ')">Ex: youtube.com/…</span>
-      <span class="ex-tag" onclick="setEx('https://youtu.be/dQw4w9WgXcQ')">Ex: youtu.be/…</span>
-    </div>
-    <div class="error" id="error-box"></div>
-  </div>
+        tmp = str(UPLOAD_DIR / f"z_{job_id}_{i}.wav")
+        cmd = ["ffmpeg", "-y", "-ss", str(zs), "-to", str(ze),
+               "-i", str(video_path), "-vn", "-ac", "1", "-ar", "16000", "-f", "wav", tmp]
+        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        if r.returncode != 0 or not Path(tmp).exists():
+            continue
+        try:
+            res = model.transcribe(tmp, language=None, fp16=False, verbose=False)
+            for seg in res.get("segments", []):
+                text  = seg.get("text", "").strip()
+                score = sum(w for k, w in VIRAL_WORDS.items() if k in text.lower())
+                score += text.count("!")*0.3 + text.count("?")*0.15
+                all_segs.append({
+                    "start": float(seg["start"]) + zs,
+                    "end":   float(seg["end"])   + zs,
+                    "text":  text,
+                    "viral_score": min(score, 1.0),
+                })
+        except Exception as e:
+            print(f"Whisper zone {i} erreur: {e}")
+        finally:
+            try: os.remove(tmp)
+            except: pass
+    return all_segs
 
-  <!-- PROGRESS -->
-  <div id="progress-section">
-    <div class="prog-card">
-      <div class="prog-top">
-        <div class="prog-row">
-          <div class="prog-left">
-            <div class="prog-tag" id="prog-tag">Analyse</div>
-            <div class="prog-title" id="prog-title">Initialisation...</div>
-            <div class="prog-msg" id="prog-msg"></div>
-          </div>
-          <div class="prog-pct" id="prog-pct">0%</div>
-        </div>
-      </div>
-      <div class="prog-bar-bg">
-        <div class="prog-bar-fill" id="prog-bar"></div>
-      </div>
-      <div class="prog-steps">
-        <div class="prog-step" id="s1"><span class="step-icon">⬇️</span><span class="step-name">DL</span></div>
-        <div class="prog-step" id="s2"><span class="step-icon">🎵</span><span class="step-name">Audio</span></div>
-        <div class="prog-step" id="s3"><span class="step-icon">🎬</span><span class="step-name">Scènes</span></div>
-        <div class="prog-step" id="s4"><span class="step-icon">🧠</span><span class="step-name">Whisper</span></div>
-        <div class="prog-step" id="s5"><span class="step-icon">📱</span><span class="step-name">Export</span></div>
-      </div>
-      <div class="timer" id="timer">⏱ 0:00 écoulé</div>
-    </div>
-  </div>
+# ─────────────────────────────────────────────────────────────
+# 6. SCORE VIRAL FINAL
+# ─────────────────────────────────────────────────────────────
+def _compute_score(times, energies, emotions, scene_scores, whisper_segs, duration):
+    norm_a = energies / energies.max() if energies.max() > 0 else np.ones_like(energies)*0.5
+    norm_e = emotions / emotions.max() if emotions.max() > 0 else np.zeros_like(emotions)
+    boost  = np.zeros(len(times))
+    for st, sc in scene_scores.items():
+        idx = np.argmin(np.abs(times - st))
+        if idx < len(boost): boost[idx] += sc
+    if boost.max() > 0: boost /= boost.max()
 
-  <!-- RESULTS -->
-  <div id="results-section">
-    <div class="results-header">
-      <div>
-        <div class="results-h"><span id="clip-count">0</span> clips détectés</div>
-        <div class="results-sub" id="results-sub">prêts à poster sur TikTok</div>
-      </div>
-      <button class="btn-new" onclick="resetApp()">↩ Nouveau</button>
-    </div>
-    <div id="clips-grid" style="display:flex;flex-direction:column;gap:12px;margin-top:14px;"></div>
-  </div>
+    ws = np.zeros(len(times))
+    for seg in whisper_segs:
+        mask = (times >= seg["start"]) & (times <= seg["end"])
+        if mask.any(): ws[mask] = max(ws[mask].max(), seg["viral_score"])
 
-  <!-- HOW IT WORKS -->
-  <div class="how" id="how-section">
-    <div class="how-title">Comment ça marche</div>
-    <div class="how-steps">
-      <div class="how-step">
-        <div class="how-num">1</div>
-        <div class="how-step-body">
-          <div class="how-step-t">Téléchargement YouTube</div>
-          <div class="how-step-d">yt-dlp récupère la vidéo côté serveur — aucun upload de ta part, aucune limite.</div>
-        </div>
-      </div>
-      <div class="how-step">
-        <div class="how-num">2</div>
-        <div class="how-step-body">
-          <div class="how-step-t">Analyse audio + scènes</div>
-          <div class="how-step-d">Énergie RMS, émotions, changements de scènes — les passages hype ressortent.</div>
-        </div>
-      </div>
-      <div class="how-step">
-        <div class="how-num">3</div>
-        <div class="how-step-body">
-          <div class="how-step-t">Whisper AI ciblé</div>
-          <div class="how-step-d">Transcription uniquement sur les zones hype — 5x plus rapide, même précision.</div>
-        </div>
-      </div>
-      <div class="how-step">
-        <div class="how-num">4</div>
-        <div class="how-step-body">
-          <div class="how-step-t">Export TikTok 1080×1920</div>
-          <div class="how-step-d">Fond flou, format vertical, fade out, caption générée. Zéro montage.</div>
-        </div>
-      </div>
-    </div>
-  </div>
+    combined = (ws*0.40 + norm_a*0.35 + boost*0.15 + norm_e*0.10) \
+        if ws.max() > 0 else (norm_a*0.70 + boost*0.20 + norm_e*0.10)
 
-  <div class="footer"><p>ClipViral · Whisper AI · FFmpeg · yt-dlp</p></div>
+    w = max(5, min(15, int(len(times)/50)))
+    return np.convolve(combined, np.ones(w)/w, mode='same')
 
-</div>
+# ─────────────────────────────────────────────────────────────
+# 7. DÉTECTION CLIPS (61s → 180s, tous les passages hype)
+# ─────────────────────────────────────────────────────────────
+def _find_clips(times, smoothed, duration):
+    peak_thr   = np.percentile(smoothed, 80)
+    extend_thr = np.percentile(smoothed, 55)
+    peaks = [i for i in range(1, len(smoothed)-1)
+             if smoothed[i] >= peak_thr
+             and smoothed[i] >= smoothed[i-1]
+             and smoothed[i] >= smoothed[i+1]]
+    peaks.sort(key=lambda i: smoothed[i], reverse=True)
+    clips = []
+    for pi in peaks:
+        pt = times[pi]
+        if any(abs(pt - s) < MIN_GAP for s, e in clips):
+            continue
+        left = pi
+        while left > 0:
+            if times[pi] - times[left-1] > MAX_DURATION/2: break
+            if smoothed[left-1] >= extend_thr: left -= 1
+            else: break
+        right = pi
+        while right < len(times)-1:
+            if times[right+1] - times[left] > MAX_DURATION: break
+            if smoothed[right+1] >= extend_thr: right += 1
+            else:
+                if times[right] - times[left] < MIN_DURATION: right += 1
+                else: break
+        s = float(times[left])
+        e = float(times[right])
+        if e - s < MIN_DURATION: e = min(s + MIN_DURATION, duration)
+        if e > duration: e = duration; s = max(0, e - MIN_DURATION)
+        if e - s > MAX_DURATION: e = s + MAX_DURATION
+        mask = (times >= s) & (times <= e)
+        clips.append({
+            "start": round(s,1), "end": round(e,1),
+            "duration": round(e-s,1),
+            "viral_score": round(float(smoothed[mask].mean()) if mask.any() else 0.5, 3),
+        })
+    clips.sort(key=lambda x: x["start"])
+    return clips
 
-<script>
-let jobId=null, ws=null, pollInt=null, timerInt=null, t0=null;
+# ─────────────────────────────────────────────────────────────
+# 8. EXPORT TIKTOK
+# ─────────────────────────────────────────────────────────────
+def _export_clip(input_path, start, end, out_path) -> bool:
+    dur  = end - start
+    fade = max(0, dur - 2.0)
+    vf = (
+        f"[0:v]scale=1080:1920:force_original_aspect_ratio=increase,"
+        f"crop=1080:1920,boxblur=20:20,eq=brightness=-0.4[bg];"
+        f"[0:v]scale=1080:-2[fg];"
+        f"[bg][fg]overlay=(W-w)/2:(H-h)/2,fade=t=out:st={fade}:d=2[out]"
+    )
+    cmd = [
+        "ffmpeg", "-y", "-ss", str(start), "-i", str(input_path),
+        "-t", str(dur), "-filter_complex", vf,
+        "-map", "[out]", "-map", "0:a",
+        "-af", f"afade=t=out:st={fade}:d=2",
+        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+        "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart", str(out_path)
+    ]
+    r = subprocess.run(cmd, capture_output=True, timeout=600)
+    return r.returncode == 0
 
-document.getElementById('url-input').addEventListener('keydown', e => {
-  if(e.key==='Enter') startAnalysis();
-});
+def _make_caption(clip, whisper_segs):
+    texts = [s["text"] for s in whisper_segs
+             if s["start"] >= clip["start"] and s["end"] <= clip["end"]]
+    viral_found = []
+    for t in texts:
+        for w in VIRAL_WORDS:
+            if w in t.lower() and w not in viral_found:
+                viral_found.append(w)
+    pct = int(clip["viral_score"] * 100)
+    if pct >= 80:
+        t = random.choice([
+            "POV : tu tombes sur le moment le plus fou 🔥",
+            "Ce moment va te laisser sans voix 😱",
+            "Ils ont pas coupé ça au montage... 👀",
+            "Le moment que tout le monde attendait 💥",
+        ])
+    elif pct >= 60:
+        t = random.choice([
+            "Ce passage mérite vraiment d'être vu 👇",
+            "Le meilleur moment de la vidéo 🎯",
+            "Regarde jusqu'à la fin 🔥",
+        ])
+    else:
+        t = random.choice([
+            "Moment clé à ne pas rater 👇",
+            "À voir absolument 🎬",
+        ])
+    tags = "#viral #tiktok #fyp #pourtoi"
+    if viral_found:
+        tags += " #" + viral_found[0].replace(" ", "")
+    return f"{t}\n\n{tags}"
 
-function setEx(url){
-  document.getElementById('url-input').value=url;
-  document.getElementById('url-input').focus();
-}
+# ─────────────────────────────────────────────────────────────
+# 9. PIPELINE PRINCIPAL ASYNC
+# ─────────────────────────────────────────────────────────────
+async def process_url_job(job_id: str, url: str):
+    job_dir    = OUTPUT_DIR / job_id
+    job_dir.mkdir(exist_ok=True)
+    video_path = None
+    scene_path = None
+    loop       = asyncio.get_event_loop()
 
-function isYT(url){
-  return /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/.test(url);
-}
+    async def upd(progress, message, **kw):
+        set_job(job_id, progress=progress, message=message, **kw)
+        await notify_ws(job_id)
 
-async function startAnalysis(){
-  const url = document.getElementById('url-input').value.trim();
-  if(!url){showErr('Colle un lien YouTube.');return;}
-  if(!isYT(url)){showErr('URL invalide. Ex: https://www.youtube.com/watch?v=...');return;}
-  hideErr();
-  setBtn(true);
-  try{
-    const r = await fetch('/api/analyze',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({url})
-    });
-    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Erreur serveur');}
-    const d = await r.json();
-    jobId=d.job_id; t0=Date.now();
-    showProgress();
-    startTimer();
-    connectWS();
-  }catch(e){
-    showErr(e.message);
-    setBtn(false);
-  }
-}
+    try:
+        # ÉTAPE 1 — Titre YouTube
+        await upd(2, "🔍 Récupération des infos de la vidéo...")
+        title = await loop.run_in_executor(executor, _get_video_title, url)
+        if title:
+            set_job(job_id, video_title=title)
 
-function startTimer(){
-  timerInt=setInterval(()=>{
-    if(!t0)return;
-    const s=Math.floor((Date.now()-t0)/1000);
-    document.getElementById('timer').textContent=`⏱ ${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')} écoulé`;
-  },1000);
-}
+        # ÉTAPE 2 — Téléchargement
+        await upd(5, f"⬇️ Téléchargement en cours... {'«' + title + '»' if title else ''}")
+        video_path = await loop.run_in_executor(executor, _download_youtube, url, job_id)
+        size_mb = int(Path(video_path).stat().st_size / 1024 / 1024)
+        await upd(18, f"✅ Vidéo téléchargée ({size_mb} MB). Analyse audio...")
 
-function connectWS(){
-  const proto=location.protocol==='https:'?'wss:':'ws:';
-  ws=new WebSocket(`${proto}//${location.host}/ws/${jobId}`);
-  ws.onmessage=e=>{const d=JSON.parse(e.data);if(!d.ping)handleUpdate(d);};
-  ws.onclose=ws.onerror=()=>{if(!pollInt)pollInt=setInterval(pollStatus,3000);};
-}
+        # ÉTAPE 3 — Audio
+        times, energies, emotions, duration = await loop.run_in_executor(
+            executor, _extract_audio_energy, video_path, 5.0)
+        mins = int(duration // 60); secs = int(duration % 60)
+        await upd(28, f"🎵 Audio analysé · {mins}min {secs}s. Détection des scènes...")
 
-async function pollStatus(){
-  if(!jobId)return;
-  try{const r=await fetch(`/api/status/${jobId}`);handleUpdate(await r.json());}catch{}
-}
+        # ÉTAPE 4 — Scènes
+        scene_path = await loop.run_in_executor(executor, _compress_for_scenes, video_path, job_id)
+        scene_scores = await loop.run_in_executor(executor, _extract_scenes, scene_path)
+        await upd(35, "🔥 Identification des passages hype...")
 
-function handleUpdate(d){
-  if(!d.status)return;
-  updateProg(d.progress||0, d.message||'', d.status, d.video_title||'');
-  if(d.status==='done'){stopAll();showResults(d.clips||[]);}
-  else if(d.status==='error'){stopAll();showErr(d.message);hideProgress();setBtn(false);}
-}
+        # ÉTAPE 5 — Zones chaudes
+        hot_zones, _ = await loop.run_in_executor(
+            executor, _find_hot_zones, times, energies, emotions, scene_scores, duration, 210)
+        total_min = round(sum(e - s for s, e in hot_zones) / 60, 1)
+        await upd(38, f"✅ {len(hot_zones)} zones hype · {total_min} min → Whisper AI...")
 
-function stopAll(){
-  if(pollInt){clearInterval(pollInt);pollInt=null;}
-  if(timerInt){clearInterval(timerInt);timerInt=null;}
-  if(ws){try{ws.close();}catch{}ws=null;}
-}
+        # ÉTAPE 6 — Whisper
+        whisper_segs = await loop.run_in_executor(
+            executor, _transcribe_zones, video_path, hot_zones, job_id)
+        await upd(56, f"✍️ {len(whisper_segs)} segments analysés. Score viral...")
 
-function updateProg(pct, msg, status, title){
-  document.getElementById('prog-bar').style.width=pct+'%';
-  document.getElementById('prog-pct').textContent=pct+'%';
-  document.getElementById('prog-msg').textContent=msg;
-  if(title) document.getElementById('prog-title').textContent=title;
-  const steps=[
-    {id:'s1',from:2,to:18},
-    {id:'s2',from:18,to:30},
-    {id:'s3',from:30,to:38},
-    {id:'s4',from:38,to:56},
-    {id:'s5',from:56,to:100},
-  ];
-  steps.forEach(s=>{
-    const el=document.getElementById(s.id);
-    if(pct>=s.to) el.className='prog-step done';
-    else if(pct>=s.from) el.className='prog-step active';
-    else el.className='prog-step';
-  });
-  if(status==='exporting') document.getElementById('prog-tag').textContent='Export';
-  else if(status==='done') document.getElementById('prog-tag').textContent='Terminé ✓';
-}
+        # ÉTAPE 7 — Score final
+        smoothed = await loop.run_in_executor(
+            executor, _compute_score, times, energies, emotions,
+            scene_scores, whisper_segs, duration)
+        clips = await loop.run_in_executor(executor, _find_clips, times, smoothed, duration)
 
-function fmt(s){
-  return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
-}
+        if not clips:
+            await upd(100, "❌ Aucun passage hype détecté.", status="error")
+            return
 
-function showResults(clips){
-  hideProgress();
-  document.getElementById('results-section').style.display='block';
-  document.getElementById('clip-count').textContent=clips.length;
-  if(clips[0]?.video_title)
-    document.getElementById('results-sub').textContent=`dans «\u00a0${clips[0].video_title.slice(0,40)}\u00a0»`;
+        await upd(60, f"✅ {len(clips)} passages hype ! Export TikTok 1080×1920...", status="exporting")
 
-  const grid=document.getElementById('clips-grid');
-  grid.innerHTML='';
-  clips.forEach((clip,i)=>{
-    const pct=Math.round((clip.viral_score||0.5)*100);
-    const hot=pct>=70;
-    const capSafe=(clip.caption||'').replace(/`/g,'\\`').replace(/"/g,'&quot;');
-    const capHtml=(clip.caption||'').replace(/\n/g,'<br/>');
-    const card=document.createElement('div');
-    card.className='clip-card';
-    card.innerHTML=`
-      <div class="clip-header">
-        <div class="clip-rank">#${clip.rank||i+1}</div>
-        <div class="clip-info">
-          <div class="clip-name">Clip_Elite_${clip.rank||i+1}.mp4</div>
-          <div class="clip-meta">
-            <span class="meta-tag">${fmt(clip.start)}→${fmt(clip.end)}</span>
-            <span class="meta-tag">${Math.round(clip.duration)}s</span>
-            ${hot?'<span class="meta-tag hot">🔥 HOT</span>':''}
-          </div>
-        </div>
-      </div>
-      <div class="score-wrap">
-        <span class="score-lbl">Score viral</span>
-        <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
-        <span class="score-val">${pct}%</span>
-      </div>
-      <div class="clip-btns">
-        <a class="btn-dl" href="${clip.url}" download="${clip.filename}">⬇ Télécharger</a>
-        <button class="btn-secondary" onclick="togglePreview(this,'${clip.preview_url}')">▶ Preview</button>
-        <a class="btn-secondary" href="https://www.tiktok.com/upload" target="_blank" rel="noopener">↗ TikTok</a>
-      </div>
-      <div class="clip-preview" id="prev-${i}">
-        <video controls preload="metadata"></video>
-      </div>
-      ${clip.caption?`
-      <div class="clip-caption">
-        <span class="caption-ico">✍️</span>
-        <span class="caption-txt">${capHtml}</span>
-        <button class="btn-copy" onclick="copyCaption(this,\`${capSafe}\`)">Copier</button>
-      </div>`:''}
-    `;
-    grid.appendChild(card);
-  });
-}
+        # ÉTAPE 8 — Export
+        exported = []
+        for idx, clip in enumerate(clips):
+            out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
+            caption  = _make_caption(clip, whisper_segs)
+            success  = await loop.run_in_executor(
+                executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
+            if success:
+                exported.append({
+                    **clip,
+                    "filename":    f"Clip_Elite_{idx+1}.mp4",
+                    "url":         f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "preview_url": f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "rank":        idx + 1,
+                    "caption":     caption,
+                    "video_title": title,
+                })
+            pct = 60 + int(((idx+1) / len(clips)) * 38)
+            await upd(pct, f"🎬 Export {idx+1}/{len(clips)} ({int(clip['duration'])}s)...")
 
-function togglePreview(btn,url){
-  const card=btn.closest('.clip-card');
-  const prev=card.querySelector('.clip-preview');
-  const vid=prev.querySelector('video');
-  if(prev.style.display==='block'){
-    prev.style.display='none';vid.pause();vid.src='';btn.textContent='▶ Preview';
-  }else{
-    prev.style.display='block';vid.src=url;vid.play().catch(()=>{});btn.textContent='✕ Fermer';
-  }
-}
+        set_job(job_id, status="done", progress=100, clips=exported,
+                message=f"🎉 {len(exported)} clips viraux prêts à poster !")
+        await notify_ws(job_id)
 
-function copyCaption(btn,text){
-  navigator.clipboard.writeText(text).then(()=>{
-    btn.textContent='✓ Copié';btn.classList.add('ok');
-    setTimeout(()=>{btn.textContent='Copier';btn.classList.remove('ok');},2000);
-  });
-}
+    except Exception as e:
+        set_job(job_id, status="error", message=f"❌ {str(e)}")
+        await notify_ws(job_id)
+    finally:
+        for f in [video_path, scene_path]:
+            if f:
+                try: os.remove(f)
+                except: pass
 
-function showProgress(){
-  document.getElementById('progress-section').style.display='block';
-  document.getElementById('how-section').style.display='none';
-  document.getElementById('results-section').style.display='none';
-}
-function hideProgress(){document.getElementById('progress-section').style.display='none';}
-function showErr(msg){
-  const el=document.getElementById('error-box');
-  el.textContent='⚠️ '+msg.replace('❌ ','');
-  el.style.display='block';
-}
-function hideErr(){document.getElementById('error-box').style.display='none';}
-function setBtn(disabled){
-  document.getElementById('btn-go').disabled=disabled;
-  document.getElementById('url-input').disabled=disabled;
-}
+# ─────────────────────────────────────────────────────────────
+# API ROUTES
+# ─────────────────────────────────────────────────────────────
+class URLRequest(BaseModel):
+    url: str
 
-function resetApp(){
-  stopAll();jobId=null;t0=null;
-  document.getElementById('results-section').style.display='none';
-  document.getElementById('progress-section').style.display='none';
-  document.getElementById('how-section').style.display='block';
-  document.getElementById('url-input').value='';
-  document.getElementById('prog-title').textContent='Initialisation...';
-  document.getElementById('prog-tag').textContent='Analyse';
-  document.getElementById('timer').textContent='⏱ 0:00 écoulé';
-  updateProg(0,'','','');
-  hideErr();setBtn(false);
-}
-</script>
-</body>
-</html>
+@app.post("/api/analyze")
+async def analyze_url(body: URLRequest, background_tasks: BackgroundTasks):
+    url = body.url.strip()
+    if not url.startswith("http"):
+        raise HTTPException(400, "URL invalide.")
+    if not any(d in url for d in ["youtube.com", "youtu.be", "youtube"]):
+        raise HTTPException(400, "Seules les URLs YouTube sont supportées pour l'instant.")
+
+    job_id = str(uuid.uuid4())[:8]
+    jobs[job_id] = {
+        "status": "queued", "progress": 0,
+        "message": "⏳ Initialisation...",
+        "clips": [], "created_at": time.time(),
+        "video_title": "",
+    }
+    background_tasks.add_task(process_url_job, job_id, url)
+    return {"job_id": job_id}
+
+@app.get("/api/status/{job_id}")
+async def get_status(job_id: str):
+    if job_id not in jobs:
+        raise HTTPException(404, "Job introuvable.")
+    return jobs[job_id]
+
+@app.websocket("/ws/{job_id}")
+async def ws_endpoint(websocket: WebSocket, job_id: str):
+    await websocket.accept()
+    ws_connections.setdefault(job_id, []).append(websocket)
+    if job_id in jobs:
+        await websocket.send_json(jobs[job_id])
+    try:
+        while True:
+            await asyncio.sleep(15)
+            try: await websocket.send_json({"ping": True})
+            except: break
+            if jobs.get(job_id, {}).get("status") in ("done", "error"):
+                break
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if job_id in ws_connections and websocket in ws_connections[job_id]:
+            ws_connections[job_id].remove(websocket)
+
+@app.get("/outputs/{job_id}/{filename}")
+async def download_clip(job_id: str, filename: str):
+    fp = OUTPUT_DIR / job_id / filename
+    if not fp.exists():
+        raise HTTPException(404, "Clip introuvable.")
+    return FileResponse(str(fp), media_type="video/mp4", filename=filename,
+                        headers={"Accept-Ranges": "bytes",
+                                 "Content-Disposition": f"inline; filename={filename}"})
+
+static_path = Path("static")
+if static_path.exists() and not static_path.is_dir():
+    static_path.unlink()
+static_path.mkdir(exist_ok=True)
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
