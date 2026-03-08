@@ -314,9 +314,11 @@ async function uploadFile(file) {
       xhr.onerror = () => reject(new Error('Erreur réseau'));
     });
 
-    xhr.open('POST', '/api/upload');
-    xhr.setRequestHeader('Content-Disposition', `attachment; filename="${file.name}"`);
-    xhr.send(file);
+const ext = file.name.split('.').pop() || 'mp4';
+const safeName = 'video.' + ext;
+xhr.open('POST', '/api/upload');
+xhr.setRequestHeader('Content-Disposition', `attachment; filename="${safeName}"`);
+xhr.send(file);
 
     const data = await uploadDone;
     jobId = data.job_id;
