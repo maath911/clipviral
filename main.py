@@ -67,7 +67,6 @@ def set_job(job_id: str, **kwargs):
 # 1. TÉLÉCHARGEMENT YOUTUBE
 # ─────────────────────────────────────────────────────────────
 def _download_youtube(url: str, job_id: str) -> str:
-    """Télécharge la vidéo YouTube avec yt-dlp."""
     out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
     cmd = [
         "yt-dlp",
@@ -75,6 +74,8 @@ def _download_youtube(url: str, job_id: str) -> str:
         "-f", "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best",
         "--merge-output-format", "mp4",
         "--no-warnings",
+        "--extractor-args", "youtube:player_client=android",
+        "--add-header", "User-Agent:Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36",
         "-o", out_path,
         url
     ]
