@@ -11,8 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p uploads outputs && \
-    test -d static || mkdir -p static
+RUN mkdir -p uploads outputs; mkdir -p static; exit 0
 
 EXPOSE 8000
 
