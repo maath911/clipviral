@@ -455,6 +455,86 @@ async def process_url_job(job_id: str, url: str):
                 except: pass
 
 # ─────────────────────────────────────────────────────────────
+# PIPELINE UPLOAD FICHIER (identique à URL mais sans download)
+# ─────────────────────────────────────────────────────────────
+async def process_file_job(job_id: str, video_path: str, filename: str):
+    job_dir    = OUTPUT_DIR / job_id
+    job_dir.mkdir(exist_ok=True)
+    scene_path = None
+    loop       = asyncio.get_event_loop()
+
+    async def upd(progress, message, **kw):
+        set_job(job_id, progress=progress, message=message, **kw)
+        await notify_ws(job_id)
+
+    try:
+        size_mb = int(Path(video_path).stat().st_size / 1024 / 1024)
+        title = Path(filename).stem[:60]
+        set_job(job_id, video_title=title)
+        await upd(18, f"✅ Vidéo reçue ({size_mb} MB). Analyse audio...")
+
+        times, energies, emotions, duration = await loop.run_in_executor(
+            executor, _extract_audio_energy, video_path, 5.0)
+        mins = int(duration // 60); secs = int(duration % 60)
+        await upd(28, f"🎵 Audio analysé · {mins}min {secs}s. Détection des scènes...")
+
+        scene_path = await loop.run_in_executor(executor, _compress_for_scenes, video_path, job_id)
+        scene_scores = await loop.run_in_executor(executor, _extract_scenes, scene_path)
+        await upd(35, "🔥 Identification des passages hype...")
+
+        hot_zones, _ = await loop.run_in_executor(
+            executor, _find_hot_zones, times, energies, emotions, scene_scores, duration, 210)
+        total_min = round(sum(e - s for s, e in hot_zones) / 60, 1)
+        await upd(38, f"✅ {len(hot_zones)} zones hype · {total_min} min → Whisper AI...")
+
+        whisper_segs = await loop.run_in_executor(
+            executor, _transcribe_zones, video_path, hot_zones, job_id)
+        await upd(56, f"✍️ {len(whisper_segs)} segments analysés. Score viral...")
+
+        smoothed = await loop.run_in_executor(
+            executor, _compute_score, times, energies, emotions,
+            scene_scores, whisper_segs, duration)
+        clips = await loop.run_in_executor(executor, _find_clips, times, smoothed, duration)
+
+        if not clips:
+            await upd(100, "❌ Aucun passage hype détecté.", status="error")
+            return
+
+        await upd(60, f"✅ {len(clips)} passages hype ! Export TikTok 1080×1920...", status="exporting")
+
+        exported = []
+        for idx, clip in enumerate(clips):
+            out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
+            caption  = _make_caption(clip, whisper_segs)
+            success  = await loop.run_in_executor(
+                executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
+            if success:
+                exported.append({
+                    **clip,
+                    "filename":    f"Clip_Elite_{idx+1}.mp4",
+                    "url":         f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "preview_url": f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "rank":        idx + 1,
+                    "caption":     caption,
+                    "video_title": title,
+                })
+            pct = 60 + int(((idx+1) / len(clips)) * 38)
+            await upd(pct, f"🎬 Export {idx+1}/{len(clips)} ({int(clip['duration'])}s)...")
+
+        set_job(job_id, status="done", progress=100, clips=exported,
+                message=f"🎉 {len(exported)} clips viraux prêts à poster !")
+        await notify_ws(job_id)
+
+    except Exception as e:
+        set_job(job_id, status="error", message=f"❌ {str(e)}")
+        await notify_ws(job_id)
+    finally:
+        for f in [video_path, scene_path]:
+            if f:
+                try: os.remove(f)
+                except: pass
+
+# ─────────────────────────────────────────────────────────────
 # API ROUTES
 # ─────────────────────────────────────────────────────────────
 class URLRequest(BaseModel):
@@ -476,6 +556,42 @@ async def analyze_url(body: URLRequest, background_tasks: BackgroundTasks):
         "video_title": "",
     }
     background_tasks.add_task(process_url_job, job_id, url)
+    return {"job_id": job_id}
+
+@app.post("/api/upload")
+async def upload_file(background_tasks: BackgroundTasks, request: Request):
+    """Upload direct d'un fichier vidéo — pas besoin de YouTube."""
+    job_id = str(uuid.uuid4())[:8]
+    out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
+
+    # Récupère le nom original depuis les headers
+    content_disp = request.headers.get("content-disposition", "")
+    filename = "video.mp4"
+    if "filename=" in content_disp:
+        try: filename = content_disp.split("filename=")[1].strip().strip('"')
+        except: pass
+
+    # Stream l'upload directement sur disque (pas de limite mémoire)
+    size = 0
+    with open(out_path, "wb") as f:
+        async for chunk in request.stream():
+            f.write(chunk)
+            size += len(chunk)
+            if size > 4 * 1024 * 1024 * 1024:  # 4GB max
+                os.remove(out_path)
+                raise HTTPException(413, "Fichier trop volumineux (max 4GB).")
+
+    if size < 10000:
+        if Path(out_path).exists(): os.remove(out_path)
+        raise HTTPException(400, "Fichier invalide ou vide.")
+
+    jobs[job_id] = {
+        "status": "queued", "progress": 5,
+        "message": "⬆️ Fichier reçu, analyse en cours...",
+        "clips": [], "created_at": time.time(),
+        "video_title": "",
+    }
+    background_tasks.add_task(process_file_job, job_id, out_path, filename)
     return {"job_id": job_id}
 
 @app.get("/api/status/{job_id}")
