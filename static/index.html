@@ -2,223 +2,243 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>ClipViral</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#07070e;--s1:#0d0d18;--s2:#12121f;--s3:#181828;--s4:#1e1e30;
+  --bg:#07070e;--s1:#0d0d18;--s2:#12121f;--s3:#181828;
   --border:#232338;--border2:#2d2d48;
-  --a:#ff4d1c;--a2:#ff8c00;--green:#00dfa2;--blue:#5b8dee;--pink:#d94bff;
+  --a:#ff4d1c;--a2:#ff8c00;--green:#00dfa2;--blue:#5b8dee;--pink:#d94bff;--yellow:#f5c842;
   --text:#eeeeff;--sub:#8888aa;--dim:#44445a;
   --font:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
-  --r:12px;--sbw:290px;--tbh:56px;--trans:.22s cubic-bezier(.4,0,.2,1);
+  --r:12px;--sbw:288px;--tbh:56px;--trans:.22s cubic-bezier(.4,0,.2,1);
 }
-*{-webkit-font-smoothing:antialiased}
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{font-family:var(--font);background:var(--bg);color:var(--text)}
-body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 55% at 10% 0%,rgba(255,77,28,.07) 0%,transparent 55%),radial-gradient(ellipse 50% 45% at 90% 100%,rgba(91,141,238,.05) 0%,transparent 55%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 55% at 10% 0%,rgba(255,77,28,.07),transparent 55%),radial-gradient(ellipse 50% 45% at 90% 100%,rgba(91,141,238,.05),transparent 55%);pointer-events:none;z-index:0}
 
 .shell{position:relative;z-index:1;display:flex;height:100vh;overflow:hidden}
 
-/* ══ SIDEBAR ══ */
-.sb{
-  width:var(--sbw);flex-shrink:0;
-  background:var(--s1);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;height:100vh;overflow:hidden;
-  transition:width var(--trans),opacity var(--trans),border-color var(--trans);
-}
+/* ═══ SIDEBAR ═══ */
+.sb{width:var(--sbw);flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:width var(--trans),opacity var(--trans),border-color var(--trans)}
 .sb.hide{width:0;opacity:0;pointer-events:none;border-color:transparent}
+.sb-head{padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.lmark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.lname{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.lname b{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.chip{display:inline-flex;align-items:center;gap:5px;background:rgba(0,223,162,.07);border:1px solid rgba(0,223,162,.14);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--green);letter-spacing:.5px;text-transform:uppercase}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
 
-.sb-head{padding:18px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.logo-name{font-size:17px;font-weight:700;letter-spacing:-.3px}
-.logo-name b{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ai-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(0,223,162,.07);border:1px solid rgba(0,223,162,.14);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--green);letter-spacing:.5px;text-transform:uppercase}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite;flex-shrink:0}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+/* Sidebar tabs */
+.sb-tabs{display:flex;padding:8px 10px;gap:4px;border-bottom:1px solid var(--border);flex-shrink:0}
+.stab{flex:1;padding:6px 4px;border-radius:7px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.stab.on{background:var(--s3);color:var(--text)}
 
-.sb-scroll{flex:1;overflow-y:auto;padding:14px 12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sb-scroll{flex:1;overflow-y:auto;padding:12px 10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .sb-scroll::-webkit-scrollbar{width:3px}
 .sb-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
+.sb-panel{display:none}
+.sb-panel.on{display:block}
 .sb-label{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;padding:0 4px;margin-bottom:8px}
 
-.ci{padding:10px 12px;border-radius:var(--r);background:var(--s2);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s}
+/* Clips in sidebar */
+.ci{padding:9px 11px;border-radius:var(--r);background:var(--s2);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;transition:all .15s}
 .ci:hover{background:var(--s3);border-color:var(--border2);transform:translateX(2px)}
-.ci-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.ci-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
 .ci-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-.ci-pct{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--a);background:rgba(255,77,28,.1);border:1px solid rgba(255,77,28,.2);border-radius:4px;padding:1px 6px;flex-shrink:0}
+.ci-grade{font-family:var(--mono);font-size:11px;font-weight:700;width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ci-sub{font-size:10px;color:var(--dim)}
-
-.sb-empty{text-align:center;padding:28px 12px}
-.sb-empty-ico{font-size:28px;margin-bottom:8px}
+.sb-empty{text-align:center;padding:24px 10px}
+.sb-empty-ico{font-size:26px;margin-bottom:7px}
 .sb-empty-t{font-size:11px;color:var(--sub);line-height:1.7}
 
-.sb-foot{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+/* YouTube reco cards */
+.yt-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 11px;margin-bottom:6px;cursor:pointer;transition:all .15s;text-decoration:none;display:block}
+.yt-card:hover{background:var(--s3);border-color:var(--border2)}
+.yt-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
+.yt-cat{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.yt-info{flex:1;min-width:0}
+.yt-chan{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yt-desc{font-size:10px;color:var(--sub);line-height:1.5;margin-top:2px}
+.yt-tags{display:flex;gap:4px;flex-wrap:wrap}
+.ytag{background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:600;color:var(--sub)}
+.ytag.hot{background:rgba(255,77,28,.1);border-color:rgba(255,77,28,.2);color:var(--a)}
+.ytag.new{background:rgba(0,223,162,.07);border-color:rgba(0,223,162,.14);color:var(--green)}
+
+.sb-foot{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .ver{font-family:var(--mono);font-size:10px;color:var(--dim)}
 
-/* ══ MAIN ══ */
-.main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-
-/* ══ TOPBAR ══ */
-.tb{
-  height:var(--tbh);flex-shrink:0;
-  background:rgba(7,7,14,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;position:relative;z-index:10;
-}
-.tb-l{display:flex;align-items:center;gap:10px}
-.tb-r{display:flex;align-items:center;gap:8px}
-
-/* Toggle sidebar button */
-.btn-sb{
-  width:34px;height:34px;border-radius:8px;
-  background:var(--s2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s;color:var(--sub);flex-shrink:0;
-}
+/* ═══ TOPBAR ═══ */
+.tb{height:var(--tbh);flex-shrink:0;background:rgba(7,7,14,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:relative;z-index:10}
+.tb-l,.tb-r{display:flex;align-items:center;gap:8px}
+.btn-sb{width:32px;height:32px;border-radius:7px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--sub);flex-shrink:0}
 .btn-sb:hover{background:var(--s3);border-color:var(--a);color:var(--a)}
-.btn-sb svg{width:16px;height:16px}
-
-.view-seg{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:3px;gap:3px}
-.vb{padding:5px 14px;border-radius:7px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-sb svg{width:15px;height:15px}
+.vseg{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+.vb{padding:5px 13px;border-radius:6px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .vb.on{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;box-shadow:0 2px 10px rgba(255,77,28,.3)}
-
-.btn-tt{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:7px 14px;color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-tt{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s}
 .btn-tt:hover{border-color:var(--pink);color:var(--pink)}
 
-/* ══ PAGE ══ */
+/* ═══ PAGE ═══ */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
 .page{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .page::-webkit-scrollbar{width:5px}
 .page::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.inner{max-width:560px;margin:0 auto;padding:32px 20px 60px}
+.inner{max-width:560px;margin:0 auto;padding:28px 18px 60px}
 .inner.wide{max-width:880px}
 
-/* ══ HERO ══ */
-.hero{margin-bottom:26px}
-.eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,77,28,.08);border:1px solid rgba(255,77,28,.16);border-radius:100px;padding:4px 12px;font-size:10px;font-weight:700;color:var(--a);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
-h1{font-size:clamp(26px,4vw,40px);font-weight:700;line-height:1.12;letter-spacing:-.8px;margin-bottom:10px}
+/* ═══ HERO ═══ */
+.eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,77,28,.08);border:1px solid rgba(255,77,28,.16);border-radius:100px;padding:3px 11px;font-size:10px;font-weight:700;color:var(--a);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+h1{font-size:clamp(24px,4vw,38px);font-weight:700;line-height:1.12;letter-spacing:-.8px;margin-bottom:9px}
 h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-p{font-size:13px;color:var(--sub);line-height:1.75;max-width:400px}
+.hero-p{font-size:13px;color:var(--sub);line-height:1.75;max-width:400px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px}
+.sv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--a);margin-bottom:2px}
+.sl{font-size:9px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 
-/* ══ STATS ══ */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
-.stat{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
-.sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--a);margin-bottom:3px}
-.sl{font-size:10px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-
-/* ══ CARD ══ */
-.card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
-.card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border)}
-.card-ico{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+/* ═══ CARD ═══ */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.card-h{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border)}
+.card-ico{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .card-t{font-size:13px;font-weight:700}
 
 /* Drop zone */
-.drop{border:2px dashed var(--border2);border-radius:10px;padding:34px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin:14px}
+.drop{border:2px dashed var(--border2);border-radius:10px;padding:30px 18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin:12px}
 .drop:hover,.drop.ov{border-color:var(--a);background:rgba(255,77,28,.03)}
 #fi{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.d-ico{font-size:36px;display:block;margin-bottom:10px}
-.d-t{font-size:14px;font-weight:700;margin-bottom:5px}
-.d-s{font-size:12px;color:var(--sub);margin-bottom:5px}
-.d-f{font-size:10px;color:var(--dim);font-weight:600;letter-spacing:.3px}
+.d-ico{font-size:32px;display:block;margin-bottom:9px}
+.d-t{font-size:14px;font-weight:700;margin-bottom:4px}
+.d-s{font-size:12px;color:var(--sub);margin-bottom:4px}
+.d-f{font-size:10px;color:var(--dim);font-weight:600}
 
-/* File picked */
-.fp{display:none;margin:0 14px 12px;background:rgba(0,223,162,.05);border:1px solid rgba(0,223,162,.14);border-radius:10px;padding:11px 14px;align-items:center;gap:12px}
+.fp{display:none;margin:0 12px 10px;background:rgba(0,223,162,.05);border:1px solid rgba(0,223,162,.14);border-radius:10px;padding:10px 13px;align-items:center;gap:10px}
 .fp.show{display:flex}
-.fp-ico{font-size:20px;flex-shrink:0}
+.fp-ico{font-size:19px;flex-shrink:0}
 .fp-info{flex:1;min-width:0}
 .fp-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fp-sz{font-size:10px;color:var(--sub);margin-top:2px}
-.btn-go{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.3);flex-shrink:0}
-.btn-go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 18px rgba(255,77,28,.4)}
-.btn-go:disabled{opacity:.4;cursor:not-allowed;transform:none}
-
-/* Upload progress */
-.upr{display:none;margin:0 14px 12px}
+.btn-go{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.3);flex-shrink:0}
+.btn-go:hover:not(:disabled){transform:translateY(-1px)}
+.btn-go:disabled{opacity:.4;cursor:not-allowed}
+.upr{display:none;margin:0 12px 10px}
 .upr.show{display:block}
 .upr-bar{height:3px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:5px}
-.upr-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px;transition:width .3s;width:0%}
+.upr-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px;transition:width .3s;width:0}
 .upr-lbl{font-size:10px;color:var(--sub);font-weight:600;text-align:center}
+.err{display:none;margin:0 12px 10px;background:rgba(255,50,80,.07);border:1px solid rgba(255,50,80,.16);border-radius:9px;padding:9px 13px;font-size:12px;color:#ff7a9a;line-height:1.6}
 
-.err{display:none;margin:0 14px 12px;background:rgba(255,50,80,.07);border:1px solid rgba(255,50,80,.16);border-radius:9px;padding:10px 14px;font-size:12px;color:#ff7a9a;font-weight:500;line-height:1.6}
-
-/* ══ PROGRESS ══ */
-#prog{display:none;margin-bottom:14px}
-.prog-card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.prog-top{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 18px 14px}
-.prog-l{flex:1;min-width:0}
-.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,77,28,.1);border:1px solid rgba(255,77,28,.2);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--a);animation:blink 1.5s infinite}
-.prog-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:290px;margin-bottom:5px}
-.prog-msg{font-size:11px;color:var(--sub);line-height:1.5;min-height:14px}
-.prog-pct{font-family:var(--mono);font-size:46px;font-weight:700;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;line-height:1}
-.prog-mid{padding:0 18px 16px}
-.prog-track{height:5px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:16px}
-.prog-bar{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;box-shadow:0 0 10px rgba(255,77,28,.35)}
-.steps{display:flex;gap:6px}
-.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-.step-d{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .3s}
-.step.on .step-d{border-color:var(--a);background:rgba(255,77,28,.1);box-shadow:0 0 10px rgba(255,77,28,.2)}
+/* ═══ PROGRESS ═══ */
+#prog{display:none;margin-bottom:12px}
+.pc{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.pt{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 12px}
+.pl{flex:1;min-width:0}
+.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,77,28,.1);border:1px solid rgba(255,77,28,.2);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--a);animation:pulse 1.5s infinite}
+.pname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;margin-bottom:4px}
+.pmsg{font-size:11px;color:var(--sub);min-height:14px}
+.ppct{font-family:var(--mono);font-size:44px;font-weight:700;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;line-height:1}
+.pm{padding:0 16px 14px}
+.ptrack{height:4px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:14px}
+.pbar{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);width:0;box-shadow:0 0 8px rgba(255,77,28,.35)}
+.steps{display:flex;gap:5px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.step-d{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .3s}
+.step.on .step-d{border-color:var(--a);background:rgba(255,77,28,.1);box-shadow:0 0 8px rgba(255,77,28,.2)}
 .step.ok .step-d{border-color:var(--green);background:rgba(0,223,162,.08)}
 .step:not(.on):not(.ok) .step-d{filter:grayscale(.8);opacity:.4}
 .step-l{font-size:9px;color:var(--dim);font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.3px}
 .step.on .step-l{color:var(--a)}
 .step.ok .step-l{color:var(--green)}
-.prog-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--s1);border-top:1px solid var(--border)}
+.pfoot{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;background:var(--s1);border-top:1px solid var(--border)}
 .timer{font-family:var(--mono);font-size:11px;color:var(--sub)}
-.ai-tag{font-size:10px;color:var(--a2);font-weight:700;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.2);border-radius:5px;padding:3px 8px}
+.ai-tag{font-size:10px;color:var(--a2);font-weight:700;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.2);border-radius:5px;padding:2px 7px}
 
-/* ══ RESULTS ══ */
+/* ═══ RESULTS ═══ */
 #res{display:none}
-.res-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:10px}
-.res-t{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.res-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px}
+.res-t{font-size:20px;font-weight:700;letter-spacing:-.5px}
 .res-t span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.res-s{font-size:11px;color:var(--sub);margin-top:4px}
-.btn-new{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:8px 14px;color:var(--sub);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.res-s{font-size:11px;color:var(--sub);margin-top:3px}
+.btn-new{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-new:hover{border-color:var(--a);color:var(--a)}
-.clips{display:flex;flex-direction:column;gap:12px}
-.clips.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:12px}
+.clips{display:flex;flex-direction:column;gap:11px}
+.clips.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:11px}
 
-/* ══ CLIP CARD ══ */
+/* ═══ CLIP CARD ═══ */
 .clip{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s}
 .clip:hover{border-color:var(--border2)}
-.ct{display:flex;align-items:center;gap:12px;padding:14px 16px 11px}
-.crk{width:40px;height:40px;border-radius:9px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Grade banner */
+.grade-banner{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:1px solid var(--border)}
+.grade-left{display:flex;align-items:center;gap:10px}
+.grade-box{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;font-weight:700;color:#fff;flex-shrink:0}
+.grade-info{}
+.grade-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.grade-sub{font-size:10px;color:var(--sub)}
+.grade-right{text-align:right}
+.tiktok-pct{font-family:var(--mono);font-size:22px;font-weight:700}
+.tiktok-lbl{font-size:9px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+.ct{display:flex;align-items:center;gap:10px;padding:11px 14px 9px}
+.crk{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .ci2{flex:1;min-width:0}
-.cn{font-size:13px;font-weight:700;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ctags{display:flex;gap:4px;flex-wrap:wrap}
-.tg{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--sub);font-weight:600}
+.cn{font-size:12px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctags{display:flex;gap:3px;flex-wrap:wrap}
+.tg{background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:9px;color:var(--sub);font-weight:600}
 .tg.f{background:rgba(255,77,28,.1);border-color:rgba(255,77,28,.25);color:var(--a)}
-.tg.w{background:rgba(91,141,238,.07);border-color:rgba(91,141,238,.18);color:var(--blue);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sc-row{display:flex;align-items:center;gap:10px;padding:0 16px 12px}
-.sc-l{font-size:10px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.tg.w{background:rgba(91,141,238,.07);border-color:rgba(91,141,238,.18);color:var(--blue);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Score bars */
+.sc-row{display:flex;align-items:center;gap:9px;padding:0 14px 10px}
+.sc-l{font-size:9px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;width:42px}
 .sc-bar{flex:1;height:3px;background:var(--border);border-radius:100px;overflow:hidden}
-.sc-f{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px}
-.sc-n{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--a);white-space:nowrap}
-.clip-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 16px 14px}
+.sc-f{height:100%;border-radius:100px}
+.sc-n{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;width:32px;text-align:right}
+
+/* TikTok details accordion */
+.tt-details{border-top:1px solid var(--border);overflow:hidden;max-height:0;transition:max-height .3s ease}
+.tt-details.open{max-height:300px}
+.tt-inner{padding:11px 14px}
+.tt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.tt-row:last-child{margin-bottom:0}
+.tt-ico{font-size:13px;flex-shrink:0;width:18px}
+.tt-tip{font-size:10px;color:var(--sub);flex:1;line-height:1.4}
+
+/* Buttons */
+.clip-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px 12px}
 .clip-btns .bdl{grid-column:1/-1}
-.bdl{display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:9px;padding:11px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.2)}
-.bdl:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(255,77,28,.3)}
-.b2{display:flex;align-items:center;justify-content:center;gap:5px;background:var(--s3);color:var(--sub);border:1px solid var(--border);border-radius:9px;padding:10px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+.bdl{display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:8px;padding:10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.2)}
+.bdl:hover{transform:translateY(-1px)}
+.b2{display:flex;align-items:center;justify-content:center;gap:5px;background:var(--s3);color:var(--sub);border:1px solid var(--border);border-radius:8px;padding:9px;font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
 .b2:hover{border-color:var(--a);color:var(--a)}
+.btn-tt-toggle{background:rgba(0,223,162,.07);border:1px solid rgba(0,223,162,.14);color:var(--green);font-size:10px}
+.btn-tt-toggle:hover{border-color:var(--green);color:var(--green)}
+
 .cprev{display:none;border-top:1px solid var(--border)}
-.cprev video{width:100%;max-height:260px;background:#000;display:block}
-.ccap{border-top:1px solid var(--border);padding:11px 16px;display:flex;align-items:flex-start;gap:10px}
+.cprev video{width:100%;max-height:240px;background:#000;display:block}
+.ccap{border-top:1px solid var(--border);padding:10px 14px;display:flex;align-items:flex-start;gap:9px}
 .cap-t{flex:1;font-size:11px;color:var(--sub);line-height:1.7}
-.bcopy{background:var(--s3);border:1px solid var(--border);border-radius:7px;padding:4px 9px;color:var(--sub);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--font);flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+.bcopy{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--sub);font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--font);flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
 .bcopy:hover{border-color:var(--a);color:var(--a)}
 .bcopy.ok{border-color:var(--green);color:var(--green)}
 
-/* ══ OVERLAY ══ */
+/* ═══ RECO SPINNER ═══ */
+.reco-spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:12px auto 0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reco-err{text-align:center;padding:20px 12px;font-size:11px;color:var(--sub);line-height:1.7}
+#reco-refresh:hover{color:var(--a)!important;background:rgba(255,77,28,.08)!important}
+
+/* ═══ OVERLAY ═══ */
 .ov2{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:15;backdrop-filter:blur(2px)}
 .ov2.on{display:block}
 
-/* ══ MOBILE ══ */
+/* ═══ MOBILE ═══ */
 @media(max-width:680px){
   .sb{position:fixed;top:0;left:0;height:100vh;z-index:20;transform:translateX(-100%);transition:transform var(--trans);width:var(--sbw)!important;opacity:1!important;pointer-events:auto!important}
   .sb.mob{transform:translateX(0)}
@@ -232,17 +252,23 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 <div class="ov2" id="ov" onclick="closeSB()"></div>
 <div class="shell">
 
-  <!-- SIDEBAR -->
-  <aside class="sb" id="sb">
-    <div class="sb-head">
-      <div class="logo">
-        <div class="logo-mark">✦</div>
-        <div class="logo-name">Clip<b>Viral</b></div>
-      </div>
-      <div class="ai-chip"><span class="dot"></span>Claude AI · Actif</div>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sb" id="sb">
+  <div class="sb-head">
+    <div class="logo">
+      <div class="lmark">✦</div>
+      <div class="lname">Clip<b>Viral</b></div>
     </div>
-    <div class="sb-scroll" id="sb-scroll">
-      <div class="sb-label">📁 Mes clips</div>
+    <div class="chip"><span class="dot"></span>Claude AI · Actif</div>
+  </div>
+  <div class="sb-tabs">
+    <button class="stab on" onclick="setSBTab('clips',this)">📁 Mes clips</button>
+    <button class="stab" onclick="setSBTab('reco',this)">🔥 Hype</button>
+  </div>
+  <div class="sb-scroll">
+
+    <!-- CLIPS -->
+    <div class="sb-panel on" id="sp-clips">
       <div id="sb-clips">
         <div class="sb-empty">
           <div class="sb-empty-ico">🎬</div>
@@ -250,125 +276,131 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
         </div>
       </div>
     </div>
-    <div class="sb-foot">
-      <div class="ai-chip"><span class="dot"></span>IA Active</div>
-      <div class="ver">v6.0</div>
-    </div>
-  </aside>
 
-  <!-- MAIN -->
-  <div class="main">
-
-    <!-- TOPBAR -->
-    <div class="tb">
-      <div class="tb-l">
-        <button class="btn-sb" onclick="toggleSB()" title="Afficher / Masquer le panneau fichiers">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="9" y1="3" x2="9" y2="21"/>
-          </svg>
-        </button>
-        <div class="view-seg">
-          <button class="vb on" id="vb1" onclick="setView('mob')">📱 Mobile</button>
-          <button class="vb" id="vb2" onclick="setView('pc')">🖥️ PC</button>
+    <!-- RECOS YouTube — IA dynamique -->
+    <div class="sb-panel" id="sp-reco">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="sb-label" style="margin-bottom:0">🔥 Chaînes hype du moment</div>
+        <button onclick="reloadReco()" id="reco-refresh" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;transition:all .15s" title="Actualiser">↻</button>
+      </div>
+      <div id="reco-body">
+        <div id="reco-loading" style="text-align:center;padding:24px 12px">
+          <div style="font-size:24px;margin-bottom:8px">🤖</div>
+          <div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France du moment...</div>
+          <div class="reco-spinner"></div>
         </div>
       </div>
-      <div class="tb-r">
-        <a class="btn-tt" href="https://www.tiktok.com/upload" target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.95a8.27 8.27 0 004.84 1.55V7.04a4.85 4.85 0 01-1.07-.35z"/></svg>
-          Poster sur TikTok
-        </a>
-      </div>
-    </div>
-
-    <!-- PAGE -->
-    <div class="page">
-      <div class="inner" id="inner">
-
-        <div class="hero">
-          <div class="eyebrow">✦ Intelligence Artificielle</div>
-          <h1>Clips <em>viraux</em><br/>en automatique</h1>
-          <p class="hero-p">Upload ta vidéo — Whisper transcrit, Claude AI sélectionne les meilleurs moments, FFmpeg exporte en <strong>1080×1920</strong>.</p>
-        </div>
-
-        <div class="stats">
-          <div class="stat"><div class="sv">1080p</div><div class="sl">Format TikTok</div></div>
-          <div class="stat"><div class="sv">Claude</div><div class="sl">AI Scoring</div></div>
-          <div class="stat"><div class="sv">60min</div><div class="sl">Max vidéo</div></div>
-          <div class="stat"><div class="sv">~0.01€</div><div class="sl">Par vidéo</div></div>
-        </div>
-
-        <!-- UPLOAD -->
-        <div class="card" id="upload-card">
-          <div class="card-h">
-            <div class="card-ico">🎬</div>
-            <div class="card-t">Importe ta vidéo</div>
-          </div>
-          <div class="drop" id="drop">
-            <input type="file" id="fi" accept="video/*" onchange="onFile(this.files[0])"/>
-            <span class="d-ico">📁</span>
-            <div class="d-t">Glisse ta vidéo ici ou clique</div>
-            <div class="d-s">MP4, MOV, AVI, MKV · Téléchargée avec 4K Downloader ?</div>
-            <div class="d-f">Max 60 min · 360p recommandé · Export final 1080×1920 TikTok</div>
-          </div>
-          <div class="fp" id="fp">
-            <span class="fp-ico">🎥</span>
-            <div class="fp-info">
-              <div class="fp-name" id="fn">video.mp4</div>
-              <div class="fp-sz" id="fs">0 MB</div>
-            </div>
-            <button class="btn-go" id="bg" onclick="startUp()">Analyser ✦</button>
-          </div>
-          <div class="upr" id="upr">
-            <div class="upr-bar"><div class="upr-fill" id="uf"></div></div>
-            <div class="upr-lbl" id="ul">Upload en cours...</div>
-          </div>
-          <div class="err" id="err"></div>
-        </div>
-
-        <!-- PROGRESS -->
-        <div id="prog">
-          <div class="prog-card">
-            <div class="prog-top">
-              <div class="prog-l">
-                <div class="badge" id="bdg">Analyse</div>
-                <div class="prog-name" id="pn">Initialisation...</div>
-                <div class="prog-msg" id="pm"></div>
-              </div>
-              <div class="prog-pct" id="pp">0%</div>
-            </div>
-            <div class="prog-mid">
-              <div class="prog-track"><div class="prog-bar" id="pb"></div></div>
-              <div class="steps">
-                <div class="step" id="s1"><div class="step-d">⬆️</div><div class="step-l">Upload</div></div>
-                <div class="step" id="s2"><div class="step-d">🎵</div><div class="step-l">Audio</div></div>
-                <div class="step" id="s3"><div class="step-d">🎙️</div><div class="step-l">Whisper</div></div>
-                <div class="step" id="s4"><div class="step-d">🧠</div><div class="step-l">Claude</div></div>
-                <div class="step" id="s5"><div class="step-d">📱</div><div class="step-l">Export</div></div>
-              </div>
-            </div>
-            <div class="prog-foot">
-              <div class="timer" id="tmr">⏱ 0:00</div>
-              <div class="ai-tag">Whisper + Claude AI</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RESULTS -->
-        <div id="res">
-          <div class="res-head">
-            <div>
-              <div class="res-t"><span id="cc">0</span> clips détectés</div>
-              <div class="res-s" id="rs">prêts à poster sur TikTok</div>
-            </div>
-            <button class="btn-new" onclick="rst()">↩ Nouvelle vidéo</button>
-          </div>
-          <div class="clips" id="cl"></div>
-        </div>
-
+      <div style="margin-top:10px;padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);font-size:10px;color:var(--sub);line-height:1.7">
+        💡 <strong style="color:var(--text)">Workflow :</strong> Télécharge en <strong style="color:var(--a)">360p</strong> avec 4K Downloader → découpe en 30min avec VLC → upload ici
       </div>
     </div>
   </div>
+  <div class="sb-foot">
+    <div class="chip"><span class="dot"></span>IA Active</div>
+    <div class="ver">v7.0</div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="tb">
+    <div class="tb-l">
+      <button class="btn-sb" onclick="toggleSB()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
+        </svg>
+      </button>
+      <div class="vseg">
+        <button class="vb on" id="vb1" onclick="setView('mob')">📱 Mobile</button>
+        <button class="vb" id="vb2" onclick="setView('pc')">🖥️ PC</button>
+      </div>
+    </div>
+    <div class="tb-r">
+      <a class="btn-tt" href="https://www.tiktok.com/upload" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.95a8.27 8.27 0 004.84 1.55V7.04a4.85 4.85 0 01-1.07-.35z"/></svg>
+        Poster TikTok
+      </a>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="inner" id="inner">
+      <div class="eyebrow">✦ Intelligence Artificielle</div>
+      <h1>Clips <em>viraux</em><br/>en automatique</h1>
+      <p class="hero-p">Whisper transcrit, Claude AI sélectionne, FFmpeg exporte en <strong>1080×1920</strong>. Score TikTok A→F inclus.</p>
+
+      <div class="stats">
+        <div class="stat"><div class="sv">1080p</div><div class="sl">Format TikTok</div></div>
+        <div class="stat"><div class="sv">Claude</div><div class="sl">AI Scoring</div></div>
+        <div class="stat"><div class="sv">Grade A-F</div><div class="sl">Score TikTok</div></div>
+        <div class="stat"><div class="sv">~0.01€</div><div class="sl">Par vidéo</div></div>
+      </div>
+
+      <!-- UPLOAD -->
+      <div class="card" id="upload-card">
+        <div class="card-h"><div class="card-ico">🎬</div><div class="card-t">Importe ta vidéo</div></div>
+        <div class="drop" id="drop">
+          <input type="file" id="fi" accept="video/*" onchange="onFile(this.files[0])"/>
+          <span class="d-ico">📁</span>
+          <div class="d-t">Glisse ta vidéo ici ou clique</div>
+          <div class="d-s">MP4, MOV, AVI, MKV · Téléchargée avec 4K Downloader ?</div>
+          <div class="d-f">Max 60 min · 360p recommandé · Export final 1080×1920 TikTok</div>
+        </div>
+        <div class="fp" id="fp">
+          <span class="fp-ico">🎥</span>
+          <div class="fp-info">
+            <div class="fp-name" id="fn">video.mp4</div>
+            <div class="fp-sz" id="fs">0 MB</div>
+          </div>
+          <button class="btn-go" id="bg" onclick="startUp()">Analyser ✦</button>
+        </div>
+        <div class="upr" id="upr"><div class="upr-bar"><div class="upr-fill" id="uf"></div></div><div class="upr-lbl" id="ul">Upload en cours...</div></div>
+        <div class="err" id="err"></div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div id="prog">
+        <div class="pc">
+          <div class="pt">
+            <div class="pl">
+              <div class="badge" id="bdg">Analyse</div>
+              <div class="pname" id="pn">Initialisation...</div>
+              <div class="pmsg" id="pm"></div>
+            </div>
+            <div class="ppct" id="pp">0%</div>
+          </div>
+          <div class="pm">
+            <div class="ptrack"><div class="pbar" id="pb"></div></div>
+            <div class="steps">
+              <div class="step" id="s1"><div class="step-d">⬆️</div><div class="step-l">Upload</div></div>
+              <div class="step" id="s2"><div class="step-d">🎵</div><div class="step-l">Audio</div></div>
+              <div class="step" id="s3"><div class="step-d">🎙️</div><div class="step-l">Whisper</div></div>
+              <div class="step" id="s4"><div class="step-d">🧠</div><div class="step-l">Claude</div></div>
+              <div class="step" id="s5"><div class="step-d">📱</div><div class="step-l">Export</div></div>
+            </div>
+          </div>
+          <div class="pfoot">
+            <div class="timer" id="tmr">⏱ 0:00</div>
+            <div class="ai-tag">Whisper + Claude AI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="res">
+        <div class="res-head">
+          <div>
+            <div class="res-t"><span id="cc">0</span> clips détectés</div>
+            <div class="res-s" id="rs">prêts à poster sur TikTok</div>
+          </div>
+          <button class="btn-new" onclick="rst()">↩ Nouvelle vidéo</button>
+        </div>
+        <div class="clips" id="cl"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -380,54 +412,44 @@ document.addEventListener('DOMContentLoaded',()=>{
   setupDrop();loadSB();
 });
 
-/* SIDEBAR */
+/* ═══ SIDEBAR ═══ */
 function toggleSB(){
-  if(mob()){
-    document.getElementById('sb').classList.toggle('mob');
-    document.getElementById('ov').classList.toggle('on');
-  } else {
-    sbOpen=!sbOpen; applySB();
-  }
+  if(mob()){document.getElementById('sb').classList.toggle('mob');document.getElementById('ov').classList.toggle('on');}
+  else{sbOpen=!sbOpen;applySB();}
 }
-function closeSB(){
-  document.getElementById('sb').classList.remove('mob');
-  document.getElementById('ov').classList.remove('on');
-}
-function applySB(){
-  document.getElementById('sb').classList.toggle('hide',!sbOpen);
+function closeSB(){document.getElementById('sb').classList.remove('mob');document.getElementById('ov').classList.remove('on');}
+function applySB(){document.getElementById('sb').classList.toggle('hide',!sbOpen);}
+
+function setSBTab(tab, btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.sb-panel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('sp-'+tab).classList.add('on');
+  if(tab==='reco') loadReco(false);
 }
 
-/* VIEW */
+/* ═══ VIEW ═══ */
 function setView(v){
   view=v;
   document.getElementById('vb1').className='vb'+(v==='mob'?' on':'');
   document.getElementById('vb2').className='vb'+(v==='pc'?' on':'');
   document.getElementById('inner').className=v==='pc'?'inner wide':'inner';
-  const cl=document.getElementById('cl');
-  cl.className=v==='pc'?'clips grid':'clips';
+  document.getElementById('cl').className=v==='pc'?'clips grid':'clips';
 }
 
-/* DROP */
+/* ═══ DROP ═══ */
 function setupDrop(){
   const z=document.getElementById('drop');
   z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('ov')});
   z.addEventListener('dragleave',()=>z.classList.remove('ov'));
   z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('ov');const f=e.dataTransfer.files[0];if(f)onFile(f)});
 }
-function onFile(f){
-  if(!f)return; sf=f;
-  document.getElementById('fn').textContent=f.name;
-  document.getElementById('fs').textContent=(f.size/1048576).toFixed(1)+' MB';
-  document.getElementById('fp').classList.add('show');
-  hideErr();
-}
+function onFile(f){if(!f)return;sf=f;document.getElementById('fn').textContent=f.name;document.getElementById('fs').textContent=(f.size/1048576).toFixed(1)+' MB';document.getElementById('fp').classList.add('show');hideErr();}
 
-/* UPLOAD */
+/* ═══ UPLOAD ═══ */
 async function startUp(){
   if(!sf){showErr('Sélectionne une vidéo.');return;}
-  hideErr();
-  document.getElementById('bg').disabled=true;
-  document.getElementById('upr').classList.add('show');
+  hideErr();document.getElementById('bg').disabled=true;document.getElementById('upr').classList.add('show');
   return new Promise((res,rej)=>{
     const xhr=new XMLHttpRequest();
     xhr.open('POST','/api/upload');
@@ -449,7 +471,7 @@ async function startUp(){
   });
 }
 
-/* JOB */
+/* ═══ JOB ═══ */
 function startJob(id){
   jid=id;t0=Date.now();
   document.getElementById('upload-card').style.display='none';
@@ -470,20 +492,20 @@ function upd(d){
   document.getElementById('pm').textContent=d.message||'';
   if(d.video_title)document.getElementById('pn').textContent=d.video_title;
   [[1,0,10],[2,10,25],[3,25,60],[4,60,68],[5,68,100]].forEach(([n,f,t])=>{
-    const el=document.getElementById('s'+n);
-    el.className='step'+(p>=t?' ok':p>=f?' on':'');
+    document.getElementById('s'+n).className='step'+(p>=t?' ok':p>=f?' on':'');
   });
-  if(d.status==='exporting')document.getElementById('bdg').textContent='Export';
-  else if(d.status==='done')document.getElementById('bdg').textContent='Terminé ✓';
   if(d.status==='done'){stop();showRes(d.clips||[]);}
   else if(d.status==='error'){stop();showErr(d.message);document.getElementById('upload-card').style.display='block';document.getElementById('prog').style.display='none';document.getElementById('bg').disabled=false;}
 }
-
 function stop(){if(pi){clearInterval(pi);pi=null;}if(ti){clearInterval(ti);ti=null;}if(ws){try{ws.close();}catch{}ws=null;}}
 
-/* RESULTS */
-const fmt=s=>`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+/* ═══ GRADE HELPERS ═══ */
+const gradeColor={A:'#00dfa2',B:'#5b8dee',C:'#f5c842',D:'#ff8c00',F:'#ff2d55'};
+const gradeLabel={A:'Viral garanti 🔥',B:'Très bon clip','C':'Clip correct','D':'Potentiel faible','F':'À éviter'};
 
+function fmt(s){return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`}
+
+/* ═══ RESULTS ═══ */
 function showRes(clips){
   document.getElementById('prog').style.display='none';
   document.getElementById('res').style.display='block';
@@ -493,12 +515,39 @@ function showRes(clips){
   cl.className=view==='pc'?'clips grid':'clips';
   cl.innerHTML='';
   clips.forEach((c,i)=>{
-    const pct=Math.round((c.viral_score||.5)*100),hot=pct>=75;
-    const cs=(c.caption||'').replace(/`/g,'\\`'),ch=(c.caption||'').replace(/\n/g,'<br>');
-    const wr=c.reason?`<span class="tg w" title="${c.reason}">${c.reason.slice(0,32)}...</span>`:'';
+    const vs=Math.round((c.viral_score||.5)*100);
+    const hot=vs>=75;
+    const grade=c.grade||'C';
+    const gc=c.grade_color||gradeColor[grade]||'#ff8c00';
+    const ts=c.tiktok_score||vs;
+    const det=c.tt_details||{};
+    const cs=(c.caption||'').replace(/`/g,'\\`');
+    const ch=(c.caption||'').replace(/\n/g,'<br>');
+    const wr=c.reason?`<span class="tg w" title="${c.reason}">${c.reason.slice(0,30)}...</span>`:'';
+
+    // Build detail tips
+    let tipsHtml='';
+    if(det.accroche)tipsHtml+=`<div class="tt-row"><span class="tt-ico">🎯</span><span class="tt-tip">${det.accroche.tip}</span></div>`;
+    if(det.duree)tipsHtml+=`<div class="tt-row"><span class="tt-ico">⏱️</span><span class="tt-tip">${det.duree.tip}</span></div>`;
+    if(det.parole)tipsHtml+=`<div class="tt-row"><span class="tt-ico">🗣️</span><span class="tt-tip">${det.parole.tip}</span></div>`;
+    if(det.engagement)tipsHtml+=`<div class="tt-row"><span class="tt-ico">💬</span><span class="tt-tip">${det.engagement.tip}</span></div>`;
+
     const el=document.createElement('div');
     el.className='clip';
     el.innerHTML=`
+      <div class="grade-banner" style="background:${gc}11;border-bottom:1px solid ${gc}22">
+        <div class="grade-left">
+          <div class="grade-box" style="background:${gc}">${grade}</div>
+          <div class="grade-info">
+            <div class="grade-title">${gradeLabel[grade]||'Clip détecté'}</div>
+            <div class="grade-sub">Score TikTok basé sur 5 critères</div>
+          </div>
+        </div>
+        <div class="grade-right">
+          <div class="tiktok-pct" style="color:${gc}">${ts}%</div>
+          <div class="tiktok-lbl">TikTok Score</div>
+        </div>
+      </div>
       <div class="ct">
         <div class="crk">#${c.rank||i+1}</div>
         <div class="ci2">
@@ -513,12 +562,18 @@ function showRes(clips){
       </div>
       <div class="sc-row">
         <span class="sc-l">Viral</span>
-        <div class="sc-bar"><div class="sc-f" style="width:${pct}%"></div></div>
-        <span class="sc-n">${pct}%</span>
+        <div class="sc-bar"><div class="sc-f" style="width:${vs}%;background:linear-gradient(90deg,var(--a),var(--a2))"></div></div>
+        <span class="sc-n" style="color:var(--a)">${vs}%</span>
       </div>
+      ${tipsHtml?`
+      <div class="tt-details" id="ttd${i}">
+        <div class="tt-inner">${tipsHtml}</div>
+      </div>`:''
+      }
       <div class="clip-btns">
         <a class="bdl" href="${c.url}" download="${c.filename}">⬇ Télécharger en 1080p</a>
-        <button class="b2" onclick="tPrev(this,'${c.preview_url}')">▶ Preview</button>
+        ${tipsHtml?`<button class="b2 btn-tt-toggle" onclick="tDet(${i})">📊 Détails</button>`:'<div></div>'}
+        <button class="b2" onclick="tPrev(this,'${c.preview_url||c.url}')">▶ Preview</button>
         <a class="b2" href="https://www.tiktok.com/upload" target="_blank">↗ TikTok</a>
       </div>
       <div class="cprev" id="pv${i}"><video controls preload="metadata"></video></div>
@@ -529,6 +584,10 @@ function showRes(clips){
   loadSB();
 }
 
+function tDet(i){
+  const el=document.getElementById('ttd'+i);
+  if(el)el.classList.toggle('open');
+}
 function tPrev(btn,url){
   const pv=btn.closest('.clip').querySelector('.cprev'),v=pv.querySelector('video');
   if(pv.style.display==='block'){pv.style.display='none';v.pause();v.src='';btn.textContent='▶ Preview';}
@@ -536,7 +595,7 @@ function tPrev(btn,url){
 }
 function cpCap(btn,t){navigator.clipboard.writeText(t).then(()=>{btn.textContent='✓ Copié';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copier';btn.classList.remove('ok');},2000)});}
 
-/* SIDEBAR */
+/* ═══ SIDEBAR CLIPS ═══ */
 async function loadSB(){
   try{
     const jobs=await(await fetch('/api/jobs')).json();
@@ -544,13 +603,15 @@ async function loadSB(){
     if(!jobs.length){c.innerHTML='<div class="sb-empty"><div class="sb-empty-ico">🎬</div><div class="sb-empty-t">Tes clips s\'afficheront ici après chaque analyse</div></div>';return;}
     c.innerHTML='';
     jobs.forEach(j=>j.clips.forEach(clip=>{
+      const g=clip.grade||'C';
+      const gc=clip.grade_color||gradeColor[g]||'#ff8c00';
       const el=document.createElement('div');
       el.className='ci';
       el.onclick=()=>window.open(clip.url,'_blank');
       el.innerHTML=`
         <div class="ci-row">
           <div class="ci-name">${clip.video_title||'Vidéo'} — #${clip.rank}</div>
-          <div class="ci-pct">${Math.round((clip.viral_score||.5)*100)}%</div>
+          <div class="ci-grade" style="background:${gc}22;color:${gc};border:1px solid ${gc}44">${g}</div>
         </div>
         <div class="ci-sub">${Math.round(clip.duration)}s · ${new Date(j.created_at*1000).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})}</div>
       `;
@@ -559,9 +620,98 @@ async function loadSB(){
   }catch{}
 }
 
+/* ═══ RECOS IA ═══ */
+let recoLoaded = false;
+let recoCache = null;
+let recoCacheTime = 0;
+const RECO_TTL = 6 * 60 * 60 * 1000; // 6h cache
+
+async function loadReco(force) {
+  const now = Date.now();
+  if (!force && recoCache && (now - recoCacheTime) < RECO_TTL) {
+    renderReco(recoCache);
+    return;
+  }
+  document.getElementById('reco-body').innerHTML = `
+    <div id="reco-loading" style="text-align:center;padding:24px 12px">
+      <div style="font-size:24px;margin-bottom:8px">🤖</div>
+      <div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France du moment...</div>
+      <div class="reco-spinner"></div>
+    </div>`;
+  try {
+    const res = await fetch('/api/recommendations');
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    recoCache = data.channels;
+    recoCacheTime = now;
+    renderReco(recoCache);
+  } catch(e) {
+    renderRecoFallback();
+  }
+}
+
+function reloadReco() {
+  const btn = document.getElementById('reco-refresh');
+  btn.style.transform = 'rotate(360deg)';
+  btn.style.transition = 'transform .5s';
+  setTimeout(() => { btn.style.transform = ''; }, 500);
+  loadReco(true);
+}
+
+function renderReco(channels) {
+  if (!channels || !channels.length) { renderRecoFallback(); return; }
+  const catColors = {
+    'Motivation': 'rgba(255,77,28,.12)', 'Business': 'rgba(0,223,162,.1)',
+    'Finance': 'rgba(255,140,0,.1)', 'Science': 'rgba(91,141,238,.12)',
+    'Psycho': 'rgba(217,75,255,.1)', 'Humour': 'rgba(245,200,66,.12)',
+    'default': 'rgba(255,77,28,.1)'
+  };
+  const emojis = {'Motivation':'⚡','Business':'💼','Finance':'💰','Science':'🧠','Psycho':'🧩','Humour':'😂','default':'🎙️'};
+  let html = '';
+  channels.forEach(ch => {
+    const bg = catColors[ch.category] || catColors.default;
+    const ico = emojis[ch.category] || emojis.default;
+    const tags = (ch.tags || []).map(t => {
+      const cls = t.includes('🔥') ? 'ytag hot' : t.includes('✅') ? 'ytag new' : 'ytag';
+      return `<span class="${cls}">${t}</span>`;
+    }).join('');
+    html += `
+    <a class="yt-card" href="${ch.url}" target="_blank" rel="noopener">
+      <div class="yt-top">
+        <div class="yt-cat" style="background:${bg}">${ico}</div>
+        <div class="yt-info">
+          <div class="yt-chan">${ch.name}</div>
+          <div class="yt-desc">${ch.desc}</div>
+        </div>
+      </div>
+      <div class="yt-tags">${tags}</div>
+    </a>`;
+  });
+  const upd = new Date().toLocaleTimeString('fr', {hour:'2-digit', minute:'2-digit'});
+  html += `<div style="text-align:center;font-size:9px;color:var(--dim);margin-top:8px">⟳ Mis à jour à ${upd} · Claude AI</div>`;
+  document.getElementById('reco-body').innerHTML = html;
+}
+
+function renderRecoFallback() {
+  // Fallback statique France — données validées mars 2026
+  const fallback = [
+    {name:'Sans Permission', url:'https://www.youtube.com/@sanspermissionpodcast', category:'Business', desc:'Podcast business FR #1 — Yomi Denzel, Oussama Ammar. Punchlines virales à chaque épisode', tags:['🔥 #1 FR', 'Business', '60-90min']},
+    {name:'Squeezie', url:'https://www.youtube.com/@squeezie', category:'Humour', desc:'19M abonnés FR — gaming, sketches, podcasts. Moments choc = clips TikTok garantis', tags:['🔥 Top FR', 'Multi', '15-30min']},
+    {name:'HugoDécrypte', url:'https://www.youtube.com/@HugoDecrypte', category:'Science', desc:'Actu France expliquée — clips info parfaits pour TikTok FR', tags:['✅ FR', 'Actu', '10-20min']},
+    {name:'Yomi Denzel', url:'https://www.youtube.com/@YomiDenzel', category:'Business', desc:'Business digital, liberté financière — audience jeune FR ultra engagée', tags:['🔥 Viral FR', 'Finance', '15-30min']},
+    {name:'Stan Leloup', url:'https://www.youtube.com/@StanLeloup', category:'Business', desc:'Marketing & psychologie — analyses profondes = clips réflexion très partagés', tags:['Marketing', '20-40min']},
+    {name:'Antoine BM', url:'https://www.youtube.com/@AntoineBM', category:'Business', desc:'Business en ligne, soloprenariat — format parfait 30min clips viraux', tags:['✅ 30min parfait', 'Digital']},
+    {name:'Diary Of A CEO', url:'https://www.youtube.com/@TheDiaryOfACEO', category:'Business', desc:'Podcast #1 YouTube mondial — révélations et citations choc', tags:['🔥 Top Mondial', '1-2h']},
+    {name:'Huberman Lab', url:'https://www.youtube.com/@hubermanlab', category:'Science', desc:'Neurosciences, bien-être — faits surprenants = moments viraux garantis', tags:['🔥 Viral', 'Science', '60-90min']},
+  ];
+  recoCache = fallback;
+  recoCacheTime = Date.now();
+  renderReco(fallback);
+}
+
+/* ═══ UTILS ═══ */
 function showErr(m){const e=document.getElementById('err');e.textContent='⚠️ '+m.replace('❌ ','');e.style.display='block';}
 function hideErr(){document.getElementById('err').style.display='none';}
-
 function rst(){
   stop();jid=null;t0=null;sf=null;
   document.getElementById('res').style.display='none';
