@@ -13,15 +13,14 @@
   --a:#ff4d1c;--a2:#ff8c00;--green:#00dfa2;--blue:#5b8dee;--pink:#d94bff;--yellow:#f5c842;
   --text:#eeeeff;--sub:#8888aa;--dim:#44445a;
   --font:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
-  --r:12px;--sbw:288px;--tbh:56px;--trans:.22s cubic-bezier(.4,0,.2,1);
+  --r:12px;--sbw:292px;--tbh:56px;--trans:.22s cubic-bezier(.4,0,.2,1);
 }
 html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{font-family:var(--font);background:var(--bg);color:var(--text)}
 body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 55% at 10% 0%,rgba(255,77,28,.07),transparent 55%),radial-gradient(ellipse 50% 45% at 90% 100%,rgba(91,141,238,.05),transparent 55%);pointer-events:none;z-index:0}
-
 .shell{position:relative;z-index:1;display:flex;height:100vh;overflow:hidden}
 
-/* ═══ SIDEBAR ═══ */
+/* ════ SIDEBAR ════ */
 .sb{width:var(--sbw);flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:width var(--trans),opacity var(--trans),border-color var(--trans)}
 .sb.hide{width:0;opacity:0;pointer-events:none;border-color:transparent}
 .sb-head{padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -32,20 +31,15 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .chip{display:inline-flex;align-items:center;gap:5px;background:rgba(0,223,162,.07);border:1px solid rgba(0,223,162,.14);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--green);letter-spacing:.5px;text-transform:uppercase}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
-
-/* Sidebar tabs */
-.sb-tabs{display:flex;padding:8px 10px;gap:4px;border-bottom:1px solid var(--border);flex-shrink:0}
-.stab{flex:1;padding:6px 4px;border-radius:7px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.sb-tabs{display:flex;padding:7px 9px;gap:3px;border-bottom:1px solid var(--border);flex-shrink:0}
+.stab{flex:1;padding:6px 3px;border-radius:7px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;white-space:nowrap}
 .stab.on{background:var(--s3);color:var(--text)}
-
 .sb-scroll{flex:1;overflow-y:auto;padding:12px 10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .sb-scroll::-webkit-scrollbar{width:3px}
 .sb-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .sb-panel{display:none}
 .sb-panel.on{display:block}
 .sb-label{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;padding:0 4px;margin-bottom:8px}
-
-/* Clips in sidebar */
 .ci{padding:9px 11px;border-radius:var(--r);background:var(--s2);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;transition:all .15s}
 .ci:hover{background:var(--s3);border-color:var(--border2);transform:translateX(2px)}
 .ci-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
@@ -55,68 +49,68 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .sb-empty{text-align:center;padding:24px 10px}
 .sb-empty-ico{font-size:26px;margin-bottom:7px}
 .sb-empty-t{font-size:11px;color:var(--sub);line-height:1.7}
-
-/* YouTube reco cards */
 .yt-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 11px;margin-bottom:6px;cursor:pointer;transition:all .15s;text-decoration:none;display:block}
 .yt-card:hover{background:var(--s3);border-color:var(--border2)}
 .yt-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
-.yt-cat{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.yt-cat{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .yt-info{flex:1;min-width:0}
 .yt-chan{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.yt-desc{font-size:10px;color:var(--sub);line-height:1.5;margin-top:2px}
-.yt-tags{display:flex;gap:4px;flex-wrap:wrap}
+.yt-desc{font-size:10px;color:var(--sub);line-height:1.4;margin-top:2px}
+.yt-tags{display:flex;gap:3px;flex-wrap:wrap}
 .ytag{background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:600;color:var(--sub)}
 .ytag.hot{background:rgba(255,77,28,.1);border-color:rgba(255,77,28,.2);color:var(--a)}
 .ytag.new{background:rgba(0,223,162,.07);border-color:rgba(0,223,162,.14);color:var(--green)}
-
+.reco-spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:12px auto 0}
+@keyframes spin{to{transform:rotate(360deg)}}
+#reco-refresh{background:none;border:none;color:var(--sub);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px;transition:all .15s}
+#reco-refresh:hover{color:var(--a);background:rgba(255,77,28,.08)}
 .sb-foot{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .ver{font-family:var(--mono);font-size:10px;color:var(--dim)}
 
-/* ═══ TOPBAR ═══ */
+/* ════ TOPBAR ════ */
 .tb{height:var(--tbh);flex-shrink:0;background:rgba(7,7,14,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:relative;z-index:10}
 .tb-l,.tb-r{display:flex;align-items:center;gap:8px}
 .btn-sb{width:32px;height:32px;border-radius:7px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--sub);flex-shrink:0}
 .btn-sb:hover{background:var(--s3);border-color:var(--a);color:var(--a)}
 .btn-sb svg{width:15px;height:15px}
 .vseg{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
-.vb{padding:5px 13px;border-radius:6px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.vb{padding:5px 12px;border-radius:6px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .vb.on{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;box-shadow:0 2px 10px rgba(255,77,28,.3)}
 .btn-tt{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s}
 .btn-tt:hover{border-color:var(--pink);color:var(--pink)}
 
-/* ═══ PAGE ═══ */
+/* ════ PAGE ════ */
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
 .page{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .page::-webkit-scrollbar{width:5px}
 .page::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.inner{max-width:560px;margin:0 auto;padding:28px 18px 60px}
-.inner.wide{max-width:880px}
+.inner{max-width:560px;margin:0 auto;padding:26px 18px 60px}
+.inner.wide{max-width:900px}
 
-/* ═══ HERO ═══ */
+/* ════ HERO ════ */
 .eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,77,28,.08);border:1px solid rgba(255,77,28,.16);border-radius:100px;padding:3px 11px;font-size:10px;font-weight:700;color:var(--a);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
-h1{font-size:clamp(24px,4vw,38px);font-weight:700;line-height:1.12;letter-spacing:-.8px;margin-bottom:9px}
+h1{font-size:clamp(24px,4vw,38px);font-weight:700;line-height:1.12;letter-spacing:-.8px;margin-bottom:8px}
 h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-p{font-size:13px;color:var(--sub);line-height:1.75;max-width:400px;margin-bottom:20px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px}
+.hero-p{font-size:13px;color:var(--sub);line-height:1.75;max-width:400px;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px}
 .stat{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px}
 .sv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--a);margin-bottom:2px}
 .sl{font-size:9px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 
-/* ═══ CARD ═══ */
+/* ════ CARD ════ */
 .card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px}
 .card-h{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border)}
 .card-ico{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.card-t{font-size:13px;font-weight:700}
+.card-t{font-size:13px;font-weight:700;flex:1}
 
 /* Drop zone */
-.drop{border:2px dashed var(--border2);border-radius:10px;padding:30px 18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin:12px}
+.drop{border:2px dashed var(--border2);border-radius:10px;padding:28px 18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin:12px}
 .drop:hover,.drop.ov{border-color:var(--a);background:rgba(255,77,28,.03)}
 #fi{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .d-ico{font-size:32px;display:block;margin-bottom:9px}
 .d-t{font-size:14px;font-weight:700;margin-bottom:4px}
 .d-s{font-size:12px;color:var(--sub);margin-bottom:4px}
 .d-f{font-size:10px;color:var(--dim);font-weight:600}
-
 .fp{display:none;margin:0 12px 10px;background:rgba(0,223,162,.05);border:1px solid rgba(0,223,162,.14);border-radius:10px;padding:10px 13px;align-items:center;gap:10px}
 .fp.show{display:flex}
 .fp-ico{font-size:19px;flex-shrink:0}
@@ -126,6 +120,33 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 .btn-go{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.3);flex-shrink:0}
 .btn-go:hover:not(:disabled){transform:translateY(-1px)}
 .btn-go:disabled{opacity:.4;cursor:not-allowed}
+
+/* ════ SETTINGS PANEL ════ */
+.settings-panel{border-top:1px solid var(--border);padding:14px 15px}
+.settings-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;cursor:pointer}
+.settings-title-l{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+.settings-arrow{font-size:11px;color:var(--sub);transition:transform .2s}
+.settings-arrow.open{transform:rotate(180deg)}
+.settings-body{display:none}
+.settings-body.open{display:block}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sg-full{grid-column:1/-1}
+.setting-row{display:flex;flex-direction:column;gap:5px}
+.setting-label{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.setting-seg{display:flex;background:var(--s3);border:1px solid var(--border);border-radius:7px;padding:2px;gap:2px}
+.sopt{flex:1;padding:5px 4px;border-radius:5px;border:none;background:none;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;white-space:nowrap}
+.sopt.on{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--s3);border:1px solid var(--border);border-radius:8px}
+.switch-info{font-size:11px;font-weight:600}
+.switch-sub{font-size:10px;color:var(--sub);margin-top:1px}
+.switch{width:36px;height:20px;border-radius:100px;background:var(--border);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.switch.on{background:var(--green)}
+.switch::after{content:'';width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .2s}
+.switch.on::after{transform:translateX(16px)}
+.wm-input{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;transition:border-color .15s}
+.wm-input:focus{border-color:var(--a)}
+.wm-input::placeholder{color:var(--dim)}
+
 .upr{display:none;margin:0 12px 10px}
 .upr.show{display:block}
 .upr-bar{height:3px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:5px}
@@ -133,7 +154,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 .upr-lbl{font-size:10px;color:var(--sub);font-weight:600;text-align:center}
 .err{display:none;margin:0 12px 10px;background:rgba(255,50,80,.07);border:1px solid rgba(255,50,80,.16);border-radius:9px;padding:9px 13px;font-size:12px;color:#ff7a9a;line-height:1.6}
 
-/* ═══ PROGRESS ═══ */
+/* ════ PROGRESS ════ */
 #prog{display:none;margin-bottom:12px}
 .pc{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .pt{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 12px}
@@ -141,7 +162,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,77,28,.1);border:1px solid rgba(255,77,28,.2);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
 .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--a);animation:pulse 1.5s infinite}
 .pname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;margin-bottom:4px}
-.pmsg{font-size:11px;color:var(--sub);min-height:14px}
+.pmsg{font-size:11px;color:var(--sub);min-height:14px;line-height:1.5}
 .ppct{font-family:var(--mono);font-size:44px;font-weight:700;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;line-height:1}
 .pm{padding:0 16px 14px}
 .ptrack{height:4px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:14px}
@@ -159,67 +180,62 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 .timer{font-family:var(--mono);font-size:11px;color:var(--sub)}
 .ai-tag{font-size:10px;color:var(--a2);font-weight:700;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.2);border-radius:5px;padding:2px 7px}
 
-/* ═══ RESULTS ═══ */
+/* ════ RESULTS ════ */
 #res{display:none}
-.res-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px}
+.res-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
 .res-t{font-size:20px;font-weight:700;letter-spacing:-.5px}
 .res-t span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .res-s{font-size:11px;color:var(--sub);margin-top:3px}
-.btn-new{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.res-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn-new{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--sub);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;display:flex;align-items:center;gap:5px}
 .btn-new:hover{border-color:var(--a);color:var(--a)}
+.btn-zip{background:linear-gradient(135deg,rgba(91,141,238,.15),rgba(91,141,238,.08));border:1px solid rgba(91,141,238,.3);border-radius:8px;padding:7px 13px;color:var(--blue);font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;display:none;align-items:center;gap:5px}
+.btn-zip.show{display:flex}
+.btn-zip:hover{border-color:var(--blue);background:rgba(91,141,238,.2)}
+
 .clips{display:flex;flex-direction:column;gap:11px}
 .clips.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:11px}
 
-/* ═══ CLIP CARD ═══ */
+/* ════ CLIP CARD ════ */
 .clip{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s}
 .clip:hover{border-color:var(--border2)}
-
-/* Grade banner */
-.grade-banner{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:1px solid var(--border)}
-.grade-left{display:flex;align-items:center;gap:10px}
-.grade-box{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;font-weight:700;color:#fff;flex-shrink:0}
-.grade-info{}
-.grade-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.grade-banner{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+.grade-left{display:flex;align-items:center;gap:9px}
+.grade-box{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:21px;font-weight:700;color:#fff;flex-shrink:0}
+.grade-title{font-size:12px;font-weight:700;margin-bottom:1px}
 .grade-sub{font-size:10px;color:var(--sub)}
 .grade-right{text-align:right}
 .tiktok-pct{font-family:var(--mono);font-size:22px;font-weight:700}
 .tiktok-lbl{font-size:9px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-
 .ct{display:flex;align-items:center;gap:10px;padding:11px 14px 9px}
-.crk{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.crk{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .ci2{flex:1;min-width:0}
 .cn{font-size:12px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ctags{display:flex;gap:3px;flex-wrap:wrap}
 .tg{background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:9px;color:var(--sub);font-weight:600}
 .tg.f{background:rgba(255,77,28,.1);border-color:rgba(255,77,28,.25);color:var(--a)}
-.tg.w{background:rgba(91,141,238,.07);border-color:rgba(91,141,238,.18);color:var(--blue);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Score bars */
+.tg.w{background:rgba(91,141,238,.07);border-color:rgba(91,141,238,.18);color:var(--blue);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg.sub{background:rgba(0,223,162,.07);border-color:rgba(0,223,162,.18);color:var(--green)}
 .sc-row{display:flex;align-items:center;gap:9px;padding:0 14px 10px}
-.sc-l{font-size:9px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;width:42px}
+.sc-l{font-size:9px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;width:40px}
 .sc-bar{flex:1;height:3px;background:var(--border);border-radius:100px;overflow:hidden}
 .sc-f{height:100%;border-radius:100px}
-.sc-n{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;width:32px;text-align:right}
-
-/* TikTok details accordion */
-.tt-details{border-top:1px solid var(--border);overflow:hidden;max-height:0;transition:max-height .3s ease}
-.tt-details.open{max-height:300px}
+.sc-n{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;width:30px;text-align:right}
+.tt-details{overflow:hidden;max-height:0;transition:max-height .3s ease;border-top:0px solid var(--border)}
+.tt-details.open{max-height:300px;border-top:1px solid var(--border)}
 .tt-inner{padding:11px 14px}
-.tt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.tt-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
 .tt-row:last-child{margin-bottom:0}
-.tt-ico{font-size:13px;flex-shrink:0;width:18px}
-.tt-tip{font-size:10px;color:var(--sub);flex:1;line-height:1.4}
-
-/* Buttons */
+.tt-ico{font-size:13px;flex-shrink:0;width:18px;margin-top:1px}
+.tt-tip{font-size:10px;color:var(--sub);flex:1;line-height:1.5}
 .clip-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px 12px}
 .clip-btns .bdl{grid-column:1/-1}
 .bdl{display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border:none;border-radius:8px;padding:10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 3px 12px rgba(255,77,28,.2)}
 .bdl:hover{transform:translateY(-1px)}
 .b2{display:flex;align-items:center;justify-content:center;gap:5px;background:var(--s3);color:var(--sub);border:1px solid var(--border);border-radius:8px;padding:9px;font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
 .b2:hover{border-color:var(--a);color:var(--a)}
-.btn-tt-toggle{background:rgba(0,223,162,.07);border:1px solid rgba(0,223,162,.14);color:var(--green);font-size:10px}
-.btn-tt-toggle:hover{border-color:var(--green);color:var(--green)}
-
+.b2.green{border-color:rgba(0,223,162,.2);color:var(--green);background:rgba(0,223,162,.05)}
+.b2.green:hover{border-color:var(--green)}
 .cprev{display:none;border-top:1px solid var(--border)}
 .cprev video{width:100%;max-height:240px;background:#000;display:block}
 .ccap{border-top:1px solid var(--border);padding:10px 14px;display:flex;align-items:flex-start;gap:9px}
@@ -228,80 +244,68 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 .bcopy:hover{border-color:var(--a);color:var(--a)}
 .bcopy.ok{border-color:var(--green);color:var(--green)}
 
-/* ═══ RECO SPINNER ═══ */
-.reco-spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:12px auto 0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.reco-err{text-align:center;padding:20px 12px;font-size:11px;color:var(--sub);line-height:1.7}
-#reco-refresh:hover{color:var(--a)!important;background:rgba(255,77,28,.08)!important}
+/* ════ NOTIF TOAST ════ */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s2);border:1px solid var(--green);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:var(--text);z-index:100;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);pointer-events:none;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-ico{font-size:18px;flex-shrink:0}
 
-/* ═══ OVERLAY ═══ */
+/* ════ OVERLAY ════ */
 .ov2{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:15;backdrop-filter:blur(2px)}
 .ov2.on{display:block}
 
-/* ═══ MOBILE ═══ */
+/* ════ MOBILE ════ */
 @media(max-width:680px){
   .sb{position:fixed;top:0;left:0;height:100vh;z-index:20;transform:translateX(-100%);transition:transform var(--trans);width:var(--sbw)!important;opacity:1!important;pointer-events:auto!important}
   .sb.mob{transform:translateX(0)}
   .stats{grid-template-columns:1fr 1fr}
   .clips.grid{grid-template-columns:1fr}
   .inner.wide{max-width:100%}
+  .settings-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="ov2" id="ov" onclick="closeSB()"></div>
+<div class="toast" id="toast"><span class="toast-ico">🎉</span><span id="toast-msg">Clips prêts !</span></div>
 <div class="shell">
 
-<!-- ═══ SIDEBAR ═══ -->
+<!-- ════ SIDEBAR ════ -->
 <aside class="sb" id="sb">
   <div class="sb-head">
-    <div class="logo">
-      <div class="lmark">✦</div>
-      <div class="lname">Clip<b>Viral</b></div>
-    </div>
+    <div class="logo"><div class="lmark">✦</div><div class="lname">Clip<b>Viral</b></div></div>
     <div class="chip"><span class="dot"></span>Claude AI · Actif</div>
   </div>
   <div class="sb-tabs">
-    <button class="stab on" onclick="setSBTab('clips',this)">📁 Mes clips</button>
+    <button class="stab on" onclick="setSBTab('clips',this)">📁 Clips</button>
     <button class="stab" onclick="setSBTab('reco',this)">🔥 Hype</button>
   </div>
   <div class="sb-scroll">
-
-    <!-- CLIPS -->
     <div class="sb-panel on" id="sp-clips">
       <div id="sb-clips">
-        <div class="sb-empty">
-          <div class="sb-empty-ico">🎬</div>
-          <div class="sb-empty-t">Tes clips s'afficheront ici après chaque analyse</div>
-        </div>
+        <div class="sb-empty"><div class="sb-empty-ico">🎬</div><div class="sb-empty-t">Tes clips s'afficheront ici après chaque analyse</div></div>
       </div>
     </div>
-
-    <!-- RECOS YouTube — IA dynamique -->
     <div class="sb-panel" id="sp-reco">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="sb-label" style="margin-bottom:0">🔥 Chaînes hype du moment</div>
-        <button onclick="reloadReco()" id="reco-refresh" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;transition:all .15s" title="Actualiser">↻</button>
+        <button onclick="reloadReco()" id="reco-refresh" title="Actualiser">↻</button>
       </div>
       <div id="reco-body">
-        <div id="reco-loading" style="text-align:center;padding:24px 12px">
+        <div style="text-align:center;padding:24px 12px">
           <div style="font-size:24px;margin-bottom:8px">🤖</div>
-          <div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France du moment...</div>
+          <div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France...</div>
           <div class="reco-spinner"></div>
         </div>
       </div>
       <div style="margin-top:10px;padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);font-size:10px;color:var(--sub);line-height:1.7">
-        💡 <strong style="color:var(--text)">Workflow :</strong> Télécharge en <strong style="color:var(--a)">360p</strong> avec 4K Downloader → découpe en 30min avec VLC → upload ici
+        💡 <strong style="color:var(--text)">Workflow :</strong> 360p avec 4K Downloader → max 30min → upload ici
       </div>
     </div>
   </div>
-  <div class="sb-foot">
-    <div class="chip"><span class="dot"></span>IA Active</div>
-    <div class="ver">v7.0</div>
-  </div>
+  <div class="sb-foot"><div class="chip"><span class="dot"></span>IA Active</div><div class="ver">v8.0</div></div>
 </aside>
 
-<!-- ═══ MAIN ═══ -->
+<!-- ════ MAIN ════ -->
 <div class="main">
   <div class="tb">
     <div class="tb-l">
@@ -318,7 +322,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
     <div class="tb-r">
       <a class="btn-tt" href="https://www.tiktok.com/upload" target="_blank">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.95a8.27 8.27 0 004.84 1.55V7.04a4.85 4.85 0 01-1.07-.35z"/></svg>
-        Poster TikTok
+        TikTok
       </a>
     </div>
   </div>
@@ -327,13 +331,12 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
     <div class="inner" id="inner">
       <div class="eyebrow">✦ Intelligence Artificielle</div>
       <h1>Clips <em>viraux</em><br/>en automatique</h1>
-      <p class="hero-p">Whisper transcrit, Claude AI sélectionne, FFmpeg exporte en <strong>1080×1920</strong>. Score TikTok A→F inclus.</p>
-
+      <p class="hero-p">Whisper transcrit, Claude AI sélectionne, FFmpeg exporte en <strong>1080×1920</strong> avec sous-titres. Score TikTok A→F inclus.</p>
       <div class="stats">
-        <div class="stat"><div class="sv">1080p</div><div class="sl">Format TikTok</div></div>
-        <div class="stat"><div class="sv">Claude</div><div class="sl">AI Scoring</div></div>
-        <div class="stat"><div class="sv">Grade A-F</div><div class="sl">Score TikTok</div></div>
-        <div class="stat"><div class="sv">~0.01€</div><div class="sl">Par vidéo</div></div>
+        <div class="stat"><div class="sv">1080p</div><div class="sl">TikTok</div></div>
+        <div class="stat"><div class="sv">Sous-titres</div><div class="sl">Auto</div></div>
+        <div class="stat"><div class="sv">Grade A-F</div><div class="sl">Score IA</div></div>
+        <div class="stat"><div class="sv">ZIP</div><div class="sl">Tout d'un coup</div></div>
       </div>
 
       <!-- UPLOAD -->
@@ -344,7 +347,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
           <span class="d-ico">📁</span>
           <div class="d-t">Glisse ta vidéo ici ou clique</div>
           <div class="d-s">MP4, MOV, AVI, MKV · Téléchargée avec 4K Downloader ?</div>
-          <div class="d-f">Max 60 min · 360p recommandé · Export final 1080×1920 TikTok</div>
+          <div class="d-f">Max 60 min · 360p recommandé · Export final 1080×1920</div>
         </div>
         <div class="fp" id="fp">
           <span class="fp-ico">🎥</span>
@@ -354,6 +357,62 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
           </div>
           <button class="btn-go" id="bg" onclick="startUp()">Analyser ✦</button>
         </div>
+
+        <!-- SETTINGS -->
+        <div class="settings-panel">
+          <div class="settings-title" onclick="toggleSettings()">
+            <div class="settings-title-l"><span>⚙️</span><span>Paramètres d'export</span></div>
+            <span class="settings-arrow" id="sarr">▾</span>
+          </div>
+          <div class="settings-body" id="sbody">
+            <div class="settings-grid">
+              <!-- Nombre de clips -->
+              <div class="setting-row">
+                <div class="setting-label">🎬 Nombre de clips</div>
+                <div class="setting-seg" id="nb-seg">
+                  <button class="sopt" onclick="setNb(3,this)">3</button>
+                  <button class="sopt on" onclick="setNb(5,this)">5</button>
+                  <button class="sopt" onclick="setNb(10,this)">10</button>
+                </div>
+              </div>
+              <!-- Langue -->
+              <div class="setting-row">
+                <div class="setting-label">🌍 Langue</div>
+                <div class="setting-seg" id="lang-seg">
+                  <button class="sopt on" onclick="setLang('auto',this)">Auto</button>
+                  <button class="sopt" onclick="setLang('fr',this)">FR</button>
+                  <button class="sopt" onclick="setLang('en',this)">EN</button>
+                </div>
+              </div>
+              <!-- Sous-titres -->
+              <div class="setting-row sg-full">
+                <div class="switch-row" onclick="toggleSwitch('sub-sw')">
+                  <div>
+                    <div class="switch-info">📝 Sous-titres automatiques</div>
+                    <div class="switch-sub">Brûlés sur la vidéo via Whisper</div>
+                  </div>
+                  <div class="switch on" id="sub-sw"></div>
+                </div>
+              </div>
+              <!-- Notification -->
+              <div class="setting-row sg-full">
+                <div class="switch-row" onclick="toggleNotif()">
+                  <div>
+                    <div class="switch-info">🔔 Notification quand prêt</div>
+                    <div class="switch-sub">Alerte navigateur en fin d'analyse</div>
+                  </div>
+                  <div class="switch" id="notif-sw"></div>
+                </div>
+              </div>
+              <!-- Watermark -->
+              <div class="setting-row sg-full">
+                <div class="setting-label">💧 Watermark (optionnel)</div>
+                <input class="wm-input" id="wm-input" type="text" placeholder="@toncreateur · max 40 caractères" maxlength="40"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="upr" id="upr"><div class="upr-bar"><div class="upr-fill" id="uf"></div></div><div class="upr-lbl" id="ul">Upload en cours...</div></div>
         <div class="err" id="err"></div>
       </div>
@@ -390,10 +449,13 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
       <div id="res">
         <div class="res-head">
           <div>
-            <div class="res-t"><span id="cc">0</span> clips détectés</div>
-            <div class="res-s" id="rs">prêts à poster sur TikTok</div>
+            <div class="res-t"><span id="cc">0</span> clips prêts</div>
+            <div class="res-s" id="rs">export 1080×1920 · prêts à poster</div>
           </div>
-          <button class="btn-new" onclick="rst()">↩ Nouvelle vidéo</button>
+          <div class="res-actions">
+            <a class="btn-zip" id="btn-zip" href="#" download="tous_les_clips.zip">📦 Tout télécharger</a>
+            <button class="btn-new" onclick="rst()">↩ Nouvelle vidéo</button>
+          </div>
         </div>
         <div class="clips" id="cl"></div>
       </div>
@@ -405,22 +467,57 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));-w
 
 <script>
 let jid=null,ws=null,pi=null,ti=null,t0=null,sf=null,sbOpen=true,view='mob';
+let settings={nb:5,lang:'auto',subtitles:true,watermark:'',notif:false};
 const mob=()=>window.innerWidth<=680;
+const gradeColor={A:'#00dfa2',B:'#5b8dee',C:'#f5c842',D:'#ff8c00',F:'#ff2d55'};
+const gradeLabel={A:'Viral garanti 🔥',B:'Très bon clip',C:'Clip correct',D:'Potentiel faible',F:'À éviter'};
 
 document.addEventListener('DOMContentLoaded',()=>{
   if(mob()){sbOpen=false;applySB();}
   setupDrop();loadSB();
 });
 
-/* ═══ SIDEBAR ═══ */
+/* ════ SETTINGS ════ */
+function toggleSettings(){
+  const b=document.getElementById('sbody'),a=document.getElementById('sarr');
+  b.classList.toggle('open');a.classList.toggle('open');
+}
+function setNb(n,btn){
+  settings.nb=n;
+  document.querySelectorAll('#nb-seg .sopt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function setLang(l,btn){
+  settings.lang=l;
+  document.querySelectorAll('#lang-seg .sopt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function toggleSwitch(id){
+  const sw=document.getElementById(id);
+  sw.classList.toggle('on');
+  if(id==='sub-sw') settings.subtitles=sw.classList.contains('on');
+}
+async function toggleNotif(){
+  const sw=document.getElementById('notif-sw');
+  if(!settings.notif){
+    if('Notification' in window){
+      const p=await Notification.requestPermission();
+      settings.notif=(p==='granted');
+      if(settings.notif) sw.classList.add('on');
+    }
+  } else {
+    settings.notif=false;sw.classList.remove('on');
+  }
+}
+
+/* ════ SIDEBAR ════ */
 function toggleSB(){
   if(mob()){document.getElementById('sb').classList.toggle('mob');document.getElementById('ov').classList.toggle('on');}
   else{sbOpen=!sbOpen;applySB();}
 }
 function closeSB(){document.getElementById('sb').classList.remove('mob');document.getElementById('ov').classList.remove('on');}
 function applySB(){document.getElementById('sb').classList.toggle('hide',!sbOpen);}
-
-function setSBTab(tab, btn){
+function setSBTab(tab,btn){
   document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.sb-panel').forEach(p=>p.classList.remove('on'));
   btn.classList.add('on');
@@ -428,7 +525,7 @@ function setSBTab(tab, btn){
   if(tab==='reco') loadReco(false);
 }
 
-/* ═══ VIEW ═══ */
+/* ════ VIEW ════ */
 function setView(v){
   view=v;
   document.getElementById('vb1').className='vb'+(v==='mob'?' on':'');
@@ -437,7 +534,7 @@ function setView(v){
   document.getElementById('cl').className=v==='pc'?'clips grid':'clips';
 }
 
-/* ═══ DROP ═══ */
+/* ════ DROP ════ */
 function setupDrop(){
   const z=document.getElementById('drop');
   z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('ov')});
@@ -446,14 +543,19 @@ function setupDrop(){
 }
 function onFile(f){if(!f)return;sf=f;document.getElementById('fn').textContent=f.name;document.getElementById('fs').textContent=(f.size/1048576).toFixed(1)+' MB';document.getElementById('fp').classList.add('show');hideErr();}
 
-/* ═══ UPLOAD ═══ */
+/* ════ UPLOAD ════ */
 async function startUp(){
   if(!sf){showErr('Sélectionne une vidéo.');return;}
+  settings.watermark=document.getElementById('wm-input').value.trim();
   hideErr();document.getElementById('bg').disabled=true;document.getElementById('upr').classList.add('show');
   return new Promise((res,rej)=>{
     const xhr=new XMLHttpRequest();
     xhr.open('POST','/api/upload');
     xhr.setRequestHeader('Content-Disposition',`attachment; filename="${sf.name}"`);
+    xhr.setRequestHeader('x-nb-clips',String(settings.nb));
+    xhr.setRequestHeader('x-lang',settings.lang);
+    xhr.setRequestHeader('x-subtitles',String(settings.subtitles));
+    xhr.setRequestHeader('x-watermark',settings.watermark);
     xhr.upload.onprogress=e=>{
       if(e.lengthComputable){
         const p=Math.round(e.loaded/e.total*100);
@@ -471,12 +573,11 @@ async function startUp(){
   });
 }
 
-/* ═══ JOB ═══ */
+/* ════ JOB ════ */
 function startJob(id){
   jid=id;t0=Date.now();
   document.getElementById('upload-card').style.display='none';
   document.getElementById('prog').style.display='block';
-  document.getElementById('res').style.display='none';
   ti=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);document.getElementById('tmr').textContent=`⏱ ${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;},1000);
   const proto=location.protocol==='https:'?'wss:':'ws:';
   ws=new WebSocket(`${proto}//${location.host}/ws/${jid}`);
@@ -494,26 +595,42 @@ function upd(d){
   [[1,0,10],[2,10,25],[3,25,60],[4,60,68],[5,68,100]].forEach(([n,f,t])=>{
     document.getElementById('s'+n).className='step'+(p>=t?' ok':p>=f?' on':'');
   });
-  if(d.status==='done'){stop();showRes(d.clips||[]);}
-  else if(d.status==='error'){stop();showErr(d.message);document.getElementById('upload-card').style.display='block';document.getElementById('prog').style.display='none';document.getElementById('bg').disabled=false;}
+  if(d.status==='done'){
+    stop();showRes(d.clips||[],d.zip_url);
+    showToast(`🎉 ${d.clips?.length||0} clips viraux prêts !`);
+    if(settings.notif && 'Notification' in window && Notification.permission==='granted')
+      new Notification('ClipViral ✦',{body:`${d.clips?.length||0} clips prêts à poster !`,icon:'/favicon.ico'});
+  }else if(d.status==='error'){
+    stop();showErr(d.message);
+    document.getElementById('upload-card').style.display='block';
+    document.getElementById('prog').style.display='none';
+    document.getElementById('bg').disabled=false;
+  }
 }
 function stop(){if(pi){clearInterval(pi);pi=null;}if(ti){clearInterval(ti);ti=null;}if(ws){try{ws.close();}catch{}ws=null;}}
 
-/* ═══ GRADE HELPERS ═══ */
-const gradeColor={A:'#00dfa2',B:'#5b8dee',C:'#f5c842',D:'#ff8c00',F:'#ff2d55'};
-const gradeLabel={A:'Viral garanti 🔥',B:'Très bon clip','C':'Clip correct','D':'Potentiel faible','F':'À éviter'};
+/* ════ TOAST ════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
 
-function fmt(s){return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`}
+/* ════ RESULTS ════ */
+const fmt=s=>`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
 
-/* ═══ RESULTS ═══ */
-function showRes(clips){
+function showRes(clips,zipUrl){
   document.getElementById('prog').style.display='none';
   document.getElementById('res').style.display='block';
   document.getElementById('cc').textContent=clips.length;
-  if(clips[0]?.video_title)document.getElementById('rs').textContent=`dans « ${clips[0].video_title.slice(0,40)} »`;
   const cl=document.getElementById('cl');
   cl.className=view==='pc'?'clips grid':'clips';
   cl.innerHTML='';
+  if(zipUrl){
+    const bz=document.getElementById('btn-zip');
+    bz.href=zipUrl;bz.classList.add('show');
+  }
   clips.forEach((c,i)=>{
     const vs=Math.round((c.viral_score||.5)*100);
     const hot=vs>=75;
@@ -523,24 +640,22 @@ function showRes(clips){
     const det=c.tt_details||{};
     const cs=(c.caption||'').replace(/`/g,'\\`');
     const ch=(c.caption||'').replace(/\n/g,'<br>');
-    const wr=c.reason?`<span class="tg w" title="${c.reason}">${c.reason.slice(0,30)}...</span>`:'';
-
-    // Build detail tips
+    const wr=c.reason?`<span class="tg w" title="${c.reason}">${c.reason.slice(0,28)}...</span>`:'';
+    const subTag=c.has_subtitles?'<span class="tg sub">📝 Sous-titres</span>':'';
     let tipsHtml='';
     if(det.accroche)tipsHtml+=`<div class="tt-row"><span class="tt-ico">🎯</span><span class="tt-tip">${det.accroche.tip}</span></div>`;
     if(det.duree)tipsHtml+=`<div class="tt-row"><span class="tt-ico">⏱️</span><span class="tt-tip">${det.duree.tip}</span></div>`;
     if(det.parole)tipsHtml+=`<div class="tt-row"><span class="tt-ico">🗣️</span><span class="tt-tip">${det.parole.tip}</span></div>`;
     if(det.engagement)tipsHtml+=`<div class="tt-row"><span class="tt-ico">💬</span><span class="tt-tip">${det.engagement.tip}</span></div>`;
-
     const el=document.createElement('div');
     el.className='clip';
     el.innerHTML=`
       <div class="grade-banner" style="background:${gc}11;border-bottom:1px solid ${gc}22">
         <div class="grade-left">
           <div class="grade-box" style="background:${gc}">${grade}</div>
-          <div class="grade-info">
+          <div>
             <div class="grade-title">${gradeLabel[grade]||'Clip détecté'}</div>
-            <div class="grade-sub">Score TikTok basé sur 5 critères</div>
+            <div class="grade-sub">Score sur 5 critères TikTok</div>
           </div>
         </div>
         <div class="grade-right">
@@ -556,7 +671,7 @@ function showRes(clips){
             <span class="tg">${fmt(c.start)} → ${fmt(c.end)}</span>
             <span class="tg">${Math.round(c.duration)}s</span>
             ${hot?'<span class="tg f">🔥 HOT</span>':''}
-            ${wr}
+            ${subTag}${wr}
           </div>
         </div>
       </div>
@@ -565,14 +680,10 @@ function showRes(clips){
         <div class="sc-bar"><div class="sc-f" style="width:${vs}%;background:linear-gradient(90deg,var(--a),var(--a2))"></div></div>
         <span class="sc-n" style="color:var(--a)">${vs}%</span>
       </div>
-      ${tipsHtml?`
-      <div class="tt-details" id="ttd${i}">
-        <div class="tt-inner">${tipsHtml}</div>
-      </div>`:''
-      }
+      ${tipsHtml?`<div class="tt-details" id="ttd${i}"><div class="tt-inner">${tipsHtml}</div></div>`:''}
       <div class="clip-btns">
-        <a class="bdl" href="${c.url}" download="${c.filename}">⬇ Télécharger en 1080p</a>
-        ${tipsHtml?`<button class="b2 btn-tt-toggle" onclick="tDet(${i})">📊 Détails</button>`:'<div></div>'}
+        <a class="bdl" href="${c.url}" download="${c.filename}">⬇ Télécharger 1080p</a>
+        ${tipsHtml?`<button class="b2 green" onclick="tDet(${i})">📊 Analyse</button>`:'<div></div>'}
         <button class="b2" onclick="tPrev(this,'${c.preview_url||c.url}')">▶ Preview</button>
         <a class="b2" href="https://www.tiktok.com/upload" target="_blank">↗ TikTok</a>
       </div>
@@ -584,10 +695,7 @@ function showRes(clips){
   loadSB();
 }
 
-function tDet(i){
-  const el=document.getElementById('ttd'+i);
-  if(el)el.classList.toggle('open');
-}
+function tDet(i){const el=document.getElementById('ttd'+i);if(el)el.classList.toggle('open');}
 function tPrev(btn,url){
   const pv=btn.closest('.clip').querySelector('.cprev'),v=pv.querySelector('video');
   if(pv.style.display==='block'){pv.style.display='none';v.pause();v.src='';btn.textContent='▶ Preview';}
@@ -595,7 +703,56 @@ function tPrev(btn,url){
 }
 function cpCap(btn,t){navigator.clipboard.writeText(t).then(()=>{btn.textContent='✓ Copié';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copier';btn.classList.remove('ok');},2000)});}
 
-/* ═══ SIDEBAR CLIPS ═══ */
+/* ════ RECOS IA ════ */
+let recoCache=null,recoCacheTime=0;
+const RECO_TTL=6*60*60*1000;
+async function loadReco(force){
+  const now=Date.now();
+  if(!force&&recoCache&&(now-recoCacheTime)<RECO_TTL){renderReco(recoCache);return;}
+  document.getElementById('reco-body').innerHTML=`<div style="text-align:center;padding:24px 12px"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France...</div><div class="reco-spinner"></div></div>`;
+  try{
+    const r=await fetch('/api/recommendations');
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    recoCache=d.channels;recoCacheTime=now;renderReco(recoCache);
+  }catch{renderRecoFallback();}
+}
+function reloadReco(){
+  const btn=document.getElementById('reco-refresh');
+  btn.style.transition='transform .5s';btn.style.transform='rotate(360deg)';
+  setTimeout(()=>{btn.style.transform='';},500);
+  loadReco(true);
+}
+const catBg={'Motivation':'rgba(255,77,28,.12)','Business':'rgba(0,223,162,.1)','Finance':'rgba(255,140,0,.1)','Science':'rgba(91,141,238,.12)','Psycho':'rgba(217,75,255,.1)','Humour':'rgba(245,200,66,.12)'};
+const catIco={'Motivation':'⚡','Business':'💼','Finance':'💰','Science':'🧠','Psycho':'🧩','Humour':'😂'};
+function renderReco(channels){
+  if(!channels?.length){renderRecoFallback();return;}
+  let html='';
+  channels.forEach(ch=>{
+    const bg=catBg[ch.category]||'rgba(255,77,28,.1)';
+    const ico=catIco[ch.category]||'🎙️';
+    const tags=(ch.tags||[]).map(t=>`<span class="${t.includes('🔥')?'ytag hot':t.includes('✅')?'ytag new':'ytag'}">${t}</span>`).join('');
+    html+=`<a class="yt-card" href="${ch.url}" target="_blank" rel="noopener"><div class="yt-top"><div class="yt-cat" style="background:${bg}">${ico}</div><div class="yt-info"><div class="yt-chan">${ch.name}</div><div class="yt-desc">${ch.desc}</div></div></div><div class="yt-tags">${tags}</div></a>`;
+  });
+  const upd=new Date().toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'});
+  html+=`<div style="text-align:center;font-size:9px;color:var(--dim);margin-top:8px">⟳ Mis à jour à ${upd} · Claude AI</div>`;
+  document.getElementById('reco-body').innerHTML=html;
+}
+function renderRecoFallback(){
+  const f=[
+    {name:'Sans Permission',url:'https://www.youtube.com/@sanspermissionpodcast',category:'Business',desc:'Podcast business FR #1 — punchlines virales garanties chaque épisode',tags:['🔥 #1 FR','60-90min']},
+    {name:'Squeezie',url:'https://www.youtube.com/@squeezie',category:'Humour',desc:'19M abonnés FR — moments choc = clips TikTok parfaits',tags:['🔥 Top FR','15-30min']},
+    {name:'HugoDécrypte',url:'https://www.youtube.com/@HugoDecrypte',category:'Science',desc:'Actu FR expliquée — clips info parfaits TikTok France',tags:['✅ FR','10-20min']},
+    {name:'Yomi Denzel',url:'https://www.youtube.com/@YomiDenzel',category:'Business',desc:'Business digital FR — audience jeune très engagée',tags:['🔥 Viral FR','15-30min']},
+    {name:'Stan Leloup',url:'https://www.youtube.com/@StanLeloup',category:'Business',desc:'Marketing et psychologie — très partagé en clips',tags:['Marketing','20-40min']},
+    {name:'Antoine BM',url:'https://www.youtube.com/@AntoineBM',category:'Business',desc:'Soloprenariat digital FR — format 30min parfait',tags:['✅ 30min','Digital']},
+    {name:'Diary Of A CEO',url:'https://www.youtube.com/@TheDiaryOfACEO',category:'Business',desc:'Podcast #1 YouTube mondial — révélations choc',tags:['🔥 Mondial','1-2h']},
+    {name:'Huberman Lab',url:'https://www.youtube.com/@hubermanlab',category:'Science',desc:'Neurosciences — faits surprenants viraux garantis',tags:['🔥 Viral','60-90min']},
+  ];
+  recoCache=f;recoCacheTime=Date.now();renderReco(f);
+}
+
+/* ════ SIDEBAR CLIPS ════ */
 async function loadSB(){
   try{
     const jobs=await(await fetch('/api/jobs')).json();
@@ -606,110 +763,14 @@ async function loadSB(){
       const g=clip.grade||'C';
       const gc=clip.grade_color||gradeColor[g]||'#ff8c00';
       const el=document.createElement('div');
-      el.className='ci';
-      el.onclick=()=>window.open(clip.url,'_blank');
-      el.innerHTML=`
-        <div class="ci-row">
-          <div class="ci-name">${clip.video_title||'Vidéo'} — #${clip.rank}</div>
-          <div class="ci-grade" style="background:${gc}22;color:${gc};border:1px solid ${gc}44">${g}</div>
-        </div>
-        <div class="ci-sub">${Math.round(clip.duration)}s · ${new Date(j.created_at*1000).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})}</div>
-      `;
+      el.className='ci';el.onclick=()=>window.open(clip.url,'_blank');
+      el.innerHTML=`<div class="ci-row"><div class="ci-name">${clip.video_title||'Vidéo'} — #${clip.rank}</div><div class="ci-grade" style="background:${gc}22;color:${gc};border:1px solid ${gc}44">${g}</div></div><div class="ci-sub">${Math.round(clip.duration)}s · ${new Date(j.created_at*1000).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})}</div>`;
       c.appendChild(el);
     }));
   }catch{}
 }
 
-/* ═══ RECOS IA ═══ */
-let recoLoaded = false;
-let recoCache = null;
-let recoCacheTime = 0;
-const RECO_TTL = 6 * 60 * 60 * 1000; // 6h cache
-
-async function loadReco(force) {
-  const now = Date.now();
-  if (!force && recoCache && (now - recoCacheTime) < RECO_TTL) {
-    renderReco(recoCache);
-    return;
-  }
-  document.getElementById('reco-body').innerHTML = `
-    <div id="reco-loading" style="text-align:center;padding:24px 12px">
-      <div style="font-size:24px;margin-bottom:8px">🤖</div>
-      <div style="font-size:11px;color:var(--sub)">Claude analyse les tendances<br/>YouTube France du moment...</div>
-      <div class="reco-spinner"></div>
-    </div>`;
-  try {
-    const res = await fetch('/api/recommendations');
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
-    recoCache = data.channels;
-    recoCacheTime = now;
-    renderReco(recoCache);
-  } catch(e) {
-    renderRecoFallback();
-  }
-}
-
-function reloadReco() {
-  const btn = document.getElementById('reco-refresh');
-  btn.style.transform = 'rotate(360deg)';
-  btn.style.transition = 'transform .5s';
-  setTimeout(() => { btn.style.transform = ''; }, 500);
-  loadReco(true);
-}
-
-function renderReco(channels) {
-  if (!channels || !channels.length) { renderRecoFallback(); return; }
-  const catColors = {
-    'Motivation': 'rgba(255,77,28,.12)', 'Business': 'rgba(0,223,162,.1)',
-    'Finance': 'rgba(255,140,0,.1)', 'Science': 'rgba(91,141,238,.12)',
-    'Psycho': 'rgba(217,75,255,.1)', 'Humour': 'rgba(245,200,66,.12)',
-    'default': 'rgba(255,77,28,.1)'
-  };
-  const emojis = {'Motivation':'⚡','Business':'💼','Finance':'💰','Science':'🧠','Psycho':'🧩','Humour':'😂','default':'🎙️'};
-  let html = '';
-  channels.forEach(ch => {
-    const bg = catColors[ch.category] || catColors.default;
-    const ico = emojis[ch.category] || emojis.default;
-    const tags = (ch.tags || []).map(t => {
-      const cls = t.includes('🔥') ? 'ytag hot' : t.includes('✅') ? 'ytag new' : 'ytag';
-      return `<span class="${cls}">${t}</span>`;
-    }).join('');
-    html += `
-    <a class="yt-card" href="${ch.url}" target="_blank" rel="noopener">
-      <div class="yt-top">
-        <div class="yt-cat" style="background:${bg}">${ico}</div>
-        <div class="yt-info">
-          <div class="yt-chan">${ch.name}</div>
-          <div class="yt-desc">${ch.desc}</div>
-        </div>
-      </div>
-      <div class="yt-tags">${tags}</div>
-    </a>`;
-  });
-  const upd = new Date().toLocaleTimeString('fr', {hour:'2-digit', minute:'2-digit'});
-  html += `<div style="text-align:center;font-size:9px;color:var(--dim);margin-top:8px">⟳ Mis à jour à ${upd} · Claude AI</div>`;
-  document.getElementById('reco-body').innerHTML = html;
-}
-
-function renderRecoFallback() {
-  // Fallback statique France — données validées mars 2026
-  const fallback = [
-    {name:'Sans Permission', url:'https://www.youtube.com/@sanspermissionpodcast', category:'Business', desc:'Podcast business FR #1 — Yomi Denzel, Oussama Ammar. Punchlines virales à chaque épisode', tags:['🔥 #1 FR', 'Business', '60-90min']},
-    {name:'Squeezie', url:'https://www.youtube.com/@squeezie', category:'Humour', desc:'19M abonnés FR — gaming, sketches, podcasts. Moments choc = clips TikTok garantis', tags:['🔥 Top FR', 'Multi', '15-30min']},
-    {name:'HugoDécrypte', url:'https://www.youtube.com/@HugoDecrypte', category:'Science', desc:'Actu France expliquée — clips info parfaits pour TikTok FR', tags:['✅ FR', 'Actu', '10-20min']},
-    {name:'Yomi Denzel', url:'https://www.youtube.com/@YomiDenzel', category:'Business', desc:'Business digital, liberté financière — audience jeune FR ultra engagée', tags:['🔥 Viral FR', 'Finance', '15-30min']},
-    {name:'Stan Leloup', url:'https://www.youtube.com/@StanLeloup', category:'Business', desc:'Marketing & psychologie — analyses profondes = clips réflexion très partagés', tags:['Marketing', '20-40min']},
-    {name:'Antoine BM', url:'https://www.youtube.com/@AntoineBM', category:'Business', desc:'Business en ligne, soloprenariat — format parfait 30min clips viraux', tags:['✅ 30min parfait', 'Digital']},
-    {name:'Diary Of A CEO', url:'https://www.youtube.com/@TheDiaryOfACEO', category:'Business', desc:'Podcast #1 YouTube mondial — révélations et citations choc', tags:['🔥 Top Mondial', '1-2h']},
-    {name:'Huberman Lab', url:'https://www.youtube.com/@hubermanlab', category:'Science', desc:'Neurosciences, bien-être — faits surprenants = moments viraux garantis', tags:['🔥 Viral', 'Science', '60-90min']},
-  ];
-  recoCache = fallback;
-  recoCacheTime = Date.now();
-  renderReco(fallback);
-}
-
-/* ═══ UTILS ═══ */
+/* ════ UTILS ════ */
 function showErr(m){const e=document.getElementById('err');e.textContent='⚠️ '+m.replace('❌ ','');e.style.display='block';}
 function hideErr(){document.getElementById('err').style.display='none';}
 function rst(){
@@ -726,6 +787,7 @@ function rst(){
   document.getElementById('tmr').textContent='⏱ 0:00';
   document.getElementById('pb').style.width='0%';
   document.getElementById('pp').textContent='0%';
+  document.getElementById('btn-zip').classList.remove('show');
   hideErr();
 }
 </script>
