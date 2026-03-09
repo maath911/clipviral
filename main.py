@@ -30,7 +30,7 @@ executor = ThreadPoolExecutor(max_workers=2)
 MIN_DURATION = 61
 MAX_DURATION = 180
 MIN_GAP      = 120
-MAX_VIDEO_DURATION = 4200  # 70 min max — limite absolue Render free (disque + RAM + temps)
+MAX_VIDEO_DURATION = 3600  # 60 min max
 
 # Clé API Claude — à définir en variable d'env sur Render
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -423,7 +423,7 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
         if duration > MAX_VIDEO_DURATION:
             raise Exception(
     f"Vidéo trop longue ({int(duration//60)}min {int(duration%60)}s). "
-    f"Maximum 70 min sur ce serveur. "
+    f"Maximum 60 min sur ce serveur. "
     f"Découpe la vidéo en morceaux de 60min avec VLC (gratuit) puis envoie chaque morceau séparément."
 )
 
