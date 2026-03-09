@@ -159,18 +159,15 @@ def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
 # 3. DÉTECTION SCÈNES
 # ─────────────────────────────────────────────────────────────
 def _compress_for_scenes(video_path: str, job_id: str) -> str:
-    out = str(UPLOAD_DIR / f"sc_{job_id}.mp4")
-    cmd = ["ffmpeg", "-y", "-i", str(video_path),
-           "-vf", "scale=-2:360,fps=2",
-           "-c:v", "libx264", "-preset", "ultrafast", "-crf", "35", "-an", out]
-    r = subprocess.run(cmd, capture_output=True, timeout=300)
-    return out if r.returncode == 0 and Path(out).exists() else str(video_path)
+    """Retourne directement la vidéo source — détection scènes sans fichier intermédiaire."""
+    return str(video_path)
 
 def _extract_scenes(video_path: str) -> dict:
+    """Détection scènes directement sur la source, 1fps, sans créer de fichier."""
     cmd = ["ffmpeg", "-i", str(video_path),
-           "-vf", "select='gt(scene,0.25)',metadata=print:file=-",
+           "-vf", "fps=1,scale=-2:144,select='gt(scene,0.3)',metadata=print:file=-",
            "-an", "-f", "null", "-"]
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     scores, t = {}, None
     for line in r.stderr.split("\n"):
         if "pts_time:" in line:
