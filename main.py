@@ -123,23 +123,36 @@ def _get_duration(video_path: str) -> float:
         return 300.0
 
 def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
+    """Analyse audio par chunks 5min — max ~50MB RAM, compatible Render free."""
     duration = _get_duration(video_path)
-    cmd = ["ffmpeg", "-y", "-i", str(video_path),
-           "-vn", "-ac", "1", "-ar", "16000", "-f", "f32le", "-"]
-    r = subprocess.run(cmd, capture_output=True, timeout=600)
-    if len(r.stdout) < 100:
+    sr = 16000
+    hop = int(segment_duration * sr)
+    chunk_secs = 300  # 5 min par chunk
+    times, energies, emotions = [], [], []
+
+    offset = 0.0
+    while offset < duration:
+        end = min(offset + chunk_secs, duration)
+        cmd = ["ffmpeg", "-y", "-ss", str(offset), "-to", str(end),
+               "-i", str(video_path), "-vn", "-ac", "1", "-ar", str(sr),
+               "-f", "f32le", "-"]
+        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        if len(r.stdout) >= 100:
+            samples = np.frombuffer(r.stdout, dtype=np.float32)
+            for i in range(0, len(samples) - hop, hop):
+                chunk = samples[i:i+hop]
+                t = offset + i / sr
+                times.append(t)
+                energies.append(float(np.sqrt(np.mean(chunk**2))))
+                zcr = float(np.mean(np.abs(np.diff(np.sign(chunk)))) / 2)
+                emotions.append(float(np.clip(zcr * 3 + float(np.var(chunk)) * 10, 0, 1)))
+            del samples
+        offset += chunk_secs
+
+    if not times:
         n = max(10, int(duration / segment_duration))
         return np.linspace(0, duration, n), np.ones(n)*0.5, np.ones(n)*0.5, duration
 
-    samples = np.frombuffer(r.stdout, dtype=np.float32)
-    sr, hop = 16000, int(segment_duration * 16000)
-    times, energies, emotions = [], [], []
-    for i in range(0, len(samples) - hop, hop):
-        chunk = samples[i:i+hop]
-        times.append(i / sr)
-        energies.append(float(np.sqrt(np.mean(chunk**2))))
-        zcr = float(np.mean(np.abs(np.diff(np.sign(chunk)))) / 2)
-        emotions.append(float(np.clip(zcr * 3 + float(np.var(chunk)) * 10, 0, 1)))
     return np.array(times), np.array(energies), np.array(emotions), duration
 
 # ─────────────────────────────────────────────────────────────
