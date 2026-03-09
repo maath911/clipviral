@@ -159,24 +159,12 @@ def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
 # 3. DÉTECTION SCÈNES
 # ─────────────────────────────────────────────────────────────
 def _compress_for_scenes(video_path: str, job_id: str) -> str:
-    """Retourne directement la vidéo source — détection scènes sans fichier intermédiaire."""
+    """Désactivé — trop lent sur Render free."""
     return str(video_path)
 
 def _extract_scenes(video_path: str) -> dict:
-    """Détection scènes directement sur la source, 1fps, sans créer de fichier."""
-    cmd = ["ffmpeg", "-i", str(video_path),
-           "-vf", "fps=1,scale=-2:144,select='gt(scene,0.3)',metadata=print:file=-",
-           "-an", "-f", "null", "-"]
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-    scores, t = {}, None
-    for line in r.stderr.split("\n"):
-        if "pts_time:" in line:
-            try: t = float(line.split("pts_time:")[1].split()[0])
-            except: pass
-        if "lavfi.scene_score=" in line and t is not None:
-            try: scores[t] = float(line.split("lavfi.scene_score=")[1].strip())
-            except: pass
-    return scores
+    """Désactivé — retourne dict vide, score basé sur audio + Whisper uniquement."""
+    return {}
 
 # ─────────────────────────────────────────────────────────────
 # 4. ZONES CHAUDES
