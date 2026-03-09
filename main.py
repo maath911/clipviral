@@ -352,6 +352,87 @@ def _audio_fallback_clips(times, energies, emotions, duration) -> list:
 # ─────────────────────────────────────────────────────────────
 # 7. GÉNÉRATION CAPTION FALLBACK
 # ─────────────────────────────────────────────────────────────
+def _tiktok_score(clip, segments, duration) -> dict:
+    """
+    Calcule un score TikTok détaillé avec grade A-F.
+    Analyse : accroche, durée optimale, densité parole, questions, énergie, mots viraux.
+    """
+    start, end = clip["start"], clip["end"]
+    dur = end - start
+    base = clip.get("viral_score", 0.5)
+    details = {}
+    total = 0.0
+
+    # 1. DURÉE OPTIMALE (TikTok préfère 60-90s)
+    if 60 <= dur <= 90:
+        dur_score = 1.0; dur_tip = "✅ Durée parfaite pour TikTok"
+    elif 90 < dur <= 120:
+        dur_score = 0.85; dur_tip = "🟡 Un peu long, idéal = 60-90s"
+    elif dur < 60:
+        dur_score = 0.6; dur_tip = "⚠️ Trop court, vise 60s minimum"
+    else:
+        dur_score = 0.65; dur_tip = "⚠️ Trop long, découpe en 2"
+    details["duree"] = {"score": dur_score, "tip": dur_tip}
+    total += dur_score * 20
+
+    # 2. ACCROCHE (3 premières secondes)
+    hook_segs = [s for s in segments if start <= s["start"] <= start + 8]
+    hook_text = " ".join(s["text"] for s in hook_segs).lower()
+    hook_words = ["attention","regarde","tu sais","incroyable","jamais","secret","vérité","wait","stop","omg","wow","choquant","impossible","look","never","shocking"]
+    hook_hit = sum(1 for w in hook_words if w in hook_text)
+    if hook_hit >= 2:
+        hook_score = 1.0; hook_tip = "✅ Accroche forte dès le début"
+    elif hook_hit == 1:
+        hook_score = 0.7; hook_tip = "🟡 Accroche moyenne — ajoute un texte fort en intro"
+    else:
+        hook_score = 0.4; hook_tip = "❌ Accroche faible — commence par un moment fort"
+    details["accroche"] = {"score": hook_score, "tip": hook_tip}
+    total += hook_score * 25
+
+    # 3. DENSITÉ DE PAROLE (plus de paroles = plus engageant)
+    clip_segs = [s for s in segments if start <= s["start"] <= end]
+    words_per_min = len(" ".join(s["text"] for s in clip_segs).split()) / max(dur/60, 0.1)
+    if words_per_min >= 100:
+        speech_score = 1.0; speech_tip = "✅ Rythme de parole parfait"
+    elif words_per_min >= 60:
+        speech_score = 0.75; speech_tip = "🟡 Rythme correct"
+    elif words_per_min >= 30:
+        speech_score = 0.5; speech_tip = "⚠️ Peu de paroles — ajoute une voix off ?"
+    else:
+        speech_score = 0.3; speech_tip = "❌ Quasiment pas de paroles"
+    details["parole"] = {"score": speech_score, "tip": speech_tip}
+    total += speech_score * 20
+
+    # 4. ENGAGEMENT (questions, exclamations)
+    full_text = " ".join(s["text"] for s in clip_segs)
+    questions = full_text.count("?")
+    excla = full_text.count("!")
+    engage_score = min(1.0, (questions * 0.15 + excla * 0.1 + base * 0.5))
+    engage_tip = "✅ Contenu engageant" if engage_score >= 0.7 else "🟡 Ajoute des questions pour générer des commentaires"
+    details["engagement"] = {"score": engage_score, "tip": engage_tip}
+    total += engage_score * 20
+
+    # 5. SCORE VIRAL AUDIO
+    audio_score = base
+    audio_tip = "✅ Pic d'énergie fort" if base >= 0.7 else "🟡 Énergie audio correcte"
+    details["energie"] = {"score": audio_score, "tip": audio_tip}
+    total += audio_score * 15
+
+    # GRADE
+    pct = round(total)
+    if pct >= 85: grade = "A"; grade_color = "#00dfa2"
+    elif pct >= 70: grade = "B"; grade_color = "#5b8dee"
+    elif pct >= 55: grade = "C"; grade_color = "#ff8c00"
+    elif pct >= 40: grade = "D"; grade_color = "#ff4d1c"
+    else: grade = "F"; grade_color = "#ff2d55"
+
+    return {
+        "grade": grade,
+        "grade_color": grade_color,
+        "tiktok_score": pct,
+        "details": details,
+    }
+
 def _make_caption(clip) -> str:
     if clip.get("caption"):
         return clip["caption"]
@@ -467,6 +548,7 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
         for idx, clip in enumerate(clips[:5]):  # max 5 clips
             out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
             caption  = _make_caption(clip)
+            tt_score = _tiktok_score(clip, segments, duration)
             success  = await loop.run_in_executor(
                 executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
             if success:
@@ -479,6 +561,10 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
                     "caption":     caption,
                     "video_title": title,
                     "reason":      clip.get("reason", ""),
+                    "tiktok_score": tt_score["tiktok_score"],
+                    "grade":       tt_score["grade"],
+                    "grade_color": tt_score["grade_color"],
+                    "tt_details":  tt_score["details"],
                 })
             pct = 68 + int(((idx+1) / min(len(clips), 5)) * 30)
             await upd(pct, f"🎬 Export {idx+1}/{min(len(clips), 5)} ({int(clip['duration'])}s)...")
@@ -536,6 +622,67 @@ async def get_status(job_id: str):
     if job_id not in jobs:
         raise HTTPException(404, "Job introuvable.")
     return jobs[job_id]
+
+# ─────────────────────────────────────────────────────────────
+# ROUTE : Recommandations YouTube IA (cache 6h)
+# ─────────────────────────────────────────────────────────────
+_reco_cache: dict = {"channels": [], "updated_at": 0}
+_RECO_TTL = 6 * 3600
+
+@app.get("/api/recommendations")
+async def get_recommendations():
+    import json as _json
+    now = time.time()
+    if _reco_cache["channels"] and (now - _reco_cache["updated_at"]) < _RECO_TTL:
+        return _reco_cache
+
+    fallback_fr = [
+        {"name": "Sans Permission", "url": "https://www.youtube.com/@sanspermissionpodcast", "category": "Business", "desc": "Podcast business FR #1 — Yomi Denzel & Oussama Ammar. Punchlines virales garanties", "tags": ["🔥 #1 FR", "Business", "60-90min"]},
+        {"name": "Squeezie", "url": "https://www.youtube.com/@squeezie", "category": "Humour", "desc": "19M abonnés FR — gaming, sketches, podcasts. Moments choc = clips TikTok parfaits", "tags": ["🔥 Top FR", "Multi", "15-30min"]},
+        {"name": "HugoDécrypte", "url": "https://www.youtube.com/@HugoDecrypte", "category": "Science", "desc": "Actu France expliquée simplement — clips info parfaits pour TikTok FR", "tags": ["✅ FR", "Actu", "10-20min"]},
+        {"name": "Yomi Denzel", "url": "https://www.youtube.com/@YomiDenzel", "category": "Business", "desc": "Business digital et liberté financière — audience jeune FR ultra engagée", "tags": ["🔥 Viral FR", "Finance", "15-30min"]},
+        {"name": "Stan Leloup", "url": "https://www.youtube.com/@StanLeloup", "category": "Business", "desc": "Marketing et psychologie — analyses profondes très partagées en clips", "tags": ["Marketing", "20-40min"]},
+        {"name": "Antoine BM", "url": "https://www.youtube.com/@AntoineBM", "category": "Business", "desc": "Business en ligne, soloprenariat — format 30min = parfait pour clips viraux", "tags": ["✅ 30min", "Digital"]},
+        {"name": "Diary Of A CEO", "url": "https://www.youtube.com/@TheDiaryOfACEO", "category": "Business", "desc": "Podcast #1 YouTube mondial — révélations et citations choc", "tags": ["🔥 Mondial", "1-2h"]},
+        {"name": "Huberman Lab", "url": "https://www.youtube.com/@hubermanlab", "category": "Science", "desc": "Neurosciences et bien-être — faits surprenants = moments viraux garantis", "tags": ["🔥 Viral", "60-90min"]},
+    ]
+
+    if not ANTHROPIC_API_KEY:
+        _reco_cache["channels"] = fallback_fr
+        _reco_cache["updated_at"] = now
+        return _reco_cache
+
+    try:
+        mois = time.strftime("%B %Y")
+        prompt = f"""Tu es un expert en contenu viral TikTok pour le marché FRANÇAIS en {mois}.
+
+Donne-moi exactement 8 chaînes YouTube parfaites pour extraire des clips viraux TikTok en France MAINTENANT.
+Critères : contenu parlé (podcasts, interviews, débats), moments de révélation/choc/émotion forte, audience française ou francophone, format 10-90min.
+Mix obligatoire : 4-5 chaînes FR + 3 chaînes anglaises sous-titrables.
+Chaînes FR à considérer : Sans Permission, Squeezie, HugoDécrypte, Yomi Denzel, Stan Leloup, Antoine BM, McFly & Carlito, Tibo InShape.
+Chaînes EN à considérer : Diary of a CEO, Huberman Lab, Lex Fridman, MrBeast, Jordan Peterson.
+
+Réponds UNIQUEMENT en JSON valide, sans markdown :
+[{{"name":"...", "url":"https://youtube.com/@handle", "category":"Business|Motivation|Finance|Science|Humour|Psycho", "desc":"1 phrase pourquoi parfait pour clips TikTok FR", "tags":["🔥 Label","Catégorie","Durée"]}}]"""
+
+        headers = {"Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01"}
+        body = {"model": "claude-haiku-4-5-20251001", "max_tokens": 1200, "messages": [{"role": "user", "content": prompt}]}
+
+        async with httpx.AsyncClient(timeout=20) as client:
+            r = await client.post("https://api.anthropic.com/v1/messages", headers=headers, json=body)
+        data = r.json()
+        raw = data["content"][0]["text"].strip()
+        if "```" in raw:
+            raw = raw.split("```")[1]
+            if raw.startswith("json"): raw = raw[4:]
+        channels = _json.loads(raw.strip())
+        _reco_cache["channels"] = channels
+        _reco_cache["updated_at"] = now
+        return _reco_cache
+    except Exception:
+        _reco_cache["channels"] = fallback_fr
+        _reco_cache["updated_at"] = now
+        return _reco_cache
 
 @app.get("/api/jobs")
 async def list_jobs():
