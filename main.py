@@ -12,7 +12,10 @@ import json
 import time
 import asyncio
 import random
+import zipfile
+import re
 import httpx
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI(title="ClipViral API")
@@ -24,6 +27,8 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 jobs: dict = {}
+ip_jobs: dict = defaultdict(list)  # IP -> [timestamps] anti-abus
+MAX_JOBS_PER_IP = 5  # max 5 jobs/heure par IP
 ws_connections: dict[str, list] = {}
 executor = ThreadPoolExecutor(max_workers=2)
 
@@ -137,7 +142,7 @@ def _extract_scenes(video_path: str) -> dict:
 # ─────────────────────────────────────────────────────────────
 # 4. WHISPER — transcription complète par sampling adaptatif
 # ─────────────────────────────────────────────────────────────
-def _transcribe_full(video_path: str, duration: float, job_id: str) -> list:
+def _transcribe_full(video_path: str, duration: float, job_id: str, lang: str = 'auto') -> list:
     """
     Sampling adaptatif sur toute la vidéo :
     - ≤30min : 100% couverture (30s/30s)
@@ -185,7 +190,8 @@ def _transcribe_full(video_path: str, duration: float, job_id: str) -> list:
         if r.returncode != 0 or not Path(tmp).exists():
             continue
         try:
-            res = model.transcribe(tmp, language=None, fp16=False, verbose=False,
+            whisper_lang = None if lang == "auto" else lang
+            res = model.transcribe(tmp, language=whisper_lang, fp16=False, verbose=False,
                                    condition_on_previous_text=False)
             for seg in res.get("segments", []):
                 text = seg.get("text", "").strip()
@@ -460,19 +466,77 @@ def _make_caption(clip) -> str:
 # ─────────────────────────────────────────────────────────────
 # 8. EXPORT TIKTOK 1080×1920
 # ─────────────────────────────────────────────────────────────
-def _export_clip(input_path, start, end, out_path) -> bool:
+def _generate_srt(segments, clip_start, clip_end, out_srt) -> bool:
+    """Génère un fichier SRT pour un clip à partir des segments Whisper."""
+    try:
+        clip_segs = [s for s in segments if s["start"] >= clip_start - 0.5 and s["end"] <= clip_end + 0.5]
+        if not clip_segs:
+            return False
+        lines = []
+        for i, seg in enumerate(clip_segs, 1):
+            s = max(0, seg["start"] - clip_start)
+            e = min(clip_end - clip_start, seg["end"] - clip_start)
+            def ts(sec):
+                h = int(sec // 3600)
+                m = int((sec % 3600) // 60)
+                s2 = sec % 60
+                return f"{h:02d}:{m:02d}:{s2:06.3f}".replace(".", ",")
+            text = seg["text"].strip()
+            if not text:
+                continue
+            # Coupe les lignes trop longues en 2
+            if len(text) > 42:
+                mid = len(text) // 2
+                sp = text.rfind(' ', 0, mid)
+                if sp > 0:
+                    text = text[:sp] + "\n" + text[sp+1:]
+            lines.append(f"{i}\n{ts(s)} --> {ts(e)}\n{text}\n")
+        if lines:
+            with open(out_srt, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+            return True
+        return False
+    except Exception:
+        return False
+
+def _export_clip(input_path, start, end, out_path, srt_path=None, watermark=None) -> bool:
     dur  = end - start
     fade = max(0, dur - 2.0)
-    vf = (
+
+    # Base video filter: blur bg + overlay centered
+    vf_base = (
         f"[0:v]scale=1080:1920:force_original_aspect_ratio=increase,"
         f"crop=1080:1920,boxblur=20:20,eq=brightness=-0.4[bg];"
         f"[0:v]scale=1080:-2[fg];"
-        f"[bg][fg]overlay=(W-w)/2:(H-h)/2,fade=t=out:st={fade}:d=2[out]"
+        f"[bg][fg]overlay=(W-w)/2:(H-h)/2,fade=t=out:st={fade}:d=2[vbase]"
     )
+
+    # Subtitles filter
+    if srt_path and Path(srt_path).exists():
+        vf = vf_base.replace("[vbase]", "[vtmp]") + (
+            f";[vtmp]subtitles={srt_path}:force_style='"
+            f"FontName=Arial,FontSize=14,Bold=1,PrimaryColour=&HFFFFFF,"
+            f"OutlineColour=&H000000,Outline=2,Shadow=1,"
+            f"Alignment=2,MarginV=60'[vout]"
+        )
+        out_label = "[vout]"
+    else:
+        vf = vf_base
+        out_label = "[vbase]"
+
+    # Watermark filter
+    if watermark:
+        safe_wm = watermark.replace("'", "\'")
+        vf = vf.replace(f"{out_label}", "[vwm]") + (
+            f";[vwm]drawtext=text='{safe_wm}':fontsize=28:fontcolor=white@0.6:"
+            f"x=20:y=20:fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf[vfinal]"
+        )
+        out_label = "[vfinal]"
+
     cmd = [
         "ffmpeg", "-y", "-ss", str(start), "-i", str(input_path),
         "-t", str(dur), "-filter_complex", vf,
-        "-map", "[out]", "-map", "0:a",
+        "-map", out_label, "-map", "0:a",
         "-af", f"afade=t=out:st={fade}:d=2",
         "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
         "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
@@ -484,8 +548,11 @@ def _export_clip(input_path, start, end, out_path) -> bool:
 # ─────────────────────────────────────────────────────────────
 # 9. PIPELINE PRINCIPAL
 # ─────────────────────────────────────────────────────────────
-async def process_video_job(job_id: str, video_path: str, filename: str):
-    job_dir    = OUTPUT_DIR / job_id
+async def process_video_job(job_id: str, video_path: str, filename: str,
+                            settings: dict = None):
+    if settings is None:
+        settings = {}
+    job_dir
     job_dir.mkdir(exist_ok=True)
     loop       = asyncio.get_event_loop()
 
@@ -519,7 +586,7 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
 
         # ÉTAPE 3 — Whisper sampling adaptatif
         segments = await loop.run_in_executor(
-            executor, _transcribe_full, video_path, duration, job_id)
+            executor, _transcribe_full, video_path, duration, job_id, lang)
         seg_count = len(segments)
         await upd(60, f"✍️ {seg_count} segments transcrits. Analyse IA...")
 
@@ -543,20 +610,32 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
 
         await upd(68, f"✅ {len(clips)} clips détectés via {method}. Export TikTok...", status="exporting")
 
-        # ÉTAPE 5 — Export TikTok
+        # ÉTAPE 5 — Export TikTok + sous-titres + watermark
         exported = []
-        for idx, clip in enumerate(clips[:5]):  # max 5 clips
-            out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
-            caption  = _make_caption(clip)
-            tt_score = _tiktok_score(clip, segments, duration)
-            success  = await loop.run_in_executor(
-                executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
+        max_clips = min(nb_clips, len(clips))
+        for idx, clip in enumerate(clips[:max_clips]):
+            clip_name = f"Clip_Elite_{idx+1}"
+            out_path  = job_dir / f"{clip_name}.mp4"
+            srt_path  = str(job_dir / f"{clip_name}.srt") if subtitles else None
+            caption   = _make_caption(clip)
+            tt_score  = _tiktok_score(clip, segments, duration)
+
+            # Génère SRT si sous-titres activés
+            if subtitles and srt_path:
+                await loop.run_in_executor(
+                    executor, _generate_srt, segments, clip["start"], clip["end"], srt_path)
+
+            wm = watermark if watermark else None
+            success = await loop.run_in_executor(
+                executor, _export_clip, video_path, clip["start"], clip["end"],
+                str(out_path), srt_path, wm)
+
             if success:
                 exported.append({
                     **clip,
-                    "filename":    f"Clip_Elite_{idx+1}.mp4",
-                    "url":         f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
-                    "preview_url": f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
+                    "filename":    f"{clip_name}.mp4",
+                    "url":         f"/outputs/{job_id}/{clip_name}.mp4",
+                    "preview_url": f"/outputs/{job_id}/{clip_name}.mp4",
                     "rank":        idx + 1,
                     "caption":     caption,
                     "video_title": title,
@@ -565,11 +644,25 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
                     "grade":       tt_score["grade"],
                     "grade_color": tt_score["grade_color"],
                     "tt_details":  tt_score["details"],
+                    "has_subtitles": subtitles,
                 })
-            pct = 68 + int(((idx+1) / min(len(clips), 5)) * 30)
-            await upd(pct, f"🎬 Export {idx+1}/{min(len(clips), 5)} ({int(clip['duration'])}s)...")
+            pct = 68 + int(((idx+1) / max_clips) * 28)
+            await upd(pct, f"🎬 Export {idx+1}/{max_clips} ({int(clip['duration'])}s)...")
 
+        # Crée ZIP de tous les clips
+        if exported:
+            zip_path = job_dir / "tous_les_clips.zip"
+            def make_zip():
+                with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_STORED) as zf:
+                    for c in exported:
+                        p = job_dir / c["filename"]
+                        if p.exists():
+                            zf.write(p, c["filename"])
+            await loop.run_in_executor(executor, make_zip)
+
+        zip_url = f"/outputs/{job_id}/tous_les_clips.zip" if exported else None
         set_job(job_id, status="done", progress=100, clips=exported,
+                zip_url=zip_url,
                 message=f"🎉 {len(exported)} clips viraux prêts !")
         await notify_ws(job_id)
 
@@ -587,6 +680,14 @@ async def process_video_job(job_id: str, video_path: str, filename: str):
 # ─────────────────────────────────────────────────────────────
 @app.post("/api/upload")
 async def upload_file(background_tasks: BackgroundTasks, request: Request):
+    # Anti-abus: max 5 jobs/heure par IP
+    client_ip = request.client.host if request.client else "unknown"
+    now_ts = time.time()
+    ip_jobs[client_ip] = [t for t in ip_jobs[client_ip] if now_ts - t < 3600]
+    if len(ip_jobs[client_ip]) >= MAX_JOBS_PER_IP:
+        raise HTTPException(429, "Trop de vidéos envoyées. Attends 1h avant de réessayer.")
+    ip_jobs[client_ip].append(now_ts)
+
     job_id   = str(uuid.uuid4())[:8]
     out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
 
@@ -614,7 +715,13 @@ async def upload_file(background_tasks: BackgroundTasks, request: Request):
         "message": "⬆️ Fichier reçu, initialisation...",
         "clips": [], "created_at": time.time(), "video_title": "",
     }
-    background_tasks.add_task(process_video_job, job_id, out_path, filename)
+    settings = {
+        "nb_clips":  int(request.headers.get("x-nb-clips", "5")),
+        "lang":      request.headers.get("x-lang", "auto"),
+        "subtitles": request.headers.get("x-subtitles", "true").lower() == "true",
+        "watermark": request.headers.get("x-watermark", ""),
+    }
+    background_tasks.add_task(process_video_job, job_id, out_path, filename, settings)
     return {"job_id": job_id}
 
 @app.get("/api/status/{job_id}")
