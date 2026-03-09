@@ -12,6 +12,7 @@ import json
 import time
 import asyncio
 import random
+import httpx
 from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI(title="ClipViral API")
@@ -29,20 +30,33 @@ executor = ThreadPoolExecutor(max_workers=2)
 MIN_DURATION = 61
 MAX_DURATION = 180
 MIN_GAP      = 120
+MAX_VIDEO_DURATION = 4200  # 70 min max — limite absolue Render free (disque + RAM + temps)
 
-VIRAL_WORDS = {
-    "incroyable": 1.0, "choquant": 1.0, "unbelievable": 1.0, "shocking": 1.0,
-    "jamais vu": 1.0, "never seen": 1.0, "impossible": 0.9, "insane": 1.0,
-    "fou": 0.8, "crazy": 0.8, "wtf": 1.0, "omg": 1.0, "waouh": 1.0, "wow": 1.0,
-    "incroyablement": 0.9, "literally": 0.7, "honestly": 0.7,
-    "secret": 0.9, "révélation": 1.0, "vérité": 0.8, "truth": 0.8,
-    "personne ne sait": 1.0, "nobody knows": 1.0, "finally": 0.8,
-    "lol": 0.7, "haha": 0.7, "mort de rire": 0.9, "hilarant": 0.9,
-    "attention": 0.8, "stop": 0.7, "wait": 0.8, "attends": 0.8,
-    "meilleur": 0.8, "pire": 0.8, "best": 0.8, "worst": 0.8,
-    "first ever": 1.0, "putain": 0.9, "incredible": 1.0, "amazing": 0.9,
-    "never": 0.7, "jamais": 0.7, "regarde": 0.7, "look": 0.7,
-}
+# Clé API Claude — à définir en variable d'env sur Render
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+# ─────────────────────────────────────────────────────────────
+# CLEANUP AUTO — supprime les clips après 3h
+# ─────────────────────────────────────────────────────────────
+async def cleanup_loop():
+    while True:
+        await asyncio.sleep(600)  # vérifie toutes les 10 min
+        now = time.time()
+        for job_id, job in list(jobs.items()):
+            age = now - job.get("created_at", now)
+            if age > 10800:  # 3h
+                job_dir = OUTPUT_DIR / job_id
+                if job_dir.exists():
+                    for f in job_dir.iterdir():
+                        try: f.unlink()
+                        except: pass
+                    try: job_dir.rmdir()
+                    except: pass
+                jobs.pop(job_id, None)
+
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(cleanup_loop())
 
 # ─────────────────────────────────────────────────────────────
 # WEBSOCKET
@@ -64,70 +78,26 @@ def set_job(job_id: str, **kwargs):
     jobs[job_id].update(kwargs)
 
 # ─────────────────────────────────────────────────────────────
-# 1. TÉLÉCHARGEMENT YOUTUBE
-# ─────────────────────────────────────────────────────────────
-COOKIES_PATH = Path("cookies.txt")
-
-def _download_youtube(url: str, job_id: str) -> str:
-    """
-    Télécharge avec yt-dlp + cookies.txt (100% fiable sur IP datacenter).
-    cookies.txt doit etre a la racine du repo GitHub (format Netscape).
-    """
-    out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
-
-    def try_cmd(cmd):
-        if Path(out_path).exists():
-            try: os.remove(out_path)
-            except: pass
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-        ok = r.returncode == 0 and Path(out_path).exists() and Path(out_path).stat().st_size > 10000
-        return ok, (r.stderr or r.stdout)[:200]
-
-    base = ["yt-dlp", "--no-playlist",
-            "-f", "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-            "--merge-output-format", "mp4", "--no-warnings",
-            "--socket-timeout", "30", "-o", out_path]
-
-    err = "unknown"
-    # 1 — Cookies (solution la plus fiable sur datacenter)
-    if COOKIES_PATH.exists():
-        ok, err = try_cmd(base + ["--cookies", str(COOKIES_PATH), url])
-        if ok: return out_path
-
-    # 2 — Clients alternatifs moins bloques
-    for client in ["android_vr", "android_creator", "android", "ios", "tv_embedded"]:
-        ok, err = try_cmd(base + ["--extractor-args", f"youtube:player_client={client}", url])
-        if ok: return out_path
-
-    raise Exception(f"Telechargement echoue. Ajoute cookies.txt au repo GitHub. Detail: {err[:120]}")
-
-def _get_video_title(url: str) -> str:
-    """Récupère le titre de la vidéo YouTube."""
-    try:
-        cmd = ["yt-dlp", "--get-title", "--no-warnings", url]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        return r.stdout.strip()[:80] if r.returncode == 0 else ""
-    except:
-        return ""
-
-# ─────────────────────────────────────────────────────────────
-# 2. ANALYSE AUDIO
+# 1. DURÉE VIDÉO
 # ─────────────────────────────────────────────────────────────
 def _get_duration(video_path: str) -> float:
-    cmd = ["ffprobe", "-v", "quiet", "-print_format", "json",
-           "-show_format", str(video_path)]
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+           "-of", "default=noprint_wrappers=1:nokey=1", str(video_path)]
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     try:
-        return float(json.loads(r.stdout)["format"]["duration"])
+        return float(r.stdout.strip())
     except:
-        return 300.0
+        return 0.0
 
+# ─────────────────────────────────────────────────────────────
+# 2. ANALYSE AUDIO PAR CHUNKS (anti-RAM crash)
+# ─────────────────────────────────────────────────────────────
 def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
-    """Analyse audio par chunks 5min — max ~50MB RAM, compatible Render free."""
+    """Analyse audio par chunks de 5min — max ~50MB RAM."""
     duration = _get_duration(video_path)
     sr = 16000
     hop = int(segment_duration * sr)
-    chunk_secs = 300  # 5 min par chunk
+    chunk_secs = 300
     times, energies, emotions = [], [], []
 
     offset = 0.0
@@ -156,154 +126,258 @@ def _extract_audio_energy(video_path: str, segment_duration: float = 5.0):
     return np.array(times), np.array(energies), np.array(emotions), duration
 
 # ─────────────────────────────────────────────────────────────
-# 3. DÉTECTION SCÈNES
+# 3. SCÈNES — désactivé (trop lent sur Render free)
 # ─────────────────────────────────────────────────────────────
 def _compress_for_scenes(video_path: str, job_id: str) -> str:
-    """Désactivé — trop lent sur Render free."""
     return str(video_path)
 
 def _extract_scenes(video_path: str) -> dict:
-    """Désactivé — retourne dict vide, score basé sur audio + Whisper uniquement."""
     return {}
 
 # ─────────────────────────────────────────────────────────────
-# 4. ZONES CHAUDES
+# 4. WHISPER — transcription complète par sampling adaptatif
 # ─────────────────────────────────────────────────────────────
-def _find_hot_zones(times, energies, emotions, scene_scores, duration, zone=210):
-    norm_a = energies / energies.max() if energies.max() > 0 else np.ones_like(energies)
-    norm_e = emotions / emotions.max() if emotions.max() > 0 else np.zeros_like(emotions)
-    boost  = np.zeros(len(times))
-    for st, sc in scene_scores.items():
-        idx = np.argmin(np.abs(times - st))
-        if idx < len(boost): boost[idx] += sc
-    if boost.max() > 0: boost /= boost.max()
-
-    combined = norm_a * 0.65 + boost * 0.25 + norm_e * 0.10
-    w = max(5, min(20, int(len(times) / 40)))
-    smoothed = np.convolve(combined, np.ones(w)/w, mode='same')
-
-    blocks = []
-    for b in range(max(1, int(duration / zone))):
-        bs, be = b * zone, min((b+1)*zone, duration)
-        mask = (times >= bs) & (times < be)
-        if mask.any():
-            blocks.append((bs, be, float(smoothed[mask].mean())))
-
-    if not blocks:
-        return [(0, min(zone, duration))], smoothed
-
-    thr = np.percentile([b[2] for b in blocks], 40)
-    hot = sorted([(s, e) for s, e, sc in blocks if sc >= thr], key=lambda x: x[0])
-    return (hot if hot else [(0, min(zone, duration))]), smoothed
-
-# ─────────────────────────────────────────────────────────────
-# 5. WHISPER SUR ZONES CHAUDES
-# ─────────────────────────────────────────────────────────────
-def _transcribe_zones(video_path: str, hot_zones: list, job_id: str) -> list:
+def _transcribe_full(video_path: str, duration: float, job_id: str) -> list:
+    """
+    Sampling adaptatif sur toute la vidéo :
+    - ≤30min : 100% couverture (30s/30s)
+    - 30-60min : 1 sample/60s
+    - >60min : 1 sample/90s
+    Résultat : transcription couvrant toute la vidéo, timestamps exacts.
+    """
     try:
         import whisper
         model = whisper.load_model("tiny")
     except:
         return []
 
+    SAMPLE_DUR = 30
+    if duration <= 1800:
+        interval = 30
+    elif duration <= 3600:
+        interval = 60
+    else:
+        interval = 90
+
+    sample_starts = []
+    t = 0.0
+    while t + SAMPLE_DUR <= duration:
+        sample_starts.append(t)
+        t += interval
+    last = max(0, duration - SAMPLE_DUR)
+    if not sample_starts or sample_starts[-1] < last - 5:
+        sample_starts.append(last)
+
+    total = len(sample_starts)
     all_segs = []
-    for i, (zs, ze) in enumerate(hot_zones):
+
+    for i, zs in enumerate(sample_starts):
+        ze = min(zs + SAMPLE_DUR, duration)
+        pct = 30 + int((i / total) * 30)
         set_job(job_id,
-                progress=38 + int((i / len(hot_zones)) * 17),
-                message=f"🧠 Whisper zone {i+1}/{len(hot_zones)} ({int(zs//60)}min → {int(ze//60)}min)...")
+                progress=pct,
+                message=f"🎙️ Transcription {i+1}/{total} · {int(zs//60)}:{int(zs%60):02d}...")
 
         tmp = str(UPLOAD_DIR / f"z_{job_id}_{i}.wav")
         cmd = ["ffmpeg", "-y", "-ss", str(zs), "-to", str(ze),
                "-i", str(video_path), "-vn", "-ac", "1", "-ar", "16000", "-f", "wav", tmp]
-        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        r = subprocess.run(cmd, capture_output=True, timeout=30)
         if r.returncode != 0 or not Path(tmp).exists():
             continue
         try:
-            res = model.transcribe(tmp, language=None, fp16=False, verbose=False)
+            res = model.transcribe(tmp, language=None, fp16=False, verbose=False,
+                                   condition_on_previous_text=False)
             for seg in res.get("segments", []):
-                text  = seg.get("text", "").strip()
-                score = sum(w for k, w in VIRAL_WORDS.items() if k in text.lower())
-                score += text.count("!")*0.3 + text.count("?")*0.15
-                all_segs.append({
-                    "start": float(seg["start"]) + zs,
-                    "end":   float(seg["end"])   + zs,
-                    "text":  text,
-                    "viral_score": min(score, 1.0),
-                })
+                text = seg.get("text", "").strip()
+                if text:
+                    all_segs.append({
+                        "start": round(float(seg["start"]) + zs, 1),
+                        "end":   round(float(seg["end"])   + zs, 1),
+                        "text":  text,
+                    })
         except Exception as e:
-            print(f"Whisper zone {i} erreur: {e}")
+            print(f"Whisper sample {i} erreur: {e}")
         finally:
             try: os.remove(tmp)
             except: pass
+
     return all_segs
 
 # ─────────────────────────────────────────────────────────────
-# 6. SCORE VIRAL FINAL
+# 5. CLAUDE API — scoring viral intelligent
 # ─────────────────────────────────────────────────────────────
-def _compute_score(times, energies, emotions, scene_scores, whisper_segs, duration):
-    norm_a = energies / energies.max() if energies.max() > 0 else np.ones_like(energies)*0.5
+async def _claude_score_clips(segments: list, duration: float, job_id: str) -> list:
+    """
+    Envoie la transcription complète à Claude qui identifie
+    les meilleurs moments viraux avec timestamps précis.
+    Retourne une liste de clips triés par score décroissant.
+    """
+    if not ANTHROPIC_API_KEY:
+        return []
+
+    # Construit le texte de transcription
+    transcript = "\n".join(
+        f"[{int(s['start']//60)}:{int(s['start']%60):02d}] {s['text']}"
+        for s in segments
+    ) if segments else "Pas de transcription disponible."
+
+    dur_min = int(duration // 60)
+    dur_sec = int(duration % 60)
+
+    prompt = f"""Tu es un expert en création de contenu viral TikTok/Reels.
+Voici la transcription d'une vidéo de {dur_min}min{dur_sec}s.
+
+TRANSCRIPTION :
+{transcript[:12000]}
+
+MISSION : Identifie les 5 meilleurs moments pour créer des clips viraux TikTok.
+Chaque clip doit durer entre 61 et 180 secondes.
+
+Critères de sélection (par ordre d'importance) :
+1. Moments émotionnellement forts (rires, surprises, révélations, chocs)
+2. Accroches puissantes (début de phrase qui donne envie de continuer)
+3. Valeur informationnelle ou divertissante exceptionnelle
+4. Moments avec des réactions authentiques
+5. Punchlines ou citations mémorables
+
+Réponds UNIQUEMENT avec ce JSON valide, rien d'autre :
+{{
+  "clips": [
+    {{
+      "start": 45.0,
+      "end": 165.0,
+      "score": 0.95,
+      "reason": "Révélation choquante avec réaction authentique",
+      "caption": "Ils ont caché ça pendant des années... 😱\\n\\n#viral #fyp #choquant #pourtoi"
+    }}
+  ]
+}}
+
+Règles :
+- start et end sont en secondes (floats)
+- score entre 0.0 et 1.0
+- Minimum 120 secondes entre le début de chaque clip
+- Ne dépasse pas {int(duration)}s pour end
+- caption en français avec emojis et hashtags TikTok"""
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 1500,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+            )
+        data = r.json()
+        text = data["content"][0]["text"].strip()
+        # Nettoie le JSON si Claude ajoute des backticks
+        if "```" in text:
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        result = json.loads(text)
+        clips = result.get("clips", [])
+        # Validation basique
+        valid = []
+        for c in clips:
+            s = float(c.get("start", 0))
+            e = float(c.get("end", 0))
+            if e - s >= MIN_DURATION and e <= duration + 5:
+                e = min(e, duration)
+                valid.append({
+                    "start":       round(s, 1),
+                    "end":         round(e, 1),
+                    "duration":    round(e - s, 1),
+                    "viral_score": float(c.get("score", 0.7)),
+                    "reason":      c.get("reason", ""),
+                    "caption":     c.get("caption", ""),
+                })
+        return sorted(valid, key=lambda x: x["viral_score"], reverse=True)
+    except Exception as e:
+        print(f"Claude API erreur: {e}")
+        return []
+
+# ─────────────────────────────────────────────────────────────
+# 6. FALLBACK — score audio si Claude API indisponible
+# ─────────────────────────────────────────────────────────────
+def _audio_fallback_clips(times, energies, emotions, duration) -> list:
+    """Score 100% audio RMS — fallback si pas de clé API."""
+    norm_a = energies / energies.max() if energies.max() > 0 else np.ones_like(energies)
     norm_e = emotions / emotions.max() if emotions.max() > 0 else np.zeros_like(emotions)
-    boost  = np.zeros(len(times))
-    for st, sc in scene_scores.items():
-        idx = np.argmin(np.abs(times - st))
-        if idx < len(boost): boost[idx] += sc
-    if boost.max() > 0: boost /= boost.max()
+    combined = norm_a * 0.70 + norm_e * 0.30
+    w = max(5, min(20, int(len(times) / 40)))
+    smoothed = np.convolve(combined, np.ones(w)/w, mode='same')
 
-    ws = np.zeros(len(times))
-    for seg in whisper_segs:
-        mask = (times >= seg["start"]) & (times <= seg["end"])
-        if mask.any(): ws[mask] = max(ws[mask].max(), seg["viral_score"])
-
-    combined = (ws*0.40 + norm_a*0.35 + boost*0.15 + norm_e*0.10) \
-        if ws.max() > 0 else (norm_a*0.70 + boost*0.20 + norm_e*0.10)
-
-    w = max(5, min(15, int(len(times)/50)))
-    return np.convolve(combined, np.ones(w)/w, mode='same')
-
-# ─────────────────────────────────────────────────────────────
-# 7. DÉTECTION CLIPS (61s → 180s, tous les passages hype)
-# ─────────────────────────────────────────────────────────────
-def _find_clips(times, smoothed, duration):
-    peak_thr   = np.percentile(smoothed, 80)
-    extend_thr = np.percentile(smoothed, 55)
-    peaks = [i for i in range(1, len(smoothed)-1)
-             if smoothed[i] >= peak_thr
-             and smoothed[i] >= smoothed[i-1]
-             and smoothed[i] >= smoothed[i+1]]
-    peaks.sort(key=lambda i: smoothed[i], reverse=True)
+    sr = np.percentile(smoothed, 75)
+    candidates = np.where(smoothed >= sr)[0]
     clips = []
-    for pi in peaks:
-        pt = times[pi]
-        if any(abs(pt - s) < MIN_GAP for s, e in clips):
+    last_end = -MIN_GAP
+
+    for idx in candidates:
+        t = float(times[idx])
+        if t - last_end < MIN_GAP:
             continue
-        left = pi
-        while left > 0:
-            if times[pi] - times[left-1] > MAX_DURATION/2: break
-            if smoothed[left-1] >= extend_thr: left -= 1
-            else: break
-        right = pi
-        while right < len(times)-1:
-            if times[right+1] - times[left] > MAX_DURATION: break
-            if smoothed[right+1] >= extend_thr: right += 1
-            else:
-                if times[right] - times[left] < MIN_DURATION: right += 1
-                else: break
+        left, right = idx, idx
+        sr2 = len(times)
+        while right < sr2 - 1 and times[right] - times[left] < MIN_DURATION:
+            right += 1
         s = float(times[left])
-        e = float(times[right])
-        if e - s < MIN_DURATION: e = min(s + MIN_DURATION, duration)
-        if e > duration: e = duration; s = max(0, e - MIN_DURATION)
-        if e - s > MAX_DURATION: e = s + MAX_DURATION
+        e = min(float(times[right]), duration)
+        if e - s < MIN_DURATION:
+            e = min(s + MIN_DURATION, duration)
+        if e - s > MAX_DURATION:
+            e = s + MAX_DURATION
         mask = (times >= s) & (times <= e)
         clips.append({
-            "start": round(s,1), "end": round(e,1),
-            "duration": round(e-s,1),
+            "start":       round(s, 1),
+            "end":         round(e, 1),
+            "duration":    round(e - s, 1),
             "viral_score": round(float(smoothed[mask].mean()) if mask.any() else 0.5, 3),
+            "reason":      "Pic d'énergie audio",
+            "caption":     "",
         })
-    clips.sort(key=lambda x: x["start"])
-    return clips
+        last_end = e
+        if len(clips) >= 5:
+            break
+
+    return sorted(clips, key=lambda x: x["viral_score"], reverse=True)
 
 # ─────────────────────────────────────────────────────────────
-# 8. EXPORT TIKTOK
+# 7. GÉNÉRATION CAPTION FALLBACK
+# ─────────────────────────────────────────────────────────────
+def _make_caption(clip) -> str:
+    if clip.get("caption"):
+        return clip["caption"]
+    pct = int(clip.get("viral_score", 0.5) * 100)
+    if pct >= 80:
+        t = random.choice([
+            "POV : tu tombes sur le moment le plus fou 🔥",
+            "Ce moment va te laisser sans voix 😱",
+            "Ils ont pas coupé ça au montage... 👀",
+            "Le moment que tout le monde attendait 💥",
+        ])
+    elif pct >= 60:
+        t = random.choice([
+            "Ce passage mérite vraiment d'être vu 👇",
+            "Le meilleur moment de la vidéo 🎯",
+            "Regarde jusqu'à la fin 🔥",
+        ])
+    else:
+        t = random.choice([
+            "Moment clé à ne pas rater 👇",
+            "À voir absolument 🎬",
+        ])
+    return f"{t}\n\n#viral #tiktok #fyp #pourtoi"
+
+# ─────────────────────────────────────────────────────────────
+# 8. EXPORT TIKTOK 1080×1920
 # ─────────────────────────────────────────────────────────────
 def _export_clip(input_path, start, end, out_path) -> bool:
     dur  = end - start
@@ -326,46 +400,12 @@ def _export_clip(input_path, start, end, out_path) -> bool:
     r = subprocess.run(cmd, capture_output=True, timeout=600)
     return r.returncode == 0
 
-def _make_caption(clip, whisper_segs):
-    texts = [s["text"] for s in whisper_segs
-             if s["start"] >= clip["start"] and s["end"] <= clip["end"]]
-    viral_found = []
-    for t in texts:
-        for w in VIRAL_WORDS:
-            if w in t.lower() and w not in viral_found:
-                viral_found.append(w)
-    pct = int(clip["viral_score"] * 100)
-    if pct >= 80:
-        t = random.choice([
-            "POV : tu tombes sur le moment le plus fou 🔥",
-            "Ce moment va te laisser sans voix 😱",
-            "Ils ont pas coupé ça au montage... 👀",
-            "Le moment que tout le monde attendait 💥",
-        ])
-    elif pct >= 60:
-        t = random.choice([
-            "Ce passage mérite vraiment d'être vu 👇",
-            "Le meilleur moment de la vidéo 🎯",
-            "Regarde jusqu'à la fin 🔥",
-        ])
-    else:
-        t = random.choice([
-            "Moment clé à ne pas rater 👇",
-            "À voir absolument 🎬",
-        ])
-    tags = "#viral #tiktok #fyp #pourtoi"
-    if viral_found:
-        tags += " #" + viral_found[0].replace(" ", "")
-    return f"{t}\n\n{tags}"
-
 # ─────────────────────────────────────────────────────────────
-# 9. PIPELINE PRINCIPAL ASYNC
+# 9. PIPELINE PRINCIPAL
 # ─────────────────────────────────────────────────────────────
-async def process_url_job(job_id: str, url: str):
+async def process_video_job(job_id: str, video_path: str, filename: str):
     job_dir    = OUTPUT_DIR / job_id
     job_dir.mkdir(exist_ok=True)
-    video_path = None
-    scene_path = None
     loop       = asyncio.get_event_loop()
 
     async def upd(progress, message, **kw):
@@ -373,137 +413,60 @@ async def process_url_job(job_id: str, url: str):
         await notify_ws(job_id)
 
     try:
-        # ÉTAPE 1 — Titre YouTube
-        await upd(2, "🔍 Récupération des infos de la vidéo...")
-        title = await loop.run_in_executor(executor, _get_video_title, url)
-        if title:
-            set_job(job_id, video_title=title)
-
-        # ÉTAPE 2 — Téléchargement
-        await upd(5, f"⬇️ Téléchargement en cours... {'«' + title + '»' if title else ''}")
-        video_path = await loop.run_in_executor(executor, _download_youtube, url, job_id)
-        size_mb = int(Path(video_path).stat().st_size / 1024 / 1024)
-        await upd(18, f"✅ Vidéo téléchargée ({size_mb} MB). Analyse audio...")
-
-        # ÉTAPE 3 — Audio
-        times, energies, emotions, duration = await loop.run_in_executor(
-            executor, _extract_audio_energy, video_path, 5.0)
-        mins = int(duration // 60); secs = int(duration % 60)
-        await upd(28, f"🎵 Audio analysé · {mins}min {secs}s. Détection des scènes...")
-
-        # ÉTAPE 4 — Scènes
-        scene_path = await loop.run_in_executor(executor, _compress_for_scenes, video_path, job_id)
-        scene_scores = await loop.run_in_executor(executor, _extract_scenes, scene_path)
-        await upd(35, "🔥 Identification des passages hype...")
-
-        # ÉTAPE 5 — Zones chaudes
-        hot_zones, _ = await loop.run_in_executor(
-            executor, _find_hot_zones, times, energies, emotions, scene_scores, duration, 210)
-        total_min = round(sum(e - s for s, e in hot_zones) / 60, 1)
-        await upd(38, f"✅ {len(hot_zones)} zones hype · {total_min} min → Whisper AI...")
-
-        # ÉTAPE 6 — Whisper
-        whisper_segs = await loop.run_in_executor(
-            executor, _transcribe_zones, video_path, hot_zones, job_id)
-        await upd(56, f"✍️ {len(whisper_segs)} segments analysés. Score viral...")
-
-        # ÉTAPE 7 — Score final
-        smoothed = await loop.run_in_executor(
-            executor, _compute_score, times, energies, emotions,
-            scene_scores, whisper_segs, duration)
-        clips = await loop.run_in_executor(executor, _find_clips, times, smoothed, duration)
-
-        if not clips:
-            await upd(100, "❌ Aucun passage hype détecté.", status="error")
-            return
-
-        await upd(60, f"✅ {len(clips)} passages hype ! Export TikTok 1080×1920...", status="exporting")
-
-        # ÉTAPE 8 — Export
-        exported = []
-        for idx, clip in enumerate(clips):
-            out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
-            caption  = _make_caption(clip, whisper_segs)
-            success  = await loop.run_in_executor(
-                executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
-            if success:
-                exported.append({
-                    **clip,
-                    "filename":    f"Clip_Elite_{idx+1}.mp4",
-                    "url":         f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
-                    "preview_url": f"/outputs/{job_id}/Clip_Elite_{idx+1}.mp4",
-                    "rank":        idx + 1,
-                    "caption":     caption,
-                    "video_title": title,
-                })
-            pct = 60 + int(((idx+1) / len(clips)) * 38)
-            await upd(pct, f"🎬 Export {idx+1}/{len(clips)} ({int(clip['duration'])}s)...")
-
-        set_job(job_id, status="done", progress=100, clips=exported,
-                message=f"🎉 {len(exported)} clips viraux prêts à poster !")
-        await notify_ws(job_id)
-
-    except Exception as e:
-        set_job(job_id, status="error", message=f"❌ {str(e)}")
-        await notify_ws(job_id)
-    finally:
-        for f in [video_path, scene_path]:
-            if f:
-                try: os.remove(f)
-                except: pass
-
-# ─────────────────────────────────────────────────────────────
-# PIPELINE UPLOAD FICHIER (identique à URL mais sans download)
-# ─────────────────────────────────────────────────────────────
-async def process_file_job(job_id: str, video_path: str, filename: str):
-    job_dir    = OUTPUT_DIR / job_id
-    job_dir.mkdir(exist_ok=True)
-    scene_path = None
-    loop       = asyncio.get_event_loop()
-
-    async def upd(progress, message, **kw):
-        set_job(job_id, progress=progress, message=message, **kw)
-        await notify_ws(job_id)
-
-    try:
+        # ÉTAPE 1 — Vérification durée
         size_mb = int(Path(video_path).stat().st_size / 1024 / 1024)
         title = Path(filename).stem[:60]
         set_job(job_id, video_title=title)
-        await upd(18, f"✅ Vidéo reçue ({size_mb} MB). Analyse audio...")
+        await upd(5, f"✅ Vidéo reçue ({size_mb} MB). Vérification...")
 
+        duration = await loop.run_in_executor(executor, _get_duration, video_path)
+        if duration > MAX_VIDEO_DURATION:
+            raise Exception(
+    f"Vidéo trop longue ({int(duration//60)}min {int(duration%60)}s). "
+    f"Maximum 70 min sur ce serveur. "
+    f"Découpe la vidéo en morceaux de 60min avec VLC (gratuit) puis envoie chaque morceau séparément."
+)
+
+        mins = int(duration // 60)
+        secs = int(duration % 60)
+        await upd(10, f"⏱️ Durée : {mins}min {secs}s. Analyse audio...")
+
+        # ÉTAPE 2 — Audio RMS (toute la vidéo, par chunks)
         times, energies, emotions, duration = await loop.run_in_executor(
             executor, _extract_audio_energy, video_path, 5.0)
-        mins = int(duration // 60); secs = int(duration % 60)
-        await upd(28, f"🎵 Audio analysé · {mins}min {secs}s. Détection des scènes...")
+        await upd(25, f"🎵 Audio analysé sur {mins}min. Transcription Whisper...")
 
-        scene_path = await loop.run_in_executor(executor, _compress_for_scenes, video_path, job_id)
-        scene_scores = await loop.run_in_executor(executor, _extract_scenes, scene_path)
-        await upd(35, "🔥 Identification des passages hype...")
+        # ÉTAPE 3 — Whisper sampling adaptatif
+        segments = await loop.run_in_executor(
+            executor, _transcribe_full, video_path, duration, job_id)
+        seg_count = len(segments)
+        await upd(60, f"✍️ {seg_count} segments transcrits. Analyse IA...")
 
-        hot_zones, _ = await loop.run_in_executor(
-            executor, _find_hot_zones, times, energies, emotions, scene_scores, duration, 210)
-        total_min = round(sum(e - s for s, e in hot_zones) / 60, 1)
-        await upd(38, f"✅ {len(hot_zones)} zones hype · {total_min} min → Whisper AI...")
+        # ÉTAPE 4 — Claude API scoring (meilleur) ou fallback audio
+        if ANTHROPIC_API_KEY:
+            await upd(62, "🧠 Claude analyse les meilleurs moments...")
+            clips = await _claude_score_clips(segments, duration, job_id)
+            method = "Claude AI"
+        else:
+            clips = []
+            method = "Audio RMS"
 
-        whisper_segs = await loop.run_in_executor(
-            executor, _transcribe_zones, video_path, hot_zones, job_id)
-        await upd(56, f"✍️ {len(whisper_segs)} segments analysés. Score viral...")
-
-        smoothed = await loop.run_in_executor(
-            executor, _compute_score, times, energies, emotions,
-            scene_scores, whisper_segs, duration)
-        clips = await loop.run_in_executor(executor, _find_clips, times, smoothed, duration)
+        # Fallback si Claude renvoie rien ou pas de clé
+        if not clips:
+            await upd(65, f"⚡ Score audio ({method})...")
+            clips = await loop.run_in_executor(
+                executor, _audio_fallback_clips, times, energies, emotions, duration)
 
         if not clips:
-            await upd(100, "❌ Aucun passage hype détecté.", status="error")
-            return
+            raise Exception("Aucun passage hype détecté. Essaie avec une vidéo plus longue.")
 
-        await upd(60, f"✅ {len(clips)} passages hype ! Export TikTok 1080×1920...", status="exporting")
+        await upd(68, f"✅ {len(clips)} clips détectés via {method}. Export TikTok...", status="exporting")
 
+        # ÉTAPE 5 — Export TikTok
         exported = []
-        for idx, clip in enumerate(clips):
+        for idx, clip in enumerate(clips[:5]):  # max 5 clips
             out_path = job_dir / f"Clip_Elite_{idx+1}.mp4"
-            caption  = _make_caption(clip, whisper_segs)
+            caption  = _make_caption(clip)
             success  = await loop.run_in_executor(
                 executor, _export_clip, video_path, clip["start"], clip["end"], str(out_path))
             if success:
@@ -515,67 +478,44 @@ async def process_file_job(job_id: str, video_path: str, filename: str):
                     "rank":        idx + 1,
                     "caption":     caption,
                     "video_title": title,
+                    "reason":      clip.get("reason", ""),
                 })
-            pct = 60 + int(((idx+1) / len(clips)) * 38)
-            await upd(pct, f"🎬 Export {idx+1}/{len(clips)} ({int(clip['duration'])}s)...")
+            pct = 68 + int(((idx+1) / min(len(clips), 5)) * 30)
+            await upd(pct, f"🎬 Export {idx+1}/{min(len(clips), 5)} ({int(clip['duration'])}s)...")
 
         set_job(job_id, status="done", progress=100, clips=exported,
-                message=f"🎉 {len(exported)} clips viraux prêts à poster !")
+                message=f"🎉 {len(exported)} clips viraux prêts !")
         await notify_ws(job_id)
 
     except Exception as e:
         set_job(job_id, status="error", message=f"❌ {str(e)}")
         await notify_ws(job_id)
     finally:
-        for f in [video_path, scene_path]:
-            if f:
-                try: os.remove(f)
-                except: pass
+        try:
+            if Path(video_path).exists():
+                os.remove(video_path)
+        except: pass
 
 # ─────────────────────────────────────────────────────────────
 # API ROUTES
 # ─────────────────────────────────────────────────────────────
-class URLRequest(BaseModel):
-    url: str
-
-@app.post("/api/analyze")
-async def analyze_url(body: URLRequest, background_tasks: BackgroundTasks):
-    url = body.url.strip()
-    if not url.startswith("http"):
-        raise HTTPException(400, "URL invalide.")
-    if not any(d in url for d in ["youtube.com", "youtu.be", "youtube"]):
-        raise HTTPException(400, "Seules les URLs YouTube sont supportées pour l'instant.")
-
-    job_id = str(uuid.uuid4())[:8]
-    jobs[job_id] = {
-        "status": "queued", "progress": 0,
-        "message": "⏳ Initialisation...",
-        "clips": [], "created_at": time.time(),
-        "video_title": "",
-    }
-    background_tasks.add_task(process_url_job, job_id, url)
-    return {"job_id": job_id}
-
 @app.post("/api/upload")
 async def upload_file(background_tasks: BackgroundTasks, request: Request):
-    """Upload direct d'un fichier vidéo — pas besoin de YouTube."""
-    job_id = str(uuid.uuid4())[:8]
+    job_id   = str(uuid.uuid4())[:8]
     out_path = str(UPLOAD_DIR / f"{job_id}.mp4")
 
-    # Récupère le nom original depuis les headers
     content_disp = request.headers.get("content-disposition", "")
     filename = "video.mp4"
     if "filename=" in content_disp:
         try: filename = content_disp.split("filename=")[1].strip().strip('"')
         except: pass
 
-    # Stream l'upload directement sur disque (pas de limite mémoire)
     size = 0
     with open(out_path, "wb") as f:
         async for chunk in request.stream():
             f.write(chunk)
             size += len(chunk)
-            if size > 4 * 1024 * 1024 * 1024:  # 4GB max
+            if size > 4 * 1024 * 1024 * 1024:
                 os.remove(out_path)
                 raise HTTPException(413, "Fichier trop volumineux (max 4GB).")
 
@@ -584,12 +524,11 @@ async def upload_file(background_tasks: BackgroundTasks, request: Request):
         raise HTTPException(400, "Fichier invalide ou vide.")
 
     jobs[job_id] = {
-        "status": "queued", "progress": 5,
-        "message": "⬆️ Fichier reçu, analyse en cours...",
-        "clips": [], "created_at": time.time(),
-        "video_title": "",
+        "status": "queued", "progress": 2,
+        "message": "⬆️ Fichier reçu, initialisation...",
+        "clips": [], "created_at": time.time(), "video_title": "",
     }
-    background_tasks.add_task(process_file_job, job_id, out_path, filename)
+    background_tasks.add_task(process_video_job, job_id, out_path, filename)
     return {"job_id": job_id}
 
 @app.get("/api/status/{job_id}")
@@ -597,6 +536,21 @@ async def get_status(job_id: str):
     if job_id not in jobs:
         raise HTTPException(404, "Job introuvable.")
     return jobs[job_id]
+
+@app.get("/api/jobs")
+async def list_jobs():
+    """Retourne tous les jobs terminés pour le panneau fichiers."""
+    result = []
+    for jid, job in jobs.items():
+        if job.get("status") == "done" and job.get("clips"):
+            result.append({
+                "job_id":      jid,
+                "video_title": job.get("video_title", "Vidéo"),
+                "clips":       job.get("clips", []),
+                "created_at":  job.get("created_at", 0),
+            })
+    result.sort(key=lambda x: x["created_at"], reverse=True)
+    return result
 
 @app.websocket("/ws/{job_id}")
 async def ws_endpoint(websocket: WebSocket, job_id: str):
