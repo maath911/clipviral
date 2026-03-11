@@ -532,9 +532,25 @@ function startPolling(id){
   pollTimer=setInterval(async()=>{
     try{
       const r=await fetch('/api/status/'+id,{cache:'no-store'});
-      if(!r.ok){fails++;if(fails===6)showWarn('⏳ Serveur chargé — analyse en cours...');if(fails>24){stopAll();showErr('Connexion perdue. Réessaie.');showUploadCard();resetBtn();}return;}
-      if(fails>=6)showWarn('');fails=0;applyUpdate(await r.json());
-    }catch{fails++;if(fails===6)showWarn('⏳ Chargement...');if(fails>24){stopAll();showErr('Connexion perdue.');showUploadCard();resetBtn();}}
+      if(!r.ok){
+        fails++;
+        // Avertissement doux à 30s (6×5s)
+        if(fails===6) showWarn('⏳ Serveur chargé — analyse audio en cours, patiente...');
+        // Avertissement renforcé à 2min (24×5s)
+        if(fails===24) showWarn('⏳ Toujours en cours... Render Free peut être lent sur les vidéos longues.');
+        // Erreur fatale seulement à 5min (60×5s) sans AUCUNE réponse
+        if(fails>60){stopAll();showErr('Connexion perdue après 5min. Le serveur a peut-être redémarré. Réessaie.');showUploadCard();resetBtn();}
+        return;
+      }
+      // Réponse reçue → reset le compteur d'échecs
+      if(fails>0){fails=0;showWarn('');}
+      applyUpdate(await r.json());
+    }catch{
+      fails++;
+      if(fails===6)  showWarn('⏳ Serveur occupé — analyse en cours...');
+      if(fails===24) showWarn('⏳ Toujours en cours... patience (vidéo longue ou CPU chargé).');
+      if(fails>60){stopAll();showErr('Connexion perdue après 5min. Réessaie.');showUploadCard();resetBtn();}
+    }
   },5000);
 }
 
