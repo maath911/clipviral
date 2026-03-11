@@ -34,9 +34,9 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # ── Config FREE — conservateur pour Render Free 512MB ───────────────
 MAX_VIDEO_DURATION = 3600   # 60 min (même limite que la version PRO)
 MAX_FILE_SIZE      = 2 * 1024 * 1024 * 1024  # 2 GB
-CLIP_MIN  = 35
-CLIP_MAX  = 90
-CLIP_GAP  = 60
+CLIP_MIN  = 61
+CLIP_MAX  = 180  # 61-180s comme demandé
+CLIP_GAP  = 90
 
 jobs: dict           = {}
 ws_connections: dict = defaultdict(list)
@@ -180,7 +180,7 @@ def _extract_audio_energy(video_path: str, seg_dur: float = 3.0, duration: float
                 "-ss", str(chunk_start), "-i", str(video_path),
                 "-t", str(chunk_dur),
                 "-vn","-ac","1","-ar","22050","-f","f32le","-"
-            ], capture_output=True, timeout=120)
+            ], capture_output=True, timeout=90)
         except subprocess.TimeoutExpired:
             _neutral(chunk_start, n)
             continue
@@ -337,11 +337,16 @@ def _export_clip(input_path, start, end, out_path, watermark=None, has_audio=Tru
     if dur <= 0: return False
     fade = max(0.0, dur-2.0)
 
-    # Filtre rapide pour Render Free (CPU limité):
-    # pad fond noir au lieu de boxblur → 5x plus rapide, même format TikTok 1080×1920
+    # ── Optimisé Render Free: 720×1280 + threads 1 + CRF 28 ──────────
+    # 720p au lieu de 1080p → 2.25x moins de pixels → 2x plus rapide à encoder
+    # TikTok re-encode de toute façon, 720p est indiscernable après compression
+    # -threads 1 → stable sur vCPU partagé Render Free
+    # CRF 28 → qualité parfaite pour TikTok (CRF 23 est du gaspillage CPU)
+    W, H = 720, 1280
+
     simple_vf = (
-        f"scale=1080:1920:force_original_aspect_ratio=decrease,"
-        f"pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,"
+        f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
+        f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:black,"
         f"fade=t=out:st={fade}:d=2"
     )
 
@@ -349,24 +354,24 @@ def _export_clip(input_path, start, end, out_path, watermark=None, has_audio=Tru
         safe_wm = (watermark.replace("\\","\\\\").replace("'","\\'")
                             .replace(":","\\:").replace("%","\\%"))
         full_vf = (
-            f"[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
-            f"pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,"
+            f"[0:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
+            f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:black,"
             f"fade=t=out:st={fade}:d=2[vbase];"
-            f"[vbase]drawtext=text='{safe_wm}':fontsize=26:fontcolor=white@0.65:x=18:y=18[vout]"
+            f"[vbase]drawtext=text='{safe_wm}':fontsize=20:fontcolor=white@0.65:x=12:y=12[vout]"
         )
         cmd = ["ffmpeg","-y","-ss",str(start),"-i",str(input_path),"-t",str(dur),
-               "-filter_complex",full_vf,"-map","[vout]"]
+               "-filter_complex",full_vf,"-map","[vout]","-threads","1"]
     else:
         cmd = ["ffmpeg","-y","-ss",str(start),"-i",str(input_path),"-t",str(dur),
-               "-vf",simple_vf,"-map","0:v"]
+               "-vf",simple_vf,"-map","0:v","-threads","1"]
 
     if has_audio:
         cmd += ["-map","0:a?","-af",f"afade=t=out:st={fade}:d=2","-c:a","aac","-b:a","128k"]
-    cmd += ["-c:v","libx264","-preset","ultrafast","-crf","24",
+    cmd += ["-c:v","libx264","-preset","ultrafast","-crf","28",
             "-pix_fmt","yuv420p","-movflags","+faststart",str(out_path)]
     try:
-        # 3min max par clip sur Render Free
-        r = subprocess.run(cmd, capture_output=True, timeout=180)
+        # 4min max par clip — si ça dépasse, le clip est skippé (pas de crash)
+        r = subprocess.run(cmd, capture_output=True, timeout=240)
         return r.returncode == 0
     except subprocess.TimeoutExpired:
         return False
