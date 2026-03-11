@@ -358,7 +358,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));
       <div class="limit-box">
         <span class="limit-ico">ℹ️</span>
         <div class="limit-txt">
-          <strong>Limites version gratuite :</strong> max 30min · détection audio uniquement (pas de transcription) · pas de sous-titres automatiques · watermark optionnel.
+          <strong>Limites version gratuite :</strong> max 60min · détection audio uniquement (pas de transcription) · pas de sous-titres automatiques · watermark optionnel.
           Pour sous-titres, hook IA et analyse sémantique → <strong>version PRO avec Claude</strong>.
         </div>
       </div>
@@ -374,7 +374,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));
           <span class="d-ico">📁</span>
           <div class="d-t">Glisse ta vidéo ici ou clique</div>
           <div class="d-s">MP4, MOV, MKV, AVI, WEBM</div>
-          <div class="d-f">Maximum 30 minutes · 360p recommandé<br/>Détection automatique des moments forts par analyse audio</div>
+          <div class="d-f">Maximum <strong>60 minutes</strong> · MP4 recommandé<br/>Détection automatique des moments forts par analyse audio pure</div>
         </div>
         <div class="fp" id="fp">
           <span class="fp-ico">🎥</span>
@@ -452,7 +452,7 @@ h1 em{font-style:normal;background:linear-gradient(135deg,var(--a),var(--a2));
 const GRADE_COLOR={A:'#00dfa2',B:'#5b8dee',C:'#f5c842',D:'#ff8c00',F:'#ff2d55'};
 const GRADE_LABEL={A:'Moment viral 🔥',B:'Très bon clip',C:'Clip correct',D:'Potentiel faible',F:'À éviter'};
 const STEPS=[[1,0,10],[2,10,18],[3,18,55],[4,55,65],[5,65,100]];
-const JOB_TIMEOUT=22*60*1000; // 22min max (30min vidéo × ~0.7)
+const JOB_TIMEOUT=38*60*1000; // 38min max (60min vidéo: ~1min audio + ~5min export + marge)
 
 let jid=null,ws=null,pollTimer=null,tickTimer=null,t0=null,jobTH=null;
 let selFile=null,sbOpen=true,curView='mob';
@@ -505,14 +505,14 @@ function startUp(){
   xhr.onload=()=>{$('upr').classList.remove('show');if(xhr.status===200){let r;try{r=JSON.parse(xhr.responseText);}catch{showErr('Réponse invalide.');resetBtn();return;}startJob(r.job_id);}else{let m='Erreur upload.';try{m=JSON.parse(xhr.responseText).detail||m;}catch{}showErr(m);resetBtn();}};
   xhr.onerror=()=>{showErr('Erreur réseau.');resetBtn();$('upr').classList.remove('show');};
   xhr.ontimeout=()=>{showErr('Upload trop lent.');resetBtn();};
-  xhr.timeout=15*60*1000;
+  xhr.timeout=25*60*1000; // 25min pour uploader même les grosses vidéos
   xhr.send(selFile);
 }
 function resetBtn(){$('bg').disabled=false;}
 
 function startJob(id){
   jid=id;t0=Date.now();
-  jobTH=setTimeout(()=>{if(jid!==id)return;stopAll();showErr('Traitement trop long. Réessaie avec une vidéo plus courte.');showUploadCard();resetBtn();},JOB_TIMEOUT);
+  jobTH=setTimeout(()=>{if(jid!==id)return;stopAll();showErr('Traitement trop long (38min dépassées). Essaie une vidéo plus courte ou attendis que le serveur soit moins chargé.');showUploadCard();resetBtn();},JOB_TIMEOUT);
   showUploadCard(false);$('prog').style.display='block';$('res').style.display='none';
   tickTimer=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('tmr').textContent=`⏱ ${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;},1000);
   connectWS(id);
