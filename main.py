@@ -32,7 +32,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ── Config FREE — conservateur pour Render Free 512MB ───────────────
-MAX_VIDEO_DURATION = 1800   # 30 min max (plus safe que 60min)
+MAX_VIDEO_DURATION = 3600   # 60 min (même limite que la version PRO)
 MAX_FILE_SIZE      = 2 * 1024 * 1024 * 1024  # 2 GB
 CLIP_MIN  = 35
 CLIP_MAX  = 90
@@ -130,10 +130,10 @@ def _ensure_h264(video_path: str, job_id: str, known_duration: float = None) -> 
         return video_path
 
     dur = known_duration or 0
-    if dur > 600:   # > 10min en codec exotique → refus clair
+    if dur > 1200:  # > 20min en codec exotique → trop lent à ré-encoder
         raise ValueError(
-            f"Codec {codec.upper()} non supporté en version gratuite pour les vidéos > 10min. "
-            f"Convertis en MP4 H264 avec HandBrake (gratuit).")
+            f"Ta vidéo utilise le codec {codec.upper()} et dure {int(dur//60)}min. "
+            f"Convertis-la en MP4 H264 avec HandBrake (gratuit) avant de l'uploader.")
 
     out = str(Path(video_path).parent / f"{job_id}_h264.mp4")
     try:
@@ -239,7 +239,8 @@ def _auto_detect_clips(times, energies, emotions, duration) -> list:
     if   duration <= 600:  max_clips = 2
     elif duration <= 900:  max_clips = 3
     elif duration <= 1800: max_clips = 5
-    else:                  max_clips = 7
+    elif duration <= 3600: max_clips = 8
+    else:                  max_clips = 10
 
     peaks = [i for i in range(1, len(smoothed)-1)
              if smoothed[i] >= threshold
@@ -407,7 +408,10 @@ async def process_video_job(job_id, video_path, filename, settings=None):
                          await loop.run_in_executor(executor, _get_duration, video_path))
 
         if duration > MAX_VIDEO_DURATION:
-            raise ValueError(f"Vidéo trop longue ({int(duration//60)}min). Max 30min en version gratuite.")
+            m = int(duration//60)
+            s = int(duration%60)
+            raise ValueError(
+                f"Vidéo trop longue : {m}min {s}s détectées. Maximum 60min. Découpe avec VLC puis réenvoie.")
 
         mins = int(duration//60)
         await upd(10, f"⏱️ Durée : {mins}min. Vérification format...")
@@ -523,7 +527,8 @@ async def upload_file(background_tasks: BackgroundTasks, request: Request):
 
     written = 0
     first_chunk = True
-    VALID_MP4 = (b"ftyp",b"free",b"mdat",b"moov",b"wide")
+    # Boxes MP4 valides en position 4-8 — liste élargie pour couvrir tous les encodeurs
+    VALID_MP4 = (b"ftyp",b"free",b"mdat",b"moov",b"wide",b"skip",b"pnot",b"uuid",b"isom",b"mp41",b"mp42",b"avc1",b"MSNV",b"M4V ",b"M4A ",b"f4v ",b"qt  ")
 
     try:
         with open(tmp_path,"wb") as f:
@@ -539,12 +544,15 @@ async def upload_file(background_tasks: BackgroundTasks, request: Request):
                     )
                     if not is_video:
                         ct = request.headers.get("content-type","")
-                        if not (ct.startswith("video/") or ct in ("application/octet-stream","")):
-                            raise HTTPException(400,"Fichier non reconnu.")
+                        # Accepte si: magic bytes OK OU content-type video/x OU octet-stream OU vide
+                        # ffprobe fera la vraie vérification post-upload
+                        if not (ct.startswith("video/") or ct.startswith("application/") or ct == ""):
+                            raise HTTPException(400,
+                                "Ce fichier ne semble pas être une vidéo. "                                "Formats acceptés : MP4, MOV, MKV, AVI, WEBM.")
                 f.write(chunk)
                 written += len(chunk)
                 if written > MAX_FILE_SIZE:
-                    raise HTTPException(413,"Fichier trop lourd (max 2 GB).")
+                    raise HTTPException(413,f"Fichier trop lourd (max 2 GB). Ton fichier dépasse cette limite.")
     except HTTPException:
         try: os.remove(tmp_path)
         except: pass
