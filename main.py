@@ -421,8 +421,32 @@ async def process_video_job(job_id, video_path, filename, settings=None):
 
         # Étape principale: analyse audio pure (pas de Whisper → jamais de freeze)
         await upd(22, "🎵 Analyse de l'énergie audio en cours...")
-        times, energies, emotions, duration = await loop.run_in_executor(
-            executor, _extract_audio_energy, video_path, 3.0, duration)
+
+        # Heartbeat asyncio: envoie une update toutes les 25s pendant l'analyse audio
+        # pour que le client sache que le job est vivant (l'analyse peut prendre 1-5min)
+        audio_done = asyncio.Event()
+        async def _audio_heartbeat():
+            icons = ["🎵","🎶","🎤","🔊","🎵"]
+            i = 0
+            pct = 22
+            while not audio_done.is_set():
+                await asyncio.sleep(25)
+                if audio_done.is_set(): break
+                pct = min(54, pct + 4)  # monte doucement de 22 vers 54
+                ico = icons[i % len(icons)]
+                await upd(pct, f"{ico} Analyse audio en cours... ({pct}%)")
+                i += 1
+        hb_task = asyncio.create_task(_audio_heartbeat())
+
+        try:
+            times, energies, emotions, duration = await loop.run_in_executor(
+                executor, _extract_audio_energy, video_path, 3.0, duration)
+        finally:
+            audio_done.set()
+            hb_task.cancel()
+            try: await hb_task
+            except asyncio.CancelledError: pass
+
         await upd(55, f"✅ Audio analysé ({mins}min). Détection des moments forts...")
 
         clips = await loop.run_in_executor(
