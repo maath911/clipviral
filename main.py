@@ -337,32 +337,39 @@ def _export_clip(input_path, start, end, out_path, watermark=None, has_audio=Tru
     if dur <= 0: return False
     fade = max(0.0, dur-2.0)
 
-    filters = [
-        "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,"
-        f"crop=1080:1920,boxblur=20:20,eq=brightness=-0.4[bg]",
-        "[0:v]scale=1080:-2[fg]",
-        f"[bg][fg]overlay=(W-w)/2:(H-h)/2,fade=t=out:st={fade}:d=2[v0]",
-    ]
-    current = "[v0]"
-    idx = 1
+    # Filtre rapide pour Render Free (CPU limité):
+    # pad fond noir au lieu de boxblur → 5x plus rapide, même format TikTok 1080×1920
+    simple_vf = (
+        f"scale=1080:1920:force_original_aspect_ratio=decrease,"
+        f"pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,"
+        f"fade=t=out:st={fade}:d=2"
+    )
 
     if watermark:
         safe_wm = (watermark.replace("\\","\\\\").replace("'","\\'")
                             .replace(":","\\:").replace("%","\\%"))
-        nxt = f"[v{idx}]"
-        filters.append(f"{current}drawtext=text='{safe_wm}':fontsize=26:fontcolor=white@0.65:x=18:y=18{nxt}")
-        current = nxt
+        full_vf = (
+            f"[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
+            f"pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,"
+            f"fade=t=out:st={fade}:d=2[vbase];"
+            f"[vbase]drawtext=text='{safe_wm}':fontsize=26:fontcolor=white@0.65:x=18:y=18[vout]"
+        )
+        cmd = ["ffmpeg","-y","-ss",str(start),"-i",str(input_path),"-t",str(dur),
+               "-filter_complex",full_vf,"-map","[vout]"]
+    else:
+        cmd = ["ffmpeg","-y","-ss",str(start),"-i",str(input_path),"-t",str(dur),
+               "-vf",simple_vf,"-map","0:v"]
 
-    vf  = ";".join(filters)
-    cmd = ["ffmpeg","-y","-ss",str(start),"-i",str(input_path),"-t",str(dur),
-           "-filter_complex",vf,"-map",current]
     if has_audio:
-        cmd += ["-map","0:a?","-af",f"afade=t=out:st={fade}:d=2","-c:a","aac","-b:a","192k"]
-    cmd += ["-c:v","libx264","-preset","ultrafast","-crf","23",
+        cmd += ["-map","0:a?","-af",f"afade=t=out:st={fade}:d=2","-c:a","aac","-b:a","128k"]
+    cmd += ["-c:v","libx264","-preset","ultrafast","-crf","24",
             "-pix_fmt","yuv420p","-movflags","+faststart",str(out_path)]
     try:
-        r = subprocess.run(cmd, capture_output=True, timeout=600)
+        # 3min max par clip sur Render Free
+        r = subprocess.run(cmd, capture_output=True, timeout=180)
         return r.returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
     except Exception:
         return False
 
@@ -462,9 +469,29 @@ async def process_video_job(job_id, video_path, filename, settings=None):
         for i, clip in enumerate(clips):
             name     = f"Clip_Elite_{i+1}"
             out_path = str(job_dir / f"{name}.mp4")
-            ok = await loop.run_in_executor(
-                executor, _export_clip, video_path,
-                clip["start"], clip["end"], out_path, watermark or None, has_audio)
+            dur_s    = int(clip["duration"])
+            pct_base = 65 + int(i/len(clips)*32)
+
+            # Heartbeat pendant l'export du clip (max 3min sur Render Free)
+            export_done = asyncio.Event()
+            async def _export_heartbeat(pb=pct_base, n=i+1, tot=len(clips), ds=dur_s):
+                secs = 0
+                while not export_done.is_set():
+                    await asyncio.sleep(12)
+                    if export_done.is_set(): break
+                    secs += 12
+                    await upd(pb, f"🎬 Export clip {n}/{tot} ({ds}s) — {secs}s écoulées...")
+            hb_exp = asyncio.create_task(_export_heartbeat())
+
+            try:
+                ok = await loop.run_in_executor(
+                    executor, _export_clip, video_path,
+                    clip["start"], clip["end"], out_path, watermark or None, has_audio)
+            finally:
+                export_done.set()
+                hb_exp.cancel()
+                try: await hb_exp
+                except asyncio.CancelledError: pass
 
             if ok:
                 score = _tiktok_score(clip, duration)
@@ -483,7 +510,7 @@ async def process_video_job(job_id, video_path, filename, settings=None):
                     "has_subtitles": False,
                 })
             pct = 65 + int((i+1)/len(clips)*32)
-            await upd(pct, f"🎬 Export {i+1}/{len(clips)} ({int(clip['duration'])}s)...")
+            await upd(pct, f"✅ Clip {i+1}/{len(clips)} exporté ({dur_s}s).")
 
         if not exported:
             raise ValueError("Export échoué. Réessaie avec une autre vidéo.")
