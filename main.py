@@ -378,6 +378,38 @@ def _export_clip(input_path, start, end, out_path, watermark=None, has_audio=Tru
     except Exception:
         return False
 
+# ── 8. Titre propre ─────────────────────────────────────────────────────────
+def _make_title(clip: dict, rank: int, video_title: str = "") -> str:
+    s = int(clip["start"] // 60); sm = int(clip["start"] % 60)
+    e = int(clip["end"] // 60);   em = int(clip["end"] % 60)
+    vs = int(clip.get("viral_score", 0.5) * 100)
+    label = "Moment Viral" if vs >= 80 else "Moment Fort" if vs >= 65 else "Moment Clé" if vs >= 50 else "Extrait"
+    timing = f"{s}:{sm:02d}→{e}:{em:02d}"
+    if video_title:
+        short = video_title[:30] + ("…" if len(video_title) > 30 else "")
+        return f"{label} #{rank} | {short} ({timing})"
+    return f"{label} #{rank} ({timing}) · {int(clip['duration'])}s"
+
+def _make_hashtags(clip: dict, video_title: str = "") -> list:
+    base = ["#fyp","#pourtoi","#viral","#tiktok","#foryou"]
+    t = video_title.lower()
+    if any(k in t for k in ["basket","nba","lakers","celtics","spurs","rockets","wemby","lebron","curry","nfl","foot","soccer","goal","sport","highlight"]):
+        extra = ["#sport","#nba","#basketball","#highlights","#sports"]
+    elif any(k in t for k in ["gaming","game","fortnite","minecraft","valorant","warzone","cod","fifa","streamer","twitch"]):
+        extra = ["#gaming","#gamer","#gameplay","#streamer","#game"]
+    elif any(k in t for k in ["music","musique","rap","song","clip","album","concert","live","freestyle"]):
+        extra = ["#music","#musique","#rap","#newmusic","#song"]
+    elif any(k in t for k in ["react","reaction","funny","humour","wtf","fail","best","top","drôle"]):
+        extra = ["#reaction","#funny","#humour","#wtf","#bestmoment"]
+    elif any(k in t for k in ["news","actu","politique","info","france","monde"]):
+        extra = ["#actu","#news","#france","#info","#polemique"]
+    elif any(k in t for k in ["food","recette","cuisine","recipe","chef","eat"]):
+        extra = ["#food","#cuisine","#recette","#foodtiktok","#chef"]
+    else:
+        vs = clip.get("viral_score", 0.5)
+        extra = ["#choc","#incroyable","#wow","#incredible","#mustwatch"] if vs >= 0.75 else ["#interesting","#watch","#explore","#content","#trending"]
+    return base + extra[:5]
+
 # ── 8. Caption ───────────────────────────────────────────────────────
 def _make_caption(clip: dict) -> str:
     vs = int(clip.get("viral_score",0.5)*100)
@@ -500,16 +532,26 @@ async def process_video_job(job_id, video_path, filename, settings=None):
 
             if ok:
                 score = _tiktok_score(clip, duration)
+                # Filtre: on garde seulement A et B (crème de la crème)
+                # Si tous les clips sont C/D/F → on garde quand même le meilleur
+                clip_grade = score["grade"]
+                clip_rank_actual = i + 1
+                hashtags = _make_hashtags(clip, title)
+                clip_title = _make_title(clip, clip_rank_actual, title)
+                caption_base = _make_caption(clip)
+                caption_full = f"{caption_base}\n\n{' '.join(hashtags[:8])}"
                 exported.append({
                     **clip,
                     "filename":     f"{name}.mp4",
                     "url":          f"/outputs/{job_id}/{name}.mp4",
                     "preview_url":  f"/outputs/{job_id}/{name}.mp4",
-                    "rank":         i+1,
-                    "caption":      _make_caption(clip),
+                    "rank":         clip_rank_actual,
+                    "clip_title":   clip_title,
+                    "caption":      caption_full,
+                    "hashtags":     hashtags,
                     "video_title":  title,
                     "tiktok_score": score["tiktok_score"],
-                    "grade":        score["grade"],
+                    "grade":        clip_grade,
                     "grade_color":  score["grade_color"],
                     "tt_details":   score["details"],
                     "has_subtitles": False,
@@ -519,6 +561,18 @@ async def process_video_job(job_id, video_path, filename, settings=None):
 
         if not exported:
             raise ValueError("Export échoué. Réessaie avec une autre vidéo.")
+
+        # Filtre qualité : garde seulement A et B
+        GRADES_OK = {"A", "B"}
+        premium = [c for c in exported if c.get("grade") in GRADES_OK]
+        if premium:
+            # Re-numérote les clips gardés
+            for idx2, c in enumerate(premium):
+                c["rank"] = idx2 + 1
+                c["clip_title"] = _make_title(c, idx2 + 1, title)
+            exported = premium
+        # Si aucun A/B → garde quand même le meilleur (évite résultat vide)
+        # exported reste inchangé avec tous les clips
 
         zip_path = job_dir / "tous_les_clips.zip"
         def _make_zip():
