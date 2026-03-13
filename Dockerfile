@@ -1,14 +1,14 @@
 FROM python:3.11-slim
 
-# Outils système (FFmpeg requis pour le traitement vidéo)
+# Outils système (ffprobe est inclus dans ffmpeg, pas un paquet séparé)
 RUN apt-get update && \
-    apt-get install -y ffmpeg ffprobe git && \
+    apt-get install -y ffmpeg git && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# ⚠️ Étape critique : setuptools + wheel AVANT requirements.txt
-# openai-whisper utilise setup.py qui a besoin de pkg_resources (fourni par setuptools)
+# ⚠️ setuptools + wheel AVANT requirements.txt
+# openai-whisper utilise setup.py qui a besoin de pkg_resources
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Dépendances Python
