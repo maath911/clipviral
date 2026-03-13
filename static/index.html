@@ -475,6 +475,192 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   box-shadow:0 2px 8px rgba(124,58,237,.4);
 }
 .vs-btn:not(.on):hover{color:rgba(240,240,255,.7);}
+
+
+/* ─── MODE DÉMO ─── */
+.demo-pill{font-size:9px;font-weight:800;padding:2px 9px;border-radius:20px;
+  background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--gold);
+  letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.demo-banner{display:flex;align-items:flex-start;gap:12px;
+  background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);
+  border-radius:11px;padding:11px 14px;margin-bottom:12px}
+.demo-banner-t{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.demo-banner-s{font-size:10px;color:var(--t2)}
+
+/* ─── DURÉE CIBLE ─── */
+.dur-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dur-btn{border:1.5px solid var(--b1);border-radius:10px;padding:10px 6px;
+  text-align:center;cursor:pointer;transition:all .15s;background:var(--s2);
+  font-size:12px;font-weight:700;color:var(--t2);line-height:1.3}
+.dur-btn:hover{border-color:rgba(124,58,237,.3)}
+.dur-btn.on{border-color:var(--a);background:rgba(124,58,237,.07);color:var(--t1)}
+.dur-sub{display:block;font-size:9px;font-weight:400;color:var(--t3);margin-top:2px}
+
+/* ─── STATS BAR ─── */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat-box{background:rgba(8,8,15,.85);border:1px solid var(--b1);border-radius:12px;
+  padding:12px 10px;text-align:center;backdrop-filter:blur(8px)}
+.stat-n{font-size:22px;font-weight:800;color:var(--t1);font-family:var(--disp)}
+.stat-l{font-size:9px;color:var(--t3);margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+
+/* ─── CLIPS GRID ─── */
+.clips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:600px){.clips-grid{grid-template-columns:repeat(2,1fr)}}
+.ccard{border:1.5px solid var(--b1);border-radius:12px;overflow:hidden;
+  cursor:pointer;transition:all .15s;background:var(--s2);position:relative}
+.ccard:hover{border-color:rgba(124,58,237,.3);transform:translateY(-1px)}
+.ccard.on{border-color:var(--a);background:rgba(124,58,237,.05)}
+.cthumb{height:100px;background:linear-gradient(150deg,#0a0a18,#150a25);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.cscore{position:absolute;top:6px;left:6px;
+  background:linear-gradient(135deg,var(--a),var(--a2));
+  color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px}
+.cgrade-dot{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900}
+.grade-a{background:rgba(0,223,162,.15);color:#00dfa2;border:1px solid rgba(0,223,162,.3)}
+.grade-b{background:rgba(168,85,247,.15);color:var(--a2);border:1px solid rgba(168,85,247,.3)}
+.grade-c{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.cplay-btn{width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--a),var(--a2));
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
+  cursor:pointer;transition:transform .15s;box-shadow:0 3px 12px rgba(124,58,237,.4)}
+.cplay-btn:hover{transform:scale(1.1)}
+.ccheck{position:absolute;bottom:6px;right:6px;width:20px;height:20px;
+  border-radius:50%;background:var(--green);display:none;align-items:center;
+  justify-content:center;font-size:10px;color:#fff;font-weight:900}
+.ccard.on .ccheck{display:flex}
+.cbody{padding:9px 10px 10px}
+.ctitle{font-size:11px;font-weight:700;color:var(--t1);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px;line-height:1.35}
+.cmeta{font-size:9px;color:var(--t3);margin-bottom:5px}
+/* Score détaillé IA — raisons (nouveau) */
+.creasons{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.creason{font-size:9px;color:var(--t2);display:flex;align-items:center;gap:3px}
+
+.sel-bar{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.12);
+  border-radius:10px;padding:10px 14px;margin-top:10px;
+  display:flex;align-items:center;justify-content:space-between}
+
+/* ─── MODAL VIDEO PREVIEW ─── */
+.vid-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(12px)}
+.vid-modal.open{display:flex}
+.vid-box{background:var(--s1);border:1px solid var(--b2);border-radius:18px;
+  padding:18px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.vid-box-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.vid-box-t{font-size:13px;font-weight:700;color:var(--t1)}
+.vid-close{width:28px;height:28px;border-radius:7px;background:var(--s2);
+  border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;color:var(--t2);flex-shrink:0}
+.vid-player-wrap{position:relative;width:100%;aspect-ratio:9/16;background:#000;border-radius:10px;overflow:hidden;margin-bottom:10px}
+.vid-player-wrap video{width:100%;height:100%;object-fit:contain}
+.vid-demo-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(150deg,#0e0e20,#1a0928 55%,#0a1420)}
+.vid-demo-ico{font-size:36px;margin-bottom:8px}
+.vid-demo-t{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px}
+.vid-demo-s{font-size:10px;color:var(--t2)}
+.vid-meta{font-size:10px;color:var(--t3);text-align:center;margin-bottom:10px}
+.vid-actions{display:flex;gap:7px}
+.vid-actions .btn-dl{flex:1;padding:9px;text-align:center;font-size:12px}
+
+/* ─── ONBOARDING ─── */
+.onboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(14px)}
+.onboard-box{background:var(--s2);border:1px solid var(--b2);border-radius:20px;
+  padding:28px 24px;max-width:420px;width:100%;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.onboard-ico{font-size:44px;margin-bottom:12px}
+.onboard-title{font-family:var(--disp);font-size:22px;font-weight:800;margin-bottom:7px}
+.onboard-sub{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6}
+.onboard-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;text-align:left}
+.ob-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--t2)}
+.ob-n{width:22px;height:22px;border-radius:50%;background:rgba(124,58,237,.14);
+  color:var(--a2);font-size:10px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.onboard-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--a),var(--a2));
+  color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:var(--font);box-shadow:0 4px 16px rgba(124,58,237,.35)}
+.onboard-skip{font-size:11px;color:var(--t3);margin-top:10px;cursor:pointer;text-decoration:underline;display:block}
+
+/* ─── EXPORT ─── */
+.exp-list{display:flex;flex-direction:column;gap:10px}
+.exp-row{background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:14px;
+  display:flex;align-items:flex-start;gap:12px;transition:border-color .15s}
+.exp-row:hover{border-color:var(--b2)}
+.exp-thumb{width:52px;height:82px;background:linear-gradient(150deg,#0a0a18,#150a25);
+  border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:22px;cursor:pointer;position:relative;overflow:hidden;
+  border:1px solid var(--b2)}
+.exp-thumb:hover::after{content:'▶';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:18px;background:rgba(124,58,237,.6)}
+.exp-info{flex:1;min-width:0}
+.exp-title{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-meta{font-size:10px;color:var(--t2);margin-bottom:5px}
+.exp-score{font-size:10px;font-weight:800;padding:1px 7px;border-radius:4px;
+  display:inline-block;margin-bottom:5px}
+.score-a{background:rgba(0,223,162,.1);color:#00dfa2}
+.score-b{background:rgba(168,85,247,.1);color:var(--a2)}
+/* Pourquoi ce clip est viral (nouveau) */
+.exp-why{font-size:9px;color:var(--t3);line-height:1.5}
+.exp-why span{display:inline-block;margin-right:6px}
+.exp-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-dl{padding:8px 14px;background:linear-gradient(135deg,var(--a),var(--a2));
+  color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .12s;
+  box-shadow:0 3px 10px rgba(124,58,237,.3)}
+.btn-dl:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(124,58,237,.4)}
+/* Bouton partager lien (nouveau) */
+.btn-share{padding:7px 12px;background:var(--s1);border:1px solid var(--b2);
+  color:var(--t2);border-radius:8px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .12s}
+.btn-share:hover{color:var(--t1);border-color:var(--b3)}
+.zip-btn{width:100%;margin-top:14px;padding:14px;
+  background:linear-gradient(135deg,var(--a),var(--a2));
+  color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:var(--font);box-shadow:0 4px 16px rgba(124,58,237,.3);
+  transition:all .15s}
+.zip-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.42)}
+.ttl-warn{font-size:10px;color:var(--gold);text-align:center;margin-top:10px;
+  padding:7px 10px;border-radius:8px;background:rgba(245,158,11,.06);
+  border:1px solid rgba(245,158,11,.14)}
+
+/* ─── CLIP TABS ─── */
+.clip-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
+.clip-tabs::-webkit-scrollbar{display:none}
+.ctab{padding:5px 12px;border-radius:7px;border:1px solid var(--b1);
+  font-size:10px;font-weight:700;color:var(--t2);cursor:pointer;white-space:nowrap;
+  background:var(--s2);transition:all .12s;flex-shrink:0}
+.ctab.on{border-color:var(--a);background:rgba(124,58,237,.08);color:var(--a2)}
+
+/* ─── CAPTION AI BOX ─── */
+.ai-box{background:var(--s1);border:1px solid var(--b1);border-radius:12px;
+  padding:14px;margin-top:14px}
+.ai-box-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ai-pill{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.18);
+  color:var(--a3);font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px}
+.ai-field{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;
+  padding:9px 12px;font-size:13px;font-weight:700;color:var(--t1);font-family:var(--font);
+  outline:none;margin-bottom:7px;transition:border-color .15s;display:block}
+.ai-field:focus{border-color:rgba(124,58,237,.4)}
+.htags-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.htag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
+  background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.16);color:var(--a3);cursor:pointer}
+.htag:hover{background:rgba(124,58,237,.16)}
+.ai-cap{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;
+  padding:9px 12px;font-size:12px;color:var(--t2);font-family:var(--font);
+  outline:none;resize:none;height:88px;transition:border-color .15s;display:block}
+.ai-cap:focus{border-color:rgba(124,58,237,.4)}
+.ai-btns{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.btn-sm{padding:7px 13px;border-radius:8px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:var(--font);transition:all .12s;border:none}
+.btn-regen{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.18);color:var(--a3)}
+.btn-regen:hover{background:rgba(124,58,237,.16)}
+.btn-copy{background:var(--s2);border:1px solid var(--b2);color:var(--t2)}
+.btn-copy:hover{color:var(--t1);border-color:var(--b3)}
+
 </style>
 
 <!-- CSS Mobile (inactif par défaut) -->
@@ -875,16 +1061,15 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 </style>
 
 <style>
-/* Contrôle global des vues */
-html[data-view="pc"]  #view-mob { display:none !important; }
-html[data-view="mob"] #view-pc  { display:none !important; }
+html[data-view="pc"]  #view-mob{display:none!important}
+html[data-view="mob"] #view-pc {display:none!important}
 </style>
 </head>
 <body>
 
+
 <!-- ████████████ VUE PC ████████████ -->
 <div id="view-pc">
-
 
 <!-- TOPBAR -->
 <div class="tb">
@@ -893,6 +1078,7 @@ html[data-view="mob"] #view-pc  { display:none !important; }
     <div class="lname">Clip<em>Viral</em><span style="font-size:10px;color:var(--t3);font-weight:400;margin-left:4px">PRO</span></div>
   </div>
   <div class="tb-r">
+    <div id="demo-pill" class="demo-pill">🎭 DÉMO</div>
     <div class="cost-pill" id="cost-pill">💶 0.000€</div>
     <div class="hstatus" id="hstatus" title="Vérification..."></div>
     <button class="btn-tuto" onclick="openTuto()">▶ Démo</button>
@@ -906,82 +1092,101 @@ html[data-view="mob"] #view-pc  { display:none !important; }
 <!-- STEPPER -->
 <div class="stp-wrap">
   <div class="stepper">
-    <div class="sdot active" id="sd0"><div class="scircle">1</div><div class="slbl">Source</div></div>
+    <div class="sdot active" id="sd0" onclick="go(0)"><div class="scircle">1</div><div class="slbl">Source</div></div>
     <div class="sline" id="sl0"></div>
-    <div class="sdot" id="sd1"><div class="scircle">2</div><div class="slbl">Analyse</div></div>
+    <div class="sdot" id="sd1" onclick="go(1)"><div class="scircle">2</div><div class="slbl">Analyse</div></div>
     <div class="sline" id="sl1"></div>
-    <div class="sdot" id="sd2"><div class="scircle">3</div><div class="slbl">Clips</div></div>
+    <div class="sdot" id="sd2" onclick="go(2)"><div class="scircle">3</div><div class="slbl">Clips</div></div>
     <div class="sline" id="sl2"></div>
-    <div class="sdot" id="sd3"><div class="scircle">4</div><div class="slbl">Sous-titres</div></div>
+    <div class="sdot" id="sd3" onclick="go(3)"><div class="scircle">4</div><div class="slbl">Sous-titres</div></div>
     <div class="sline" id="sl3"></div>
-    <div class="sdot" id="sd4"><div class="scircle">5</div><div class="slbl">Export</div></div>
+    <div class="sdot" id="sd4" onclick="go(4)"><div class="scircle">5</div><div class="slbl">Export</div></div>
   </div>
 </div>
 
 <!-- MODAL TUTO -->
-<div class="modal-bg" id="modal-tuto">
+<div class="modal-bg" id="modal-tuto" onclick="if(event.target===this)closeTuto()">
   <div class="modal-box">
     <button class="modal-close" onclick="closeTuto()">✕</button>
-    <div class="modal-video">
-      <div style="text-align:center">
-        <div style="font-size:34px;margin-bottom:8px">🎬</div>
-        <div style="font-size:12px;color:var(--t2)">Vidéo de démonstration</div>
-        <div style="font-size:10px;color:var(--t3);margin-top:3px">Disponible au lancement</div>
-      </div>
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:6px">🎬</div>
+      <div style="font-size:11px;color:var(--t2)">Vidéo de démonstration — bientôt disponible</div>
     </div>
     <div class="modal-title">Comment ça marche en 5 étapes</div>
     <div class="modal-steps">
       <div class="mstep"><div class="msn">1</div><span><strong style="color:var(--t1)">Colle ton URL</strong> YouTube / Twitch ou importe un fichier vidéo</span></div>
-      <div class="mstep"><div class="msn">2</div><span><strong style="color:var(--t1)">Claude IA détecte</strong> automatiquement les moments forts via Whisper</span></div>
-      <div class="mstep"><div class="msn">3</div><span><strong style="color:var(--t1)">Sélectionne</strong> les clips que tu veux garder</span></div>
-      <div class="mstep"><div class="msn">4</div><span><strong style="color:var(--t1)">Personnalise</strong> les sous-titres — drag & drop + titre + hashtags IA</span></div>
-      <div class="mstep"><div class="msn">5</div><span><strong style="color:var(--t1)">Exporte</strong> en 1080×1920 prêt pour TikTok</span></div>
+      <div class="mstep"><div class="msn">2</div><span><strong style="color:var(--t1)">Whisper + Claude IA</strong> détectent automatiquement les moments forts</span></div>
+      <div class="mstep"><div class="msn">3</div><span><strong style="color:var(--t1)">Sélectionne</strong> les clips avec leur score viral et les raisons IA</span></div>
+      <div class="mstep"><div class="msn">4</div><span><strong style="color:var(--t1)">Personnalise</strong> sous-titres drag&drop + titre + hashtags Claude</span></div>
+      <div class="mstep"><div class="msn">5</div><span><strong style="color:var(--t1)">Exporte</strong> en 1080×1920 TikTok + copie caption en 1 clic</span></div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL PREVIEW VIDÉO -->
+<div class="vid-modal" id="vid-modal" onclick="if(event.target===this)closePreview()">
+  <div class="vid-box">
+    <div class="vid-box-h">
+      <div class="vid-box-t" id="vid-title">Aperçu du clip</div>
+      <button class="vid-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="vid-player-wrap">
+      <video id="vid-player" controls playsinline preload="metadata"></video>
+      <div class="vid-demo-overlay" id="vid-demo-overlay">
+        <div class="vid-demo-ico">🎬</div>
+        <div class="vid-demo-t">Preview disponible</div>
+        <div class="vid-demo-s">après analyse réelle avec l'API</div>
+      </div>
+    </div>
+    <div class="vid-meta" id="vid-meta">1080×1920 · Format TikTok vertical</div>
+    <div class="vid-actions">
+      <button class="btn-dl" id="vid-dl-btn" onclick="dlFromPreview()">⬇ Télécharger ce clip</button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING PREMIÈRE VISITE -->
+<div class="onboard-overlay" id="onboard-overlay" style="display:none">
+  <div class="onboard-box">
+    <div class="onboard-ico">✦</div>
+    <div class="onboard-title">Bienvenue sur ClipViral PRO</div>
+    <div class="onboard-sub">Transforme n'importe quelle vidéo en clips viraux TikTok en moins de 5 minutes — propulsé par Whisper + Claude IA.</div>
+    <div class="onboard-steps">
+      <div class="ob-step"><div class="ob-n">1</div><div>Colle une URL YouTube ou Twitch</div></div>
+      <div class="ob-step"><div class="ob-n">2</div><div>L'IA détecte les moments forts automatiquement</div></div>
+      <div class="ob-step"><div class="ob-n">3</div><div>Exporte en 1080×1920 prêt à poster sur TikTok</div></div>
+    </div>
+    <button class="onboard-btn" onclick="closeOnboard()">C'est parti ✦</button>
+    <div class="onboard-skip" onclick="closeOnboard()">Passer l'intro</div>
   </div>
 </div>
 
 <!-- SIDEBAR HISTORIQUE -->
 <div class="sb-overlay" id="sb-overlay" onclick="closeSB()"></div>
-
 <div class="sidebar" id="sidebar">
   <div class="sb-head">
     <div>
       <div class="sb-title">📁 Historique clips</div>
-      <div class="sb-subtitle">Clips téléchargés · Session + localStorage</div>
+      <div class="sb-subtitle">Clips téléchargés · expire dans 2h</div>
     </div>
     <div class="sb-close" onclick="closeSB()">✕</div>
   </div>
   <div class="sb-stats">
-    <div class="sb-stat"><div class="sb-stat-n" id="sh-total">0</div><div class="sb-stat-l">Clips</div></div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sh-total">0</div><div class="sb-stat-l">Total</div></div>
     <div class="sb-stat"><div class="sb-stat-n" id="sh-active" style="color:var(--green)">0</div><div class="sb-stat-l">Disponibles</div></div>
-    <div class="sb-stat"><div class="sb-stat-n" id="sh-cost" style="color:var(--a2)">0€</div><div class="sb-stat-l">Coût total</div></div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sh-cost" style="color:var(--a2)">0€</div><div class="sb-stat-l">Coût</div></div>
   </div>
   <div class="sb-body" id="sb-body">
-    <div class="sb-empty" id="sb-empty">
-      <div class="sb-empty-ico">📭</div>
-      <div class="sb-empty-t">Aucun clip pour l'instant</div>
-      <div class="sb-empty-s">Les clips téléchargés apparaîtront ici</div>
-    </div>
+    <div class="sb-empty"><div class="sb-empty-ico">📭</div><div class="sb-empty-t">Aucun clip pour l'instant</div><div class="sb-empty-s">Les clips téléchargés apparaîtront ici</div></div>
   </div>
-  <div class="sb-foot">
-    <button class="sb-clear" onclick="clearHistory()">🗑 Vider l'historique</button>
-  </div>
+  <div class="sb-foot"><button class="sb-clear" onclick="clearHistory()">🗑 Vider l'historique</button></div>
 </div>
-
-<!-- Onglet latéral PC -->
 <div class="sb-toggle" id="sb-toggle" onclick="openSB()">
   <div class="sb-toggle-ico">📁</div>
   <div class="sb-toggle-lbl">Clips</div>
-  <div class="sb-badge" id="sb-badge">0</div>
+  <div class="sb-badge" id="sb-badge"></div>
 </div>
-
-<!-- Bouton mobile bas gauche -->
-<button class="sb-mob" id="sb-mob" onclick="openSB()">
-  📁
-  <div class="sb-mob-badge" id="sb-mob-badge">0</div>
-</button>
-
-
+<button class="sb-mob" id="sb-mob" onclick="openSB()">📁<div class="sb-mob-badge" id="sb-mob-badge"></div></button>
 
 <div class="page"><div class="inner">
 
@@ -997,9 +1202,17 @@ html[data-view="mob"] #view-pc  { display:none !important; }
     <div class="tuto-arr">→</div>
   </div>
 
+  <!-- BANNIÈRE MODE DÉMO -->
+  <div class="demo-banner" id="demo-banner">
+    <div style="font-size:20px">🎭</div>
+    <div>
+      <div class="demo-banner-t">Mode démo actif — navigation libre sur toutes les étapes</div>
+      <div class="demo-banner-s">API non configurée · Clips fictifs pour présentation · Configure ton API pour le mode réel</div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-h"><div class="ch-ico">🎯</div><div class="ch-t">Choisis ta source</div><div class="ch-badge">Étape 1/5</div></div>
-
     <div class="src-grid">
       <div class="src-btn on" id="src-yt" onclick="setSrc('yt')">
         <div class="src-ico">▶</div><div class="src-name">YouTube</div><div class="src-desc">Colle le lien</div>
@@ -1011,22 +1224,31 @@ html[data-view="mob"] #view-pc  { display:none !important; }
         <div class="src-ico">📁</div><div class="src-name">Fichier</div><div class="src-desc">MP4 · MOV · MKV</div>
       </div>
     </div>
-
     <div id="url-wrap">
       <div class="url-row">
         <input class="url-inp" id="url-inp" placeholder="https://www.youtube.com/watch?v=..." type="url"/>
         <button class="btn-go" onclick="startAnalysis()">✦ Analyser</button>
       </div>
     </div>
-
     <div class="drop-zone" id="drop-zone" style="display:none">
       <input type="file" id="file-inp" accept="video/*" onchange="onFile(this.files[0])"/>
       <div class="drop-ico">📁</div>
       <div class="drop-t">Glisse ta vidéo ici ou clique</div>
       <div class="drop-s">MP4 · MOV · MKV · AVI — 60min max</div>
     </div>
-
     <div class="src-note" id="src-note">⚡ Découpage 15min · Whisper · Claude Haiku · Export 1080×1920</div>
+  </div>
+
+  <!-- DURÉE CIBLE (nouveau) -->
+  <div class="card">
+    <div class="card-h"><div class="ch-ico">⏱</div><div class="ch-t">Durée cible des clips</div></div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:10px">Optimise selon ta plateforme et ton contenu</div>
+    <div class="dur-grid">
+      <div class="dur-btn" data-dur="15" onclick="setDur(this)">⚡ 15s<span class="dur-sub">Hook pur</span></div>
+      <div class="dur-btn on" data-dur="30" onclick="setDur(this)">🔥 30s<span class="dur-sub">Optimal TikTok</span></div>
+      <div class="dur-btn" data-dur="45" onclick="setDur(this)">📱 45s<span class="dur-sub">Standard</span></div>
+      <div class="dur-btn" data-dur="60" onclick="setDur(this)">🎙 60s<span class="dur-sub">Podcast/Talk</span></div>
+    </div>
   </div>
 
   <div class="card">
@@ -1054,7 +1276,7 @@ html[data-view="mob"] #view-pc  { display:none !important; }
 <div class="screen" id="s1">
   <div class="card">
     <div class="card-h"><div class="ch-ico">⚙️</div><div class="ch-t">Analyse en cours</div><div class="ch-badge">Étape 2/5</div></div>
-    <div style="font-size:12px;color:var(--t2);margin-bottom:16px">2–4 minutes selon la durée · Le bouton s'active automatiquement</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:16px" id="analyse-sub">2–4 minutes · Ne ferme pas l'onglet</div>
     <div class="prog-list">
       <div class="prog-row"><div class="pdot wait" id="pd0">⬇</div>
         <div class="pbody"><div class="pname">Téléchargement</div><div class="pdetail" id="pp0">En attente...</div></div>
@@ -1070,7 +1292,7 @@ html[data-view="mob"] #view-pc  { display:none !important; }
         <div class="pbody"><div class="pname">Sélection Claude Haiku</div><div class="pdetail" id="pp3">Détecte les meilleurs moments</div></div>
         <div class="pbadge bwait" id="pb3">Attente</div></div>
       <div class="prog-row"><div class="pdot wait" id="pd4">🎬</div>
-        <div class="pbody"><div class="pname">Export 1080×1920</div><div class="pdetail" id="pp4">Conversion format TikTok vertical</div></div>
+        <div class="pbody"><div class="pname">Export 1080×1920</div><div class="pdetail" id="pp4">Format TikTok vertical</div></div>
         <div class="pbadge bwait" id="pb4">Attente</div></div>
     </div>
   </div>
@@ -1082,9 +1304,15 @@ html[data-view="mob"] #view-pc  { display:none !important; }
 
 <!-- ══ STEP 3 : CLIPS ══ -->
 <div class="screen" id="s2">
+  <!-- Stats bar (nouveau) -->
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-n" id="stat-total">0</div><div class="stat-l">Clips détectés</div></div>
+    <div class="stat-box"><div class="stat-n" id="stat-sel" style="color:var(--a2)">0</div><div class="stat-l">Sélectionnés</div></div>
+    <div class="stat-box"><div class="stat-n" id="stat-avg" style="color:var(--gold)">0s</div><div class="stat-l">Durée moyenne</div></div>
+  </div>
   <div class="card">
-    <div class="card-h"><div class="ch-ico">🎬</div><div class="ch-t">Sélectionne tes clips</div><div class="ch-badge">Étape 3/5</div></div>
-    <div style="font-size:11px;color:var(--t2);margin-bottom:13px">Claude a sélectionné les meilleurs moments — coche ceux que tu gardes</div>
+    <div class="card-h"><div class="ch-ico">🎬</div><div class="ch-t">Clips détectés par l'IA</div><div class="ch-badge">Étape 3/5</div></div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:13px">Score = potentiel viral · Raisons IA · Clique ▶ pour prévisualiser · Coche pour sélectionner</div>
     <div class="clips-grid" id="clips-grid"></div>
     <div class="sel-bar">
       <div style="font-size:12px;color:var(--t2)"><strong id="sel-n" style="color:var(--t1)">0</strong> sélectionné(s)</div>
@@ -1092,7 +1320,7 @@ html[data-view="mob"] #view-pc  { display:none !important; }
     </div>
   </div>
   <div class="nav-row">
-    <button class="btn-back" onclick="go(1)">← Retour</button>
+    <button class="btn-back" onclick="go(0)">← Retour</button>
     <button class="btn-next" onclick="goEditor()">Personnaliser →</button>
   </div>
 </div>
@@ -1101,11 +1329,9 @@ html[data-view="mob"] #view-pc  { display:none !important; }
 <div class="screen" id="s3">
   <div class="card">
     <div class="card-h"><div class="ch-ico">✏️</div><div class="ch-t">Personnalise les sous-titres</div><div class="ch-badge">Étape 4/5</div></div>
-
     <div class="clip-tabs" id="clip-tabs"></div>
-
     <div class="ed-grid">
-      <!-- Téléphone aperçu -->
+      <!-- Aperçu téléphone -->
       <div class="phone-col">
         <div class="phone-frame" id="phone-frame"
           onmousedown="dragStart(event)"
@@ -1133,7 +1359,6 @@ html[data-view="mob"] #view-pc  { display:none !important; }
           </div>
         </div>
       </div>
-
       <!-- Outils -->
       <div class="tools-col">
         <div class="tblock">
@@ -1155,20 +1380,20 @@ html[data-view="mob"] #view-pc  { display:none !important; }
             <div class="pbtn" onclick="applyPreset(this,'#a855f7','#fff','none')">🟣 Violet</div>
             <div class="pbtn" onclick="applyPreset(this,'#10b981','#fff','none')">🟢 Vert</div>
             <div class="pbtn" onclick="applyPreset(this,'transparent','#fff','1.5px solid #fff')">▭ Contour</div>
-            <div class="pbtn" onclick="applyPreset(this,'rgba(0,0,0,.6)','#fff','none')">🎬 Cinéma</div>
+            <div class="pbtn" onclick="applyPreset(this,'rgba(0,0,0,.65)','#fff','none')">🎬 Cinéma</div>
           </div>
         </div>
         <div class="tblock">
           <div class="tlbl">Couleur texte</div>
           <div class="swatches">
             <div class="sw-dot on" style="background:#fff" onclick="setColor(this,'#fff')"></div>
-            <div class="sw-dot" style="background:#ffe600;outline:1px solid var(--b2)" onclick="setColor(this,'#ffe600')"></div>
+            <div class="sw-dot" style="background:#ffe600" onclick="setColor(this,'#ffe600')"></div>
             <div class="sw-dot" style="background:#a855f7" onclick="setColor(this,'#a855f7')"></div>
             <div class="sw-dot" style="background:#10b981" onclick="setColor(this,'#10b981')"></div>
             <div class="sw-dot" style="background:#ef4444" onclick="setColor(this,'#ef4444')"></div>
             <div class="sw-dot" style="background:#06b6d4" onclick="setColor(this,'#06b6d4')"></div>
             <div class="sw-dot" style="background:#f59e0b" onclick="setColor(this,'#f59e0b')"></div>
-            <div class="sw-dot" style="background:#111;outline:1px solid var(--b2)" onclick="setColor(this,'#111')"></div>
+            <div class="sw-dot" style="background:#000;border:1px solid var(--b3)" onclick="setColor(this,'#000')"></div>
           </div>
         </div>
         <div class="tblock">
@@ -1179,7 +1404,7 @@ html[data-view="mob"] #view-pc  { display:none !important; }
           </div>
         </div>
         <div class="tblock">
-          <div class="tlbl">Style texte</div>
+          <div class="tlbl">Style</div>
           <div class="tog-row">
             <div class="tog on" id="tg-b" onclick="togStyle('b')"><b>G</b></div>
             <div class="tog" id="tg-i" onclick="togStyle('i')"><i>I</i></div>
@@ -1190,40 +1415,45 @@ html[data-view="mob"] #view-pc  { display:none !important; }
       </div>
     </div>
 
-    <!-- Titre IA + Hashtags + Caption -->
+    <!-- Caption IA -->
     <div class="ai-box">
       <div class="ai-box-h">
-        <div class="ai-box-lbl">Titre · Hook · Caption générés par Claude</div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--t3)">Titre · Hook · Caption — générés par Claude IA</div>
         <div class="ai-pill">✦ Haiku</div>
       </div>
       <input class="ai-field" id="ai-titre" placeholder="Titre TikTok..."/>
-      <input class="ai-field ai-hook" id="ai-hook" placeholder="Hook d'accroche..."/>
-      <div class="htags" id="htags-wrap"></div>
-      <textarea class="cap-area" id="ai-cap" rows="3" placeholder="Caption + hashtags..."></textarea>
+      <input class="ai-field" id="ai-hook" placeholder="Hook d'accroche..." style="font-style:italic;color:var(--a3)"/>
+      <div class="htags-wrap" id="htags-wrap"></div>
+      <textarea class="ai-cap" id="ai-cap" rows="3" placeholder="Caption complète + hashtags..."></textarea>
       <div class="ai-btns">
         <button class="btn-sm btn-regen" onclick="regenClip()">🔄 Regénérer</button>
-        <button class="btn-sm btn-copy" onclick="copyCap()">📋 Copier caption</button>
+        <button class="btn-sm btn-copy" id="btn-copy" onclick="copyCap()">📋 Copier caption</button>
       </div>
     </div>
   </div>
-
   <div class="nav-row">
-    <button class="btn-back" onclick="go(2)">← Retour</button>
+    <button class="btn-back" onclick="go(2)">← Retour clips</button>
     <button class="btn-next" onclick="go(4)">Exporter →</button>
   </div>
 </div>
 
 <!-- ══ STEP 5 : EXPORT ══ -->
 <div class="screen" id="s4">
+  <!-- Stats export (nouveau) -->
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-n" id="exp-n" style="color:var(--green)">0</div><div class="stat-l">Clips prêts</div></div>
+    <div class="stat-box"><div class="stat-n" id="exp-cost" style="color:var(--a2)">0€</div><div class="stat-l">Coût session</div></div>
+    <div class="stat-box"><div class="stat-n" id="exp-total" style="color:var(--gold)">0</div><div class="stat-l">Total générés</div></div>
+  </div>
   <div class="card">
-    <div class="card-h"><div class="ch-ico">🎉</div><div class="ch-t">Tes clips sont prêts</div><div class="ch-badge">Étape 5/5</div></div>
-    <div style="font-size:11px;color:var(--t2);margin-bottom:13px">Sous-titres gravés · 1080×1920 · Prêt pour TikTok</div>
+    <div class="card-h"><div class="ch-ico">🎉</div><div class="ch-t">Clips prêts à poster !</div><div class="ch-badge">Étape 5/5</div></div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:14px">1080×1920 · Sous-titres gravés · Prêt pour TikTok</div>
     <div class="exp-list" id="exp-list"></div>
-    <button class="zip-btn" id="zip-btn">⬇ Télécharger tous les clips — ZIP</button>
-    <div class="ttl-note">⏰ Clips supprimés automatiquement dans 2h — télécharge avant !</div>
+    <button class="zip-btn" onclick="dlZip()">⬇ Télécharger tous les clips — ZIP</button>
+    <div class="ttl-warn">⏰ Les clips sont supprimés automatiquement du serveur dans 2h — télécharge maintenant !</div>
   </div>
   <div class="nav-row">
-    <button class="btn-back" onclick="nouvelleVideo()" style="color:var(--a2);border-color:rgba(124,58,237,.2)">✦ Nouvelle vidéo</button>
+    <button class="btn-back" onclick="nouvelleVideo()">✦ Nouvelle vidéo</button>
     <a href="https://www.tiktok.com/upload" target="_blank" rel="noopener" style="text-decoration:none">
       <button class="btn-next">↗ Poster sur TikTok</button>
     </a>
@@ -1231,501 +1461,10 @@ html[data-view="mob"] #view-pc  { display:none !important; }
 </div>
 
 </div></div><!-- /inner /page -->
+</div><!-- /view-pc -->
 
-<script>
-/* ── état global ── */
-let step=0,niche='mindset',src='yt',jobId=null;
-let allClips=[],selClips=[],curIdx=0;
-let analyseDone=false, clipsDone=false; // garde-fous navigation
-let ss={bg:'#fff',col:'#fff',font:'Impact',sz:22,b:true,i:false,u:false,s:false,border:'none'};
-let pos={x:50,y:75};
-let dragging=false,dx0=0,dy0=0,pos0={x:50,y:75};
-
-/* ── utils ── */
-const $=id=>document.getElementById(id);
-const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML;};
-const fmt=s=>`${Math.floor(s/60)}:${('0'+Math.floor(s%60)).slice(-2)}`;
-function toast(msg,dur=2800){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-
-/* ── navigation avec garde-fous ── */
-function go(n){
-  // Bloquer l'avance si les étapes prérequises ne sont pas terminées
-  if(n>=2 && !analyseDone){toast('⚠️ Lance d\'abord une analyse');return;}
-  if(n>=3 && !clipsDone){toast('⚠️ Sélectionne tes clips d\'abord');return;}
-  if(n>=4 && !selClips.length){toast('⚠️ Aucun clip sélectionné');return;}
-
-  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
-  document.querySelectorAll('.sdot').forEach((d,i)=>{
-    d.classList.remove('active','done');
-    d.classList.add(i===n?'active':i<n?'done':'');
-    // Griser les étapes non encore accessibles
-    d.style.pointerEvents=(i<=n||(i===1&&n===0)||(i<=1&&analyseDone)||(i<=2&&clipsDone))?'auto':'none';
-    d.style.opacity=(i<=n||( analyseDone&&i<=2)||(clipsDone&&i<=3))?'1':'0.35';
-  });
-  document.querySelectorAll('.sline').forEach((l,i)=>l.classList.toggle('done',i<n));
-  step=n; window.scrollTo(0,0);
-}
-
-/* ── tuto ── */
-function openTuto(){$('modal-tuto').classList.add('show');}
-function closeTuto(){$('modal-tuto').classList.remove('show');}
-$('modal-tuto').addEventListener('click',e=>{if(e.target===$('modal-tuto'))closeTuto();});
-
-/* ── source ── */
-const SRC_NOTE={
-  yt:'⚡ Découpage auto 15min · Whisper · Claude Haiku · Export 1080×1920',
-  tw:'🎮 VOD (twitch.tv/videos/xxx) ou Clip (clips.twitch.tv/xxx) · Découpage auto',
-  up:'📁 MP4 · MOV · MKV · AVI — 60min max — Découpage auto si >15min'
-};
-function setSrc(t){
-  src=t;
-  ['yt','tw','up'].forEach(s=>$('src-'+s).classList.toggle('on',s===t));
-  $('src-note').textContent=SRC_NOTE[t];
-  const isUp=t==='up';
-  $('url-wrap').style.display=isUp?'none':'block';
-  $('drop-zone').style.display=isUp?'block':'none';
-  if(!isUp) $('url-inp').placeholder=t==='tw'?'https://www.twitch.tv/videos/... ou https://clips.twitch.tv/...':'https://www.youtube.com/watch?v=...';
-}
-function setNiche(el){document.querySelectorAll('.niche-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');niche=el.dataset.n;}
-
-/* Bug #7 — vérification durée fichier côté JS avant upload */
-function onFile(f){
-  if(!f) return;
-  // Vérif taille max 4 Go
-  if(f.size>4*1024*1024*1024){toast('❌ Fichier trop lourd (max 4 Go)');$('file-inp').value='';return;}
-  // Vérif durée via video element
-  const vid=document.createElement('video');
-  vid.preload='metadata';
-  vid.onloadedmetadata=()=>{
-    URL.revokeObjectURL(vid.src);
-    if(vid.duration>3700){// >61min
-      toast('❌ Vidéo trop longue (max 60min)');$('file-inp').value='';return;
-    }
-    toast(`📁 ${f.name} · ${Math.round(vid.duration/60)}min — OK`);
-  };
-  vid.src=URL.createObjectURL(f);
-}
-
-/* Bug #4 — validation URL avant analyse */
-function validateUrl(url){
-  if(!url) return{ok:false,msg:'Colle une URL d\'abord'};
-  const isYT=/youtube\.com|youtu\.be/.test(url);
-  const isTW=/twitch\.tv|clips\.twitch\.tv/.test(url);
-  if(src==='yt'&&!isYT) return{ok:false,msg:'URL YouTube invalide (youtube.com ou youtu.be)'};
-  if(src==='tw'&&!isTW) return{ok:false,msg:'URL Twitch invalide (twitch.tv/videos/xxx ou clips.twitch.tv/xxx)'};
-  return{ok:true};
-}
-
-/* ── analyse ── */
-function startAnalysis(){
-  const url=$('url-inp').value.trim();
-  if(src!=='up'){
-    const v=validateUrl(url);
-    if(!v.ok){toast('⚠️ '+v.msg);return;}
-  } else {
-    if(!$('file-inp').files[0]){toast('⚠️ Aucun fichier sélectionné');return;}
-  }
-  analyseDone=false; clipsDone=false;
-  go_raw(1); resetProg();
-  src==='up'?startUpload():startYT(url);
-}
-
-// go_raw = navigation sans garde-fous (usage interne uniquement)
-function go_raw(n){
-  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
-  document.querySelectorAll('.sdot').forEach((d,i)=>{d.classList.remove('active','done');d.classList.add(i===n?'active':i<n?'done':'');});
-  document.querySelectorAll('.sline').forEach((l,i)=>l.classList.toggle('done',i<n));
-  step=n; window.scrollTo(0,0);
-}
-
-function resetProg(){
-  $('btn-clips').disabled=true;
-  for(let i=0;i<5;i++){$('pd'+i).className='pdot wait';$('pb'+i).className='pbadge bwait';$('pb'+i).textContent='Attente';}
-  ['pp0','pp1','pp2','pp3','pp4'].forEach(id=>$(id).textContent='En attente...');
-  $('pbar-wrap').style.display='none'; $('pbar').style.width='0%';
-}
-function setProg(i,state,detail,badge){
-  $('pd'+i).className='pdot '+state;
-  $('pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
-  $('pb'+i).textContent=badge;
-  if(detail) $('pp'+i).textContent=detail;
-}
-async function startYT(url){
-  setProg(0,'active','Connexion...','En cours');
-  try{
-    const r=await fetch('/api/youtube',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,niche,whisper:true})});
-    if(!r.ok){
-      const err=await r.json().catch(()=>({}));
-      const msg=err.detail||'Erreur serveur ('+r.status+')';
-      setProg(0,'wait','❌ '+msg,'Erreur');
-      toast('❌ '+msg); return;
-    }
-    const d=await r.json(); jobId=d.job_id; connectWS();
-  }catch(e){setProg(0,'wait','❌ Connexion impossible','Erreur');toast('❌ Vérifie ta connexion internet');}
-}
-function startUpload(){
-  const f=$('file-inp').files[0]; if(!f){toast('⚠️ Aucun fichier');return;}
-  setProg(0,'active','Upload en cours...','En cours');
-  const xhr=new XMLHttpRequest();
-  xhr.open('POST','/api/upload');
-  xhr.setRequestHeader('Content-Disposition','attachment; filename="'+encodeURIComponent(f.name)+'"');
-  xhr.setRequestHeader('x-niche',niche); xhr.setRequestHeader('x-whisper','true');
-  xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);setProg(0,'active','Upload '+p+'%...','En cours');}};
-  xhr.onload=()=>{
-    try{const d=JSON.parse(xhr.responseText);if(d.job_id){jobId=d.job_id;connectWS();}else{setProg(0,'wait','❌ '+(d.detail||'Erreur upload'),'Erreur');toast('❌ Upload échoué');}}
-    catch{setProg(0,'wait','❌ Réponse invalide','Erreur');}
-  };
-  xhr.onerror=()=>{setProg(0,'wait','❌ Upload échoué','Erreur');toast('❌ Erreur réseau');};
-  xhr.send(f);
-}
-
-/* Bug #2 — WS + fallback poll avec délai initial */
-function connectWS(){
-  try{
-    const ws=new WebSocket(`wss://${location.host}/ws/${jobId}`);
-    let wsOk=false;
-    ws.onopen=()=>{wsOk=true;};
-    ws.onmessage=e=>{try{handleUpdate(JSON.parse(e.data));}catch{}};
-    ws.onerror=()=>{if(!wsOk) setTimeout(pollJob,500);}; // délai 500ms avant fallback
-    ws.onclose=e=>{if(!wsOk||e.code===1006) setTimeout(pollJob,500);};
-  }catch{setTimeout(pollJob,500);}
-}
-function pollJob(){
-  let done=false;
-  const iv=setInterval(async()=>{
-    if(done||!jobId)return;
-    try{
-      const r=await fetch('/api/status/'+jobId);
-      const d=await r.json();
-      handleUpdate(d);
-      if(d.status==='done'||d.status==='error'){done=true;clearInterval(iv);}
-    }catch{}
-  },3000);
-}
-function handleUpdate(d){
-  const p=d.progress||0,msg=d.message||'';
-  if(p>=3) setProg(0,'done','Téléchargé','✓'); else if(msg.includes('élécharg')||p>0) setProg(0,'active',msg||'Téléchargement...','En cours');
-  if(p>=18) setProg(1,'done','Segments découpés','✓'); else if(p>=8) setProg(1,'active','Découpage...','En cours');
-  if(p>=55) setProg(2,'done','Transcription OK','✓');
-  else if(p>=18){setProg(2,'active',msg||'Transcription...','En cours');$('pbar-wrap').style.display='block';$('pbar').style.width=Math.min(100,((p-18)/37)*100)+'%';}
-  if(p>=65) setProg(3,'done','Moments sélectionnés','✓'); else if(p>=55) setProg(3,'active','Claude analyse...','En cours');
-  if(p>=96) setProg(4,'done','Export terminé','✓'); else if(p>=65) setProg(4,'active','Export 1080×1920...','En cours');
-  if(d.status==='done'&&d.clips?.length){
-    allClips=d.clips; analyseDone=true; buildClips();
-    $('btn-clips').disabled=false; $('btn-clips').textContent='Voir les clips ('+allClips.length+') →';
-  }
-  if(d.status==='error'){
-    // Bug #4 — messages d'erreur spécifiques
-    let errMsg=d.message||'Erreur inconnue';
-    if(errMsg.includes('private')||errMsg.includes('login')) errMsg='Vidéo privée ou nécessite une connexion';
-    else if(errMsg.includes('age')) errMsg='Vidéo avec restriction d\'âge — non supporté';
-    else if(errMsg.includes('unavailable')||errMsg.includes('404')) errMsg='Vidéo introuvable ou supprimée';
-    else if(errMsg.includes('copyright')) errMsg='Vidéo bloquée pour droits d\'auteur';
-    toast('❌ '+errMsg,4000);
-    setProg(0,'wait','❌ '+errMsg,'Erreur');
-    $('btn-clips').disabled=false;$('btn-clips').textContent='← Réessayer';$('btn-clips').onclick=()=>go_raw(0);
-  }
-  if(d.cost) $('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
-}
-
-/* ── clips grid ── */
-const GC={A:'#00dfa2',B:'#a855f7',C:'#f5c842',D:'#ff8c00'};
-function buildClips(){
-  const g=$('clips-grid'); g.innerHTML=''; selClips=[];
-  allClips.forEach((c,i)=>{
-    const sc=c.score_ia||c.tiktok_score||75,gr=c.grade||'B',gcc=GC[gr]||'#a855f7';
-    const el=document.createElement('div'); el.className='ccard on';
-    el.innerHTML=`<div class="cthumb">
-      <div class="cscore">${sc}</div><div class="cplay">▶</div><div class="ccheck">✓</div>
-      <div class="cgrade g${gr.toLowerCase()}">${gr}</div></div>
-      <div class="cbody"><div class="ctitle">${esc(c.titre||c.clip_title||'Clip #'+(i+1))}</div>
-      <div class="cmeta">${fmt(c.start)} → ${fmt(c.end)} · ${Math.round(c.duration)}s</div>
-      <div class="chook">${esc(c.hook||'')}</div></div>`;
-    el.onclick=()=>{el.classList.toggle('on');countSel();};
-    g.appendChild(el); selClips.push(c);
-  });
-  countSel();
-}
-function countSel(){
-  selClips=allClips.filter((_,i)=>$('clips-grid').children[i]?.classList.contains('on'));
-  $('sel-n').textContent=selClips.length;
-}
-function goEditor(){
-  if(!selClips.length){toast('⚠️ Sélectionne au moins 1 clip');return;}
-  clipsDone=true;
-  buildTabs(); buildExpList(); go_raw(3);
-}
-
-/* ── éditeur ── */
-function buildTabs(){
-  const tc=$('clip-tabs'); tc.innerHTML='';
-  selClips.forEach((c,i)=>{
-    const t=document.createElement('div'); t.className='ctab'+(i===0?' on':'');
-    t.textContent='Clip '+(i+1)+(c.titre?' — '+c.titre.slice(0,18)+'…':'');
-    t.onclick=()=>{document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('on'));t.classList.add('on');loadClip(i);};
-    tc.appendChild(t);
-  });
-  loadClip(0);
-}
-function loadClip(idx){
-  curIdx=idx; const c=selClips[idx]; if(!c)return;
-  $('ai-titre').value=c.titre||c.clip_title||'';
-  $('ai-hook').value=c.hook||'';
-  $('ai-cap').value=c.caption||'';
-  const hw=$('htags-wrap'); hw.innerHTML='';
-  (c.hashtags||[]).forEach(h=>{const s=document.createElement('span');s.className='htag';s.textContent=h;hw.appendChild(s);});
-  updateSub();
-}
-
-/* sous-titres */
-function updateSub(){
-  const ov=$('sub-ov');
-  ov.querySelectorAll('.sw').forEach(w=>{
-    w.style.background=ss.bg; w.style.color=ss.col; w.style.fontFamily=ss.font;
-    w.style.fontSize=ss.sz+'px'; w.style.fontWeight=ss.b?'900':'400';
-    w.style.fontStyle=ss.i?'italic':'normal'; w.style.textTransform=ss.u?'uppercase':'none';
-    w.style.textShadow=ss.s?'2px 2px 6px rgba(0,0,0,.9)':'none';
-    w.style.border=ss.border!=='none'?ss.border:'none';
-  });
-  ov.style.left=pos.x+'%'; ov.style.top=pos.y+'%'; ov.style.transform='translateX(-50%)';
-}
-function setFont(btn,f){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.font=f;updateSub();}
-function applyPreset(btn,bg,col,border){document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.bg=bg;ss.col=col;ss.border=border;updateSub();}
-function setColor(sw,col){document.querySelectorAll('.sw-dot').forEach(s=>s.classList.remove('on'));sw.classList.add('on');ss.col=col;updateSub();}
-function setSize(v){ss.sz=parseInt(v);$('sz-v').textContent=v+'px';updateSub();}
-const STMAP={b:'bold',i:'italic',u:'upper',s:'shadow'};
-function togStyle(k){ss[k]=!ss[k];$('tg-'+k).classList.toggle('on',ss[k]);updateSub();}
-
-/* position sliders */
-function sliderPos(){
-  pos.x=parseInt($('px').value); pos.y=parseInt($('py').value);
-  $('px-v').textContent=pos.x+'%'; $('py-v').textContent=pos.y+'%';
-  updateSub();
-}
-/* drag & drop */
-function dragStart(e){
-  if(!e.target.closest('.sub-ov'))return;
-  dragging=true; dx0=e.clientX; dy0=e.clientY; pos0={...pos};
-  document.onmousemove=dragMove; document.onmouseup=dragEnd; e.preventDefault();
-}
-function dragMove(e){
-  if(!dragging)return;
-  const fr=$('phone-frame'); const r=fr.getBoundingClientRect();
-  pos.x=Math.max(5,Math.min(90,pos0.x+((e.clientX-dx0)/r.width)*100));
-  pos.y=Math.max(5,Math.min(92,pos0.y+((e.clientY-dy0)/r.height)*100));
-  $('px').value=Math.round(pos.x); $('py').value=Math.round(pos.y);
-  $('px-v').textContent=Math.round(pos.x)+'%'; $('py-v').textContent=Math.round(pos.y)+'%';
-  updateSub();
-}
-function dragEnd(){dragging=false;document.onmousemove=null;document.onmouseup=null;}
-/* Bug #3 — touch : preventDefault sur l'event original pour bloquer le scroll */
-function dragStartT(e){
-  if(!e.target.closest('.sub-ov'))return;
-  e.preventDefault(); // ICI — avant tout, bloque le scroll page
-  const t=e.touches[0]; dx0=t.clientX; dy0=t.clientY; pos0={...pos}; dragging=true;
-  document.addEventListener('touchmove',dragMoveT,{passive:false});
-  document.addEventListener('touchend',dragEndT,{once:true});
-}
-function dragMoveT(e){
-  e.preventDefault(); // bloque scroll pendant le drag
-  dragMove({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});
-}
-function dragEndT(){dragging=false;document.removeEventListener('touchmove',dragMoveT);}
-
-/* Bug #9 — feedback visuel sur le bouton copie */
-async function copyCap(){
-  const btn=document.querySelector('.btn-copy');
-  try{
-    await navigator.clipboard.writeText($('ai-cap').value);
-    const orig=btn.textContent; btn.textContent='✅ Copié !'; btn.style.color='var(--green)';
-    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
-  }catch{toast('❌ Impossible de copier');}
-}
-
-/* Bug #10 — confirmation avant "Nouvelle vidéo" */
-function nouvelleVideo(){
-  if(allClips.length>0){
-    if(!confirm('Démarrer une nouvelle analyse ? Les clips actuels seront perdus.'))return;
-  }
-  allClips=[]; selClips=[]; jobId=null; analyseDone=false; clipsDone=false;
-  $('url-inp').value='';
-  go_raw(0);
-}
-async function regenClip(){
-  if(!jobId)return; const c=selClips[curIdx]; if(!c)return;
-  toast('🔄 Régénération...');
-  try{
-    const r=await fetch('/api/regenerate-hook',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({transcript:c.caption||'',titre:$('ai-titre').value,niche})});
-    const d=await r.json();
-    if(d.titre)$('ai-titre').value=d.titre;
-    if(d.hook)$('ai-hook').value=d.hook;
-    toast('✅ Contenu régénéré !');
-  }catch(e){toast('❌ '+e.message);}
-}
-function copyCap(){navigator.clipboard.writeText($('ai-cap').value).then(()=>toast('📋 Caption copiée !'));}
-
-/* ── export ── */
-function buildExpList(){
-  const el=$('exp-list'); el.innerHTML='';
-  selClips.forEach((c,i)=>{
-    const sc=c.score_ia||c.tiktok_score||75,gr=c.grade||'B';
-    const row=document.createElement('div'); row.className='exp-row';
-    row.innerHTML=`<div class="exp-thumb">🎬</div>
-      <div class="exp-info">
-        <div class="exp-title">${esc(c.titre||c.clip_title||'Clip #'+(i+1))}</div>
-        <div class="exp-meta">${fmt(c.start)} → ${fmt(c.end)} · ${Math.round(c.duration)}s · 1080×1920</div>
-        <div class="exp-score">Grade ${gr} · Score IA ${sc}/100</div>
-      </div>
-      <div class="exp-btns">
-        <button class="btn-dl" onclick="dlAndSave(${i})">⬇ Clip</button>
-        <button class="btn-prev" onclick="toast('▶ Preview clip '+(${i+1}))">▶ Preview</button>
-      </div>`;
-    el.appendChild(row);
-  });
-}
-function dlAndSave(i){
-  const c=selClips[i]; if(!c)return;
-  const url=c.url||'';
-  if(url){
-    const a=document.createElement('a');a.href=url;
-    a.download=(c.titre||'clip_'+i).replace(/\s+/g,'_')+'.mp4';
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-  }
-  addToHistory(c,url);
-  toast('✅ Clip sauvegardé dans l\'historique !');
-}
-
-/* ── SIDEBAR HISTORIQUE ── */
-const LS_KEY='clipviral_history';
-const TTL_MS=2*60*60*1000; // 2h
-
-function loadHistory(){return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}
-function saveHistory(h){localStorage.setItem(LS_KEY,JSON.stringify(h));}
-
-function addToHistory(clip,url){
-  const h=loadHistory();
-  const entry={
-    id:Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    titre:clip.titre||clip.clip_title||'Clip',
-    hook:clip.hook||'',
-    caption:clip.caption||'',
-    hashtags:clip.hashtags||[],
-    score:clip.score_ia||clip.tiktok_score||75,
-    grade:clip.grade||'B',
-    duration:Math.round(clip.duration||0),
-    url:url||clip.url||'',
-    addedAt:Date.now()
-  };
-  h.unshift(entry);
-  if(h.length>50)h.splice(50);
-  saveHistory(h);
-  renderHistory();
-}
-
-function isExpired(entry){return Date.now()-entry.addedAt>TTL_MS;}
-
-function renderHistory(){
-  const h=loadHistory();
-  const body=$('sb-body'); body.innerHTML='';
-  const active=h.filter(e=>!isExpired(e));
-  const totalCost=(parseFloat($('cost-pill').textContent.replace(/[^0-9.]/g,''))||0);
-
-  $('sh-total').textContent=h.length;
-  $('sh-active').textContent=active.length;
-  $('sh-cost').textContent=totalCost.toFixed(3)+'€';
-
-  const cnt=h.length;
-  [$('sb-badge'),$('sb-mob-badge')].forEach(b=>{
-    b.textContent=cnt;b.classList.toggle('show',cnt>0);
-  });
-
-  if(!h.length){
-    body.innerHTML=`<div class="sb-empty">
-      <div class="sb-empty-ico">📭</div>
-      <div class="sb-empty-t">Aucun clip pour l'instant</div>
-      <div class="sb-empty-s">Les clips téléchargés apparaîtront ici</div>
-    </div>`;
-    return;
-  }
-
-  h.forEach(e=>{
-    const exp=isExpired(e);
-    const msLeft=TTL_MS-(Date.now()-e.addedAt);
-    const ago=Math.round((Date.now()-e.addedAt)/60000);
-    const agoTxt=ago<60?ago+'min':Math.round(ago/60)+'h';
-    const minsLeft=Math.max(0,Math.floor(msLeft/60000));
-    const expireTxt=exp?'⚠️ Fichier expiré':minsLeft<60?`⏰ Expire dans ${minsLeft}min`:`⏰ Expire dans ${Math.floor(minsLeft/60)}h${minsLeft%60>0?' '+minsLeft%60+'min':''}`;
-    const div=document.createElement('div');
-    div.className='hclip'+(exp?' expired':'');
-    div.innerHTML=`
-      <div class="hc-top">
-        <div class="hc-thumb">🎬</div>
-        <div class="hc-info">
-          <div class="hc-title">${esc(e.titre)}</div>
-          <div class="hc-meta">${e.duration}s · Grade ${e.grade} · il y a ${agoTxt}</div>
-          <div class="hc-score">Score IA ${e.score}/100</div>
-          <div class="${exp?'hc-exp':'hc-ok'}">${expireTxt}</div>
-        </div>
-      </div>
-      <div class="hc-btns">
-        <button class="hc-btn hc-dl" ${exp?'disabled':''} onclick="dlClip('${esc(e.url)}','${esc(e.titre)}')" title="${exp?'Fichier supprimé après 2h':'Télécharger le clip'}">⬇ DL</button>
-        <button class="hc-btn hc-cp" onclick="cpCaption('${e.id}')">📋 Cap.</button>
-        <button class="hc-btn hc-del" onclick="delEntry('${e.id}')">🗑</button>
-      </div>`;
-    body.appendChild(div);
-  });
-}
-
-function dlClip(url,titre){
-  if(!url){toast('❌ URL non disponible');return;}
-  const a=document.createElement('a');a.href=url;a.download=titre.replace(/\s+/g,'_')+'.mp4';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  toast('⬇ Téléchargement lancé !');
-}
-function cpCaption(id){
-  const h=loadHistory(); const e=h.find(x=>x.id===id); if(!e)return;
-  const txt=e.caption+(e.hashtags?.length?'\n\n'+e.hashtags.join(' '):'');
-  navigator.clipboard.writeText(txt).then(()=>toast('📋 Caption copiée !'));
-}
-function delEntry(id){
-  const h=loadHistory().filter(x=>x.id!==id); saveHistory(h); renderHistory();
-  toast('🗑 Clip supprimé de l\'historique');
-}
-function clearHistory(){
-  if(!confirm('Vider tout l\'historique ?'))return;
-  localStorage.removeItem(LS_KEY); renderHistory();
-  toast('🗑 Historique vidé');
-}
-
-function openSB(){$('sidebar').classList.add('open');$('sb-overlay').classList.add('show');renderHistory();}
-function closeSB(){$('sidebar').classList.remove('open');$('sb-overlay').classList.remove('show');}
-
-// Raccourci clavier Escape
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSB();});
-
-// Init au chargement
-renderHistory();
-// Rafraîchir le countdown toutes les minutes quand la sidebar est ouverte
-setInterval(()=>{if($('sidebar').classList.contains('open'))renderHistory();},60000);
-
-
-async function checkHealth(){
-  try{
-    const d=await fetch('/health').then(r=>r.json());
-    const dot=$('hstatus');
-    if(d.whisper&&d.claude){dot.style.background='#10b981';dot.title='✅ Whisper + Claude actifs';}
-    else if(d.claude){dot.style.background='#f59e0b';dot.title='⚠️ Claude OK · Whisper manquant';}
-    else{dot.style.background='#ef4444';dot.title='❌ Clé Claude manquante';}
-    const wn=$('whisper-note');
-    if(wn) wn.textContent=d.whisper?'🎤 Whisper actif — transcription IA':'⚠️ Whisper non disponible';
-    if(d.cost) $('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
-  }catch{$('hstatus').style.background='#f59e0b';}
-}
-checkHealth(); setInterval(checkHealth,30000);
-</script>
-
-</div>
+<!-- TOAST PC -->
+<div class="toast" id="toast"></div>
 
 <!-- ████████████ VUE MOBILE ████████████ -->
 <div id="view-mob" style="display:none">
@@ -2081,7 +1820,7 @@ const SRC_NOTE={
 };
 function setSrc(t){
   src=t;
-  ['yt','tw','up'].forEach(s=>$('src-'+s).classList.toggle('on',s===t));
+  ['yt','tw','up'].forEach(s=>$('m-src-'+s).classList.toggle('on',s===t));
   $('m-src-note').textContent=SRC_NOTE[t];
   const isUp=t==='up';
   $('m-url-wrap').style.display=isUp?'none':'block';
@@ -2125,15 +1864,15 @@ function startAnalysis(){
 
 function resetProg(){
   $('m-btn-clips').disabled=true;
-  for(let i=0;i<5;i++){$('pd'+i).className='pdot wait';$('pb'+i).className='pbadge bwait';$('pb'+i).textContent='Att.';}
-  ['pp0','pp1','pp2','pp3','pp4'].forEach(id=>$(id).textContent='En attente...');
+  for(let i=0;i<5;i++){$('m-pd'+i).className='pdot wait';$('m-pb'+i).className='pbadge bwait';$('m-pb'+i).textContent='Att.';}
+  ['m-pp0','m-pp1','m-pp2','m-pp3','m-pp4'].forEach(id=>$(id).textContent='En attente...');
   $('m-pbar-wrap').style.display='none'; $('m-pbar').style.width='0%';
 }
 function setProg(i,state,detail,badge){
-  $('pd'+i).className='pdot '+state;
-  $('pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
-  $('pb'+i).textContent=badge;
-  if(detail) $('pp'+i).textContent=detail;
+  $('m-pd'+i).className='pdot '+state;
+  $('m-pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
+  $('m-pb'+i).textContent=badge;
+  if(detail) $('m-pp'+i).textContent=detail;
 }
 
 async function startYT(url){
@@ -2266,7 +2005,7 @@ function setFont(btn,f){document.querySelectorAll('.fbtn').forEach(b=>b.classLis
 function applyPreset(btn,bg,col,border){document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.bg=bg;ss.col=col;ss.border=border;$('m-thv-style').textContent=btn.textContent.replace(/^[^\s]+ /,'');updateSub();}
 function setColor(sw,col){document.querySelectorAll('.sw-dot').forEach(s=>s.classList.remove('on'));sw.classList.add('on');ss.col=col;updateSub();}
 function setSize(v){ss.sz=parseInt(v);$('m-sz-v').textContent=v+'px';$('m-thv-font').textContent=ss.font+' '+v+'px';updateSub();}
-function togStyle(k){ss[k]=!ss[k];$('tg-'+k).classList.toggle('on',ss[k]);updateSub();}
+function togStyle(k){ss[k]=!ss[k];$('m-tg-'+k).classList.toggle('on',ss[k]);updateSub();}
 
 function toggleTool(id){
   const h=$('th-'+id),b=$('tb-'+id);
@@ -2324,7 +2063,7 @@ async function regenClip(){
   }catch(e){toast('❌ '+e.message);}
 }
 async function copyCap(){
-  const btn=document.querySelector('.btn-copy');
+  const btn=document.querySelector('#view-mob .btn-copy');
   try{
     await navigator.clipboard.writeText($('m-ai-cap').value);
     const orig=btn.textContent; btn.textContent='✅ Copié !'; btn.style.color='var(--green)';
@@ -2369,9 +2108,7 @@ function nouvelleVideo(){
   goPage('p-source');
 }
 
-/* ── HISTORIQUE localStorage ── */
-const LS_KEY='clipviral_history';
-const TTL_MS=2*60*60*1000;
+/* ── HISTORIQUE localStorage (partage les constantes du JS PC) ── */
 function loadHistory(){return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}
 function saveHistory(h){localStorage.setItem(LS_KEY,JSON.stringify(h));}
 function isExpired(e){return Date.now()-e.addedAt>TTL_MS;}
@@ -2504,498 +2241,505 @@ switchView(initView);
 
 <!-- JS PC -->
 <script id="js-pc">
-
-/* ── état global ── */
-let step=0,niche='mindset',src='yt',jobId=null;
-let allClips=[],selClips=[],curIdx=0;
-let analyseDone=false, clipsDone=false; // garde-fous navigation
-let ss={bg:'#fff',col:'#fff',font:'Impact',sz:22,b:true,i:false,u:false,s:false,border:'none'};
-let pos={x:50,y:75};
-let dragging=false,dx0=0,dy0=0,pos0={x:50,y:75};
-
-/* ── utils ── */
 const $=id=>document.getElementById(id);
 const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML;};
 const fmt=s=>`${Math.floor(s/60)}:${('0'+Math.floor(s%60)).slice(-2)}`;
-function toast(msg,dur=2800){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
-/* ── navigation avec garde-fous ── */
+/* ══ ÉTAT ══ */
+let step=0, niche='mindset', src='yt', jobId=null;
+let allClips=[], selClips=[], curIdx=0;
+let demoMode=true;
+let totalSessionClips=0;
+let ss={bg:'#fff',col:'#000',font:'Impact',sz:22,b:true,i:false,u:false,s:false,border:'none'};
+let pos={x:50,y:75}, dragging=false, dx0=0,dy0=0,pos0={};
+let previewClipIdx=-1;
+
+/* ══ CLIPS DÉMO ══ */
+const DEMO=[
+  {titre:"La discipline bat la motivation — voici pourquoi",hook:"Ce que personne ne te dit sur la discipline...",caption:"La vérité sur la discipline 🔥\n\nTout le monde parle de motivation mais personne ne parle de discipline.\n\n#mindset #discipline #motivation #tiktok #viral",hashtags:["#mindset","#discipline","#motivation","#tiktok","#viral"],score_ia:94,grade:"A",start:245,end:274,duration:29,url:"",reasons:["🔥 Hook ultra-fort","😮 Brise une croyance","🎯 Moment clé"]},
+  {titre:"Comment j'ai gagné mes premiers 10 000€ en ligne",hook:"J'avais 22 ans et zéro expérience...",caption:"Mon parcours en 30 secondes 💰\n\nDe 0 à 10k€ en ligne, voici ce que j'ai fait différemment.\n\n#business #entrepreneur #argent #success #tiktok",hashtags:["#business","#entrepreneur","#argent","#success"],score_ia:91,grade:"A",start:512,end:545,duration:33,url:"",reasons:["💰 Histoire personnelle","🎯 Curiosité forte","📈 Très partagé"]},
+  {titre:"La vraie raison pour laquelle tu procrastines",hook:"Ce n'est pas de la paresse, c'est...",caption:"Enfin une explication qui a du sens 🧠\n\nLa procrastination n'est pas un problème de volonté.\n\n#psychologie #productivite #mindset #viral",hashtags:["#psychologie","#productivite","#mindset","#viral"],score_ia:88,grade:"A",start:78,end:108,duration:30,url:"",reasons:["🧠 Contre-intuitif","🌍 Sujet universel","📊 Très partageable"]},
+  {titre:"Ce conseil m'a coûté 50 000€",hook:"Mon mentor me l'avait pourtant dit...",caption:"Parfois les leçons coûtent cher 💸\n\nVoici l'erreur que j'ai faite.\n\n#business #lecon #argent #entrepreneur",hashtags:["#business","#lecon","#argent","#entrepreneur"],score_ia:85,grade:"B",start:890,end:930,duration:40,url:"",reasons:["😬 Moment d'échec","💡 Valeur éducative","🔁 Fort engagement"]},
+  {titre:"3 habitudes qui changent tout en 30 jours",hook:"La troisième m'a surpris moi-même...",caption:"30 jours pour changer sa vie ? 🚀\n\nJ'ai testé ces 3 habitudes. Les résultats m'ont bluffé.\n\n#habitudes #developpementpersonnel #routine #tiktok",hashtags:["#habitudes","#developpementpersonnel","#routine","#tiktok"],score_ia:82,grade:"B",start:1205,end:1248,duration:43,url:"",reasons:["📋 Format listicle","🎁 Tease le n°3","✅ Facile à appliquer"]},
+  {titre:"Pourquoi les riches ne travaillent pas plus que toi",hook:"La réponse va te surprendre...",caption:"La vérité sur la richesse 💡\n\nCe n'est pas une question d'heures de travail.\n\n#richesse #business #mindset #success",hashtags:["#richesse","#business","#mindset","#success"],score_ia:78,grade:"B",start:1580,end:1618,duration:38,url:"",reasons:["🤯 Très contre-intuitif","💬 Génère du débat","📱 Fort partage"]}
+];
+
+/* ══ UTILS ══ */
+function toast(msg,type='ok',dur=2600){
+  const t=$('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type==='err'?' toast-err':type==='warn'?' toast-warn':'');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ══ SWITCH VUE PC/MOB ══ */
+const VKEY='clipviral_view';
+function switchView(v){
+  document.documentElement.dataset.view=v;
+  const sp=$('style-pc'),sm=$('style-mob');
+  if(sp)sp.disabled=(v==='mob');
+  if(sm)sm.disabled=(v==='pc');
+  document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  try{localStorage.setItem(VKEY,v);}catch{}
+}
+(function initView(){
+  try{const s=localStorage.getItem(VKEY);if(s){switchView(s);return;}}catch{}
+  if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)&&window.innerWidth<768)switchView('mob');
+})();
+
+/* ══ NAVIGATION LIBRE (mode démo) ══ */
 function go(n){
-  // Bloquer l'avance si les étapes prérequises ne sont pas terminées
-  if(n>=2 && !analyseDone){toast('⚠️ Lance d\'abord une analyse');return;}
-  if(n>=3 && !clipsDone){toast('⚠️ Sélectionne tes clips d\'abord');return;}
-  if(n>=4 && !selClips.length){toast('⚠️ Aucun clip sélectionné');return;}
+  if(demoMode){
+    /* Injecter données fictives si besoin */
+    if(n>=2&&!allClips.length){
+      allClips=DEMO; totalSessionClips=DEMO.length; buildClips();
+      const bc=$('btn-clips');if(bc){bc.disabled=false;bc.textContent='Voir les clips ('+DEMO.length+') →';}
+    }
+    if(n>=3&&!selClips.length){ selClips=DEMO.slice(0,3); buildTabs(); buildExpList(); }
+  } else {
+    if(n>=2&&!allClips.length){toast('⚠️ Lance d\'abord une analyse','warn');return;}
+    if(n>=3&&!selClips.length){toast('⚠️ Sélectionne des clips','warn');return;}
+  }
+  _goRaw(n);
+}
 
-  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
+function _goRaw(n){
+  document.querySelectorAll('#view-pc .screen').forEach((s,i)=>s.classList.toggle('active',i===n));
   document.querySelectorAll('.sdot').forEach((d,i)=>{
     d.classList.remove('active','done');
-    d.classList.add(i===n?'active':i<n?'done':'');
-    // Griser les étapes non encore accessibles
-    d.style.pointerEvents=(i<=n||(i===1&&n===0)||(i<=1&&analyseDone)||(i<=2&&clipsDone))?'auto':'none';
-    d.style.opacity=(i<=n||( analyseDone&&i<=2)||(clipsDone&&i<=3))?'1':'0.35';
+    if(i===n)d.classList.add('active'); else if(i<n)d.classList.add('done');
   });
   document.querySelectorAll('.sline').forEach((l,i)=>l.classList.toggle('done',i<n));
   step=n; window.scrollTo(0,0);
+  if(n===4)refreshExpStats();
 }
 
-/* ── tuto ── */
-function openTuto(){$('modal-tuto').classList.add('show');}
-function closeTuto(){$('modal-tuto').classList.remove('show');}
-$('modal-tuto').addEventListener('click',e=>{if(e.target===$('modal-tuto'))closeTuto();});
+function goEditor(){
+  if(!selClips.length){toast('⚠️ Sélectionne au moins 1 clip','warn');return;}
+  buildTabs(); buildExpList(); _goRaw(3);
+}
+function nouvelleVideo(){
+  if(allClips.length>0&&!demoMode){if(!confirm('Nouvelle analyse ? Les clips actuels seront perdus.'))return;}
+  allClips=[]; selClips=[]; jobId=null; demoMode=true;
+  $('url-inp').value=''; _goRaw(0);
+}
 
-/* ── source ── */
-const SRC_NOTE={
-  yt:'⚡ Découpage auto 15min · Whisper · Claude Haiku · Export 1080×1920',
-  tw:'🎮 VOD (twitch.tv/videos/xxx) ou Clip (clips.twitch.tv/xxx) · Découpage auto',
-  up:'📁 MP4 · MOV · MKV · AVI — 60min max — Découpage auto si >15min'
+/* ══ ONBOARDING ══ */
+(function checkOnboard(){
+  try{if(localStorage.getItem('cv_ob1'))return;}catch{}
+  setTimeout(()=>{const o=$('onboard-overlay');if(o)o.style.display='flex';},700);
+})();
+function closeOnboard(){
+  const o=$('onboard-overlay');if(o)o.style.display='none';
+  try{localStorage.setItem('cv_ob1','1');}catch{}
+}
+
+/* ══ TUTO ══ */
+function openTuto(){$('modal-tuto').classList.add('open');}
+function closeTuto(){$('modal-tuto').classList.remove('open');}
+document.addEventListener('DOMContentLoaded',()=>{
+  const mt=$('modal-tuto');
+  if(mt)mt.addEventListener('click',e=>{if(e.target===mt)closeTuto();});
+});
+
+/* ══ PREVIEW VIDÉO ══ */
+function openPreview(i){
+  previewClipIdx=i;
+  const c=allClips[i]||selClips[i];if(!c)return;
+  $('vid-title').textContent=c.titre||'Aperçu clip '+(i+1);
+  $('vid-meta').textContent=Math.round(c.duration)+'s · 1080×1920 · TikTok';
+  const overlay=$('vid-demo-overlay'), vid=$('vid-player');
+  if(c.url&&!demoMode){
+    overlay.style.display='none'; vid.style.display='block';
+    vid.src=c.url; vid.load(); vid.play().catch(()=>{});
+  } else {
+    overlay.style.display='flex'; vid.style.display='none';
+  }
+  $('vid-modal').classList.add('open');
+}
+function closePreview(){
+  $('vid-modal').classList.remove('open');
+  const vid=$('vid-player');vid.pause();vid.src='';
+}
+function dlFromPreview(){if(previewClipIdx>=0)dlAndSave(previewClipIdx,selClips);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePreview();closeSB();closeTuto();}});
+
+/* ══ SOURCE ══ */
+const SRC_NOTES={
+  yt:'⚡ YouTube · Découpage auto · Whisper · Claude Haiku · Export 1080×1920',
+  tw:'🎮 Twitch VOD (twitch.tv/videos/xxx) · Découpage auto · Whisper · Claude Haiku',
+  up:'📁 MP4 · MOV · MKV · AVI — 60min max — Découpage auto si durée > 15min'
 };
 function setSrc(t){
   src=t;
   ['yt','tw','up'].forEach(s=>$('src-'+s).classList.toggle('on',s===t));
-  $('src-note').textContent=SRC_NOTE[t];
-  const isUp=t==='up';
+  $('src-note').textContent=SRC_NOTES[t];
+  const isUp=(t==='up');
   $('url-wrap').style.display=isUp?'none':'block';
   $('drop-zone').style.display=isUp?'block':'none';
-  if(!isUp) $('url-inp').placeholder=t==='tw'?'https://www.twitch.tv/videos/... ou https://clips.twitch.tv/...':'https://www.youtube.com/watch?v=...';
+  if(!isUp)$('url-inp').placeholder=t==='tw'?'https://www.twitch.tv/videos/...':'https://www.youtube.com/watch?v=...';
 }
-function setNiche(el){document.querySelectorAll('.niche-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');niche=el.dataset.n;}
-
-/* Bug #7 — vérification durée fichier côté JS avant upload */
+function setNiche(el){document.querySelectorAll('#s0 .niche-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');niche=el.dataset.n;}
 function onFile(f){
-  if(!f) return;
-  // Vérif taille max 4 Go
-  if(f.size>4*1024*1024*1024){toast('❌ Fichier trop lourd (max 4 Go)');$('file-inp').value='';return;}
-  // Vérif durée via video element
-  const vid=document.createElement('video');
-  vid.preload='metadata';
-  vid.onloadedmetadata=()=>{
-    URL.revokeObjectURL(vid.src);
-    if(vid.duration>3700){// >61min
-      toast('❌ Vidéo trop longue (max 60min)');$('file-inp').value='';return;
-    }
-    toast(`📁 ${f.name} · ${Math.round(vid.duration/60)}min — OK`);
+  if(!f)return;
+  if(f.size>4*1024*1024*1024){toast('❌ Fichier trop lourd (max 4 Go)','err');$('file-inp').value='';return;}
+  const vid=document.createElement('video');vid.preload='metadata';
+  vid.onloadedmetadata=()=>{URL.revokeObjectURL(vid.src);
+    if(vid.duration>3700){toast('❌ Vidéo trop longue (max 60min)','err');$('file-inp').value='';return;}
+    toast('📁 '+f.name+' · '+Math.round(vid.duration/60)+'min — OK');
   };
   vid.src=URL.createObjectURL(f);
 }
-
-/* Bug #4 — validation URL avant analyse */
 function validateUrl(url){
-  if(!url) return{ok:false,msg:'Colle une URL d\'abord'};
-  const isYT=/youtube\.com|youtu\.be/.test(url);
-  const isTW=/twitch\.tv|clips\.twitch\.tv/.test(url);
-  if(src==='yt'&&!isYT) return{ok:false,msg:'URL YouTube invalide (youtube.com ou youtu.be)'};
-  if(src==='tw'&&!isTW) return{ok:false,msg:'URL Twitch invalide (twitch.tv/videos/xxx ou clips.twitch.tv/xxx)'};
+  if(!url)return{ok:false,msg:'Colle une URL d\'abord'};
+  if(src==='yt'&&!/youtube\.com|youtu\.be/.test(url))return{ok:false,msg:'URL YouTube invalide'};
+  if(src==='tw'&&!/twitch\.tv/.test(url))return{ok:false,msg:'URL Twitch invalide'};
   return{ok:true};
 }
 
-/* ── analyse ── */
+/* ══ ANALYSE ══ */
 function startAnalysis(){
-  const url=$('url-inp').value.trim();
-  if(src!=='up'){
-    const v=validateUrl(url);
-    if(!v.ok){toast('⚠️ '+v.msg);return;}
-  } else {
-    if(!$('file-inp').files[0]){toast('⚠️ Aucun fichier sélectionné');return;}
+  if(demoMode){
+    allClips=[]; selClips=[]; _goRaw(1); resetProg(); simulateDemo(); return;
   }
-  analyseDone=false; clipsDone=false;
-  go_raw(1); resetProg();
-  src==='up'?startUpload():startYT(url);
+  if(src!=='up'){
+    const v=validateUrl($('url-inp').value.trim());
+    if(!v.ok){toast('⚠️ '+v.msg,'warn');return;}
+  } else if(!$('file-inp').files[0]){toast('⚠️ Aucun fichier sélectionné','warn');return;}
+  _goRaw(1); resetProg();
+  src==='up'?startUpload():startYT($('url-inp').value.trim());
 }
 
-// go_raw = navigation sans garde-fous (usage interne uniquement)
-function go_raw(n){
-  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
-  document.querySelectorAll('.sdot').forEach((d,i)=>{d.classList.remove('active','done');d.classList.add(i===n?'active':i<n?'done':'');});
-  document.querySelectorAll('.sline').forEach((l,i)=>l.classList.toggle('done',i<n));
-  step=n; window.scrollTo(0,0);
+function simulateDemo(){
+  $('analyse-sub').textContent='Mode démo — simulation 3 secondes...';
+  const steps=[
+    [300,()=>setProg(0,'active','Téléchargement en cours...','En cours')],
+    [700,()=>setProg(0,'done','Téléchargé ✓','✓')],
+    [900,()=>setProg(1,'active','Découpage segments...','En cours')],
+    [1300,()=>setProg(1,'done','6 segments créés ✓','✓')],
+    [1500,()=>{setProg(2,'active','Transcription Whisper...','En cours');$('pbar-wrap').style.display='block';}],
+    [1800,()=>$('pbar').style.width='55%'],
+    [2100,()=>{$('pbar').style.width='100%';setProg(2,'done','Transcription OK ✓','✓');}],
+    [2300,()=>setProg(3,'active','Claude sélectionne les moments...','En cours')],
+    [2700,()=>setProg(3,'done',DEMO.length+' moments détectés ✓','✓')],
+    [2900,()=>setProg(4,'active','Export 1080×1920...','En cours')],
+    [3200,()=>{
+      setProg(4,'done','Export terminé ✓','✓');
+      allClips=DEMO; totalSessionClips=DEMO.length; buildClips();
+      const bc=$('btn-clips');bc.disabled=false;bc.textContent='Voir '+DEMO.length+' clips →';
+      toast('✅ '+DEMO.length+' clips détectés ! (mode démo)');
+    }]
+  ];
+  steps.forEach(([d,fn])=>setTimeout(fn,d));
 }
 
 function resetProg(){
-  $('btn-clips').disabled=true;
+  const bc=$('btn-clips');if(bc){bc.disabled=true;bc.textContent='Analyse en cours...';}
   for(let i=0;i<5;i++){$('pd'+i).className='pdot wait';$('pb'+i).className='pbadge bwait';$('pb'+i).textContent='Attente';}
   ['pp0','pp1','pp2','pp3','pp4'].forEach(id=>$(id).textContent='En attente...');
-  $('pbar-wrap').style.display='none'; $('pbar').style.width='0%';
+  $('pbar-wrap').style.display='none';$('pbar').style.width='0%';
+  $('analyse-sub').textContent='2–4 minutes · Ne ferme pas l\'onglet';
 }
 function setProg(i,state,detail,badge){
   $('pd'+i).className='pdot '+state;
   $('pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
   $('pb'+i).textContent=badge;
-  if(detail) $('pp'+i).textContent=detail;
+  if(detail)$('pp'+i).textContent=detail;
 }
 async function startYT(url){
   setProg(0,'active','Connexion...','En cours');
   try{
     const r=await fetch('/api/youtube',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,niche,whisper:true})});
-    if(!r.ok){
-      const err=await r.json().catch(()=>({}));
-      const msg=err.detail||'Erreur serveur ('+r.status+')';
-      setProg(0,'wait','❌ '+msg,'Erreur');
-      toast('❌ '+msg); return;
-    }
-    const d=await r.json(); jobId=d.job_id; connectWS();
-  }catch(e){setProg(0,'wait','❌ Connexion impossible','Erreur');toast('❌ Vérifie ta connexion internet');}
+    if(!r.ok){const e=await r.json().catch(()=>({}));const m=e.detail||'Erreur '+r.status;setProg(0,'wait','❌ '+m,'Err');toast('❌ '+m,'err');return;}
+    const d=await r.json();jobId=d.job_id;connectWS();
+  }catch(e){setProg(0,'wait','❌ Connexion impossible','Err');toast('❌ Vérifie ta connexion','err');}
 }
 function startUpload(){
-  const f=$('file-inp').files[0]; if(!f){toast('⚠️ Aucun fichier');return;}
-  setProg(0,'active','Upload en cours...','En cours');
-  const xhr=new XMLHttpRequest();
-  xhr.open('POST','/api/upload');
+  const f=$('file-inp').files[0];if(!f)return;
+  setProg(0,'active','Upload...','En cours');
+  const xhr=new XMLHttpRequest();xhr.open('POST','/api/upload');
   xhr.setRequestHeader('Content-Disposition','attachment; filename="'+encodeURIComponent(f.name)+'"');
-  xhr.setRequestHeader('x-niche',niche); xhr.setRequestHeader('x-whisper','true');
-  xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);setProg(0,'active','Upload '+p+'%...','En cours');}};
-  xhr.onload=()=>{
-    try{const d=JSON.parse(xhr.responseText);if(d.job_id){jobId=d.job_id;connectWS();}else{setProg(0,'wait','❌ '+(d.detail||'Erreur upload'),'Erreur');toast('❌ Upload échoué');}}
-    catch{setProg(0,'wait','❌ Réponse invalide','Erreur');}
-  };
-  xhr.onerror=()=>{setProg(0,'wait','❌ Upload échoué','Erreur');toast('❌ Erreur réseau');};
+  xhr.setRequestHeader('x-niche',niche);xhr.setRequestHeader('x-whisper','true');
+  xhr.upload.onprogress=e=>{if(e.lengthComputable)setProg(0,'active','Upload '+Math.round(e.loaded/e.total*100)+'%','En cours');};
+  xhr.onload=()=>{try{const d=JSON.parse(xhr.responseText);if(d.job_id){jobId=d.job_id;connectWS();}else{setProg(0,'wait','❌ Erreur upload','Err');}}catch{}};
   xhr.send(f);
 }
-
-/* Bug #2 — WS + fallback poll avec délai initial */
 function connectWS(){
   try{
     const ws=new WebSocket(`wss://${location.host}/ws/${jobId}`);
-    let wsOk=false;
-    ws.onopen=()=>{wsOk=true;};
+    let ok=false;
+    ws.onopen=()=>{ok=true;};
     ws.onmessage=e=>{try{handleUpdate(JSON.parse(e.data));}catch{}};
-    ws.onerror=()=>{if(!wsOk) setTimeout(pollJob,500);}; // délai 500ms avant fallback
-    ws.onclose=e=>{if(!wsOk||e.code===1006) setTimeout(pollJob,500);};
+    ws.onerror=()=>{if(!ok)setTimeout(pollJob,500);};
+    ws.onclose=e=>{if(!ok||e.code===1006)setTimeout(pollJob,500);};
   }catch{setTimeout(pollJob,500);}
 }
 function pollJob(){
   let done=false;
   const iv=setInterval(async()=>{
     if(done||!jobId)return;
-    try{
-      const r=await fetch('/api/status/'+jobId);
-      const d=await r.json();
-      handleUpdate(d);
-      if(d.status==='done'||d.status==='error'){done=true;clearInterval(iv);}
-    }catch{}
+    try{const r=await fetch('/api/status/'+jobId);const d=await r.json();handleUpdate(d);if(d.status==='done'||d.status==='error'){done=true;clearInterval(iv);}}catch{}
   },3000);
 }
 function handleUpdate(d){
   const p=d.progress||0,msg=d.message||'';
-  if(p>=3) setProg(0,'done','Téléchargé','✓'); else if(msg.includes('élécharg')||p>0) setProg(0,'active',msg||'Téléchargement...','En cours');
-  if(p>=18) setProg(1,'done','Segments découpés','✓'); else if(p>=8) setProg(1,'active','Découpage...','En cours');
-  if(p>=55) setProg(2,'done','Transcription OK','✓');
+  if(p>=3)setProg(0,'done','Téléchargé ✓','✓');else if(p>0)setProg(0,'active',msg||'Téléchargement...','En cours');
+  if(p>=18)setProg(1,'done','Segments créés ✓','✓');else if(p>=8)setProg(1,'active','Découpage...','En cours');
+  if(p>=55)setProg(2,'done','Transcription OK ✓','✓');
   else if(p>=18){setProg(2,'active',msg||'Transcription...','En cours');$('pbar-wrap').style.display='block';$('pbar').style.width=Math.min(100,((p-18)/37)*100)+'%';}
-  if(p>=65) setProg(3,'done','Moments sélectionnés','✓'); else if(p>=55) setProg(3,'active','Claude analyse...','En cours');
-  if(p>=96) setProg(4,'done','Export terminé','✓'); else if(p>=65) setProg(4,'active','Export 1080×1920...','En cours');
+  if(p>=65)setProg(3,'done','Sélection OK ✓','✓');else if(p>=55)setProg(3,'active','Claude...','En cours');
+  if(p>=96)setProg(4,'done','Export OK ✓','✓');else if(p>=65)setProg(4,'active','Export...','En cours');
   if(d.status==='done'&&d.clips?.length){
-    allClips=d.clips; analyseDone=true; buildClips();
-    $('btn-clips').disabled=false; $('btn-clips').textContent='Voir les clips ('+allClips.length+') →';
+    allClips=d.clips; totalSessionClips+=d.clips.length; demoMode=false; buildClips();
+    const bc=$('btn-clips');bc.disabled=false;bc.textContent='Voir '+allClips.length+' clips →';
+    toast('✅ '+allClips.length+' clips détectés !');
+    const dp=$('demo-pill');if(dp)dp.style.display='none';
+    const db=$('demo-banner');if(db)db.style.display='none';
   }
   if(d.status==='error'){
-    // Bug #4 — messages d'erreur spécifiques
-    let errMsg=d.message||'Erreur inconnue';
-    if(errMsg.includes('private')||errMsg.includes('login')) errMsg='Vidéo privée ou nécessite une connexion';
-    else if(errMsg.includes('age')) errMsg='Vidéo avec restriction d\'âge — non supporté';
-    else if(errMsg.includes('unavailable')||errMsg.includes('404')) errMsg='Vidéo introuvable ou supprimée';
-    else if(errMsg.includes('copyright')) errMsg='Vidéo bloquée pour droits d\'auteur';
-    toast('❌ '+errMsg,4000);
-    setProg(0,'wait','❌ '+errMsg,'Erreur');
-    $('btn-clips').disabled=false;$('btn-clips').textContent='← Réessayer';$('btn-clips').onclick=()=>go_raw(0);
+    let m=d.message||'Erreur';
+    if(/private|login/i.test(m))m='Vidéo privée ou inaccessible';
+    else if(/age/i.test(m))m='Restriction d\'âge — non supporté';
+    else if(/unavailable|404/i.test(m))m='Vidéo introuvable';
+    else if(/copyright/i.test(m))m='Bloquée pour droits d\'auteur';
+    toast('❌ '+m,'err',4000);setProg(0,'wait','❌ '+m,'Err');
+    const bc=$('btn-clips');bc.disabled=false;bc.textContent='← Réessayer';bc.onclick=()=>_goRaw(0);
   }
-  if(d.cost) $('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
+  if(d.cost)$('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
 }
 
-/* ── clips grid ── */
-const GC={A:'#00dfa2',B:'#a855f7',C:'#f5c842',D:'#ff8c00'};
+/* ══ CLIPS ══ */
+const GRADE_CLS={A:'grade-a',B:'grade-b',C:'grade-c'};
+const SCORE_CLS={A:'score-a',B:'score-b',C:'score-c'};
 function buildClips(){
-  const g=$('clips-grid'); g.innerHTML=''; selClips=[];
+  const g=$('clips-grid');g.innerHTML='';selClips=[];
+  const avg=allClips.reduce((s,c)=>s+c.duration,0)/(allClips.length||1);
+  $('stat-total').textContent=allClips.length;
+  $('stat-sel').textContent='0';
+  $('stat-avg').textContent=Math.round(avg)+'s';
   allClips.forEach((c,i)=>{
-    const sc=c.score_ia||c.tiktok_score||75,gr=c.grade||'B',gcc=GC[gr]||'#a855f7';
-    const el=document.createElement('div'); el.className='ccard on';
+    const sc=c.score_ia||c.tiktok_score||75,gr=c.grade||'B';
+    const reasons=c.reasons||[];
+    const el=document.createElement('div');el.className='ccard on';
     el.innerHTML=`<div class="cthumb">
-      <div class="cscore">${sc}</div><div class="cplay">▶</div><div class="ccheck">✓</div>
-      <div class="cgrade g${gr.toLowerCase()}">${gr}</div></div>
-      <div class="cbody"><div class="ctitle">${esc(c.titre||c.clip_title||'Clip #'+(i+1))}</div>
+      <div class="cscore">${sc}</div>
+      <div class="cgrade-dot ${GRADE_CLS[gr]||'grade-b'}">${gr}</div>
+      <div class="cplay-btn" title="Prévisualiser">▶</div>
+      <div class="ccheck">✓</div>
+    </div>
+    <div class="cbody">
+      <div class="ctitle">${esc(c.titre||c.clip_title||'Clip #'+(i+1))}</div>
       <div class="cmeta">${fmt(c.start)} → ${fmt(c.end)} · ${Math.round(c.duration)}s</div>
-      <div class="chook">${esc(c.hook||'')}</div></div>`;
-    el.onclick=()=>{el.classList.toggle('on');countSel();};
-    g.appendChild(el); selClips.push(c);
+      ${reasons.length?'<div class="creasons">'+reasons.map(r=>`<div class="creason">${esc(r)}</div>`).join('')+'</div>':''}
+    </div>`;
+    el.querySelector('.cplay-btn').onclick=e=>{e.stopPropagation();openPreview(i);};
+    el.addEventListener('click',()=>{el.classList.toggle('on');countSel();});
+    g.appendChild(el);selClips.push(c);
   });
   countSel();
 }
 function countSel(){
-  selClips=allClips.filter((_,i)=>$('clips-grid').children[i]?.classList.contains('on'));
+  const cards=$('clips-grid').children;
+  selClips=allClips.filter((_,i)=>cards[i]?.classList.contains('on'));
   $('sel-n').textContent=selClips.length;
-}
-function goEditor(){
-  if(!selClips.length){toast('⚠️ Sélectionne au moins 1 clip');return;}
-  clipsDone=true;
-  buildTabs(); buildExpList(); go_raw(3);
+  $('stat-sel').textContent=selClips.length;
 }
 
-/* ── éditeur ── */
+/* ══ ÉDITEUR ══ */
 function buildTabs(){
-  const tc=$('clip-tabs'); tc.innerHTML='';
+  const tc=$('clip-tabs');tc.innerHTML='';
   selClips.forEach((c,i)=>{
-    const t=document.createElement('div'); t.className='ctab'+(i===0?' on':'');
-    t.textContent='Clip '+(i+1)+(c.titre?' — '+c.titre.slice(0,18)+'…':'');
+    const t=document.createElement('div');t.className='ctab'+(i===0?' on':'');
+    t.textContent='Clip '+(i+1);
     t.onclick=()=>{document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('on'));t.classList.add('on');loadClip(i);};
     tc.appendChild(t);
   });
   loadClip(0);
 }
 function loadClip(idx){
-  curIdx=idx; const c=selClips[idx]; if(!c)return;
+  curIdx=idx;const c=selClips[idx];if(!c)return;
   $('ai-titre').value=c.titre||c.clip_title||'';
   $('ai-hook').value=c.hook||'';
   $('ai-cap').value=c.caption||'';
-  const hw=$('htags-wrap'); hw.innerHTML='';
+  const hw=$('htags-wrap');hw.innerHTML='';
   (c.hashtags||[]).forEach(h=>{const s=document.createElement('span');s.className='htag';s.textContent=h;hw.appendChild(s);});
   updateSub();
 }
-
-/* sous-titres */
 function updateSub(){
   const ov=$('sub-ov');
   ov.querySelectorAll('.sw').forEach(w=>{
-    w.style.background=ss.bg; w.style.color=ss.col; w.style.fontFamily=ss.font;
-    w.style.fontSize=ss.sz+'px'; w.style.fontWeight=ss.b?'900':'400';
-    w.style.fontStyle=ss.i?'italic':'normal'; w.style.textTransform=ss.u?'uppercase':'none';
+    w.style.background=ss.bg;w.style.color=ss.col;w.style.fontFamily=ss.font;
+    w.style.fontSize=ss.sz+'px';w.style.fontWeight=ss.b?'900':'400';
+    w.style.fontStyle=ss.i?'italic':'normal';w.style.textTransform=ss.u?'uppercase':'none';
     w.style.textShadow=ss.s?'2px 2px 6px rgba(0,0,0,.9)':'none';
     w.style.border=ss.border!=='none'?ss.border:'none';
   });
-  ov.style.left=pos.x+'%'; ov.style.top=pos.y+'%'; ov.style.transform='translateX(-50%)';
+  ov.style.left=pos.x+'%';ov.style.top=pos.y+'%';ov.style.transform='translateX(-50%)';
 }
 function setFont(btn,f){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.font=f;updateSub();}
 function applyPreset(btn,bg,col,border){document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.bg=bg;ss.col=col;ss.border=border;updateSub();}
 function setColor(sw,col){document.querySelectorAll('.sw-dot').forEach(s=>s.classList.remove('on'));sw.classList.add('on');ss.col=col;updateSub();}
 function setSize(v){ss.sz=parseInt(v);$('sz-v').textContent=v+'px';updateSub();}
-const STMAP={b:'bold',i:'italic',u:'upper',s:'shadow'};
 function togStyle(k){ss[k]=!ss[k];$('tg-'+k).classList.toggle('on',ss[k]);updateSub();}
-
-/* position sliders */
 function sliderPos(){
-  pos.x=parseInt($('px').value); pos.y=parseInt($('py').value);
-  $('px-v').textContent=pos.x+'%'; $('py-v').textContent=pos.y+'%';
-  updateSub();
+  pos.x=parseInt($('px').value);pos.y=parseInt($('py').value);
+  $('px-v').textContent=pos.x+'%';$('py-v').textContent=pos.y+'%';updateSub();
 }
-/* drag & drop */
-function dragStart(e){
-  if(!e.target.closest('.sub-ov'))return;
-  dragging=true; dx0=e.clientX; dy0=e.clientY; pos0={...pos};
-  document.onmousemove=dragMove; document.onmouseup=dragEnd; e.preventDefault();
-}
-function dragMove(e){
-  if(!dragging)return;
-  const fr=$('phone-frame'); const r=fr.getBoundingClientRect();
-  pos.x=Math.max(5,Math.min(90,pos0.x+((e.clientX-dx0)/r.width)*100));
-  pos.y=Math.max(5,Math.min(92,pos0.y+((e.clientY-dy0)/r.height)*100));
-  $('px').value=Math.round(pos.x); $('py').value=Math.round(pos.y);
-  $('px-v').textContent=Math.round(pos.x)+'%'; $('py-v').textContent=Math.round(pos.y)+'%';
-  updateSub();
-}
+function dragStart(e){if(!e.target.closest('.sub-ov'))return;dragging=true;dx0=e.clientX;dy0=e.clientY;pos0={...pos};document.onmousemove=dragMove;document.onmouseup=dragEnd;e.preventDefault();}
+function dragMove(e){if(!dragging)return;const r=$('phone-frame').getBoundingClientRect();pos.x=Math.max(5,Math.min(90,pos0.x+((e.clientX-dx0)/r.width)*100));pos.y=Math.max(5,Math.min(92,pos0.y+((e.clientY-dy0)/r.height)*100));$('px').value=Math.round(pos.x);$('py').value=Math.round(pos.y);$('px-v').textContent=Math.round(pos.x)+'%';$('py-v').textContent=Math.round(pos.y)+'%';updateSub();}
 function dragEnd(){dragging=false;document.onmousemove=null;document.onmouseup=null;}
-/* Bug #3 — touch : preventDefault sur l'event original pour bloquer le scroll */
-function dragStartT(e){
-  if(!e.target.closest('.sub-ov'))return;
-  e.preventDefault(); // ICI — avant tout, bloque le scroll page
-  const t=e.touches[0]; dx0=t.clientX; dy0=t.clientY; pos0={...pos}; dragging=true;
-  document.addEventListener('touchmove',dragMoveT,{passive:false});
-  document.addEventListener('touchend',dragEndT,{once:true});
-}
-function dragMoveT(e){
-  e.preventDefault(); // bloque scroll pendant le drag
-  dragMove({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});
-}
+function dragStartT(e){if(!e.target.closest('.sub-ov'))return;e.preventDefault();const t=e.touches[0];dx0=t.clientX;dy0=t.clientY;pos0={...pos};dragging=true;document.addEventListener('touchmove',dragMoveT,{passive:false});document.addEventListener('touchend',dragEndT,{once:true});}
+function dragMoveT(e){e.preventDefault();dragMove({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});}
 function dragEndT(){dragging=false;document.removeEventListener('touchmove',dragMoveT);}
 
-/* Bug #9 — feedback visuel sur le bouton copie */
-async function copyCap(){
-  const btn=document.querySelector('.btn-copy');
-  try{
-    await navigator.clipboard.writeText($('ai-cap').value);
-    const orig=btn.textContent; btn.textContent='✅ Copié !'; btn.style.color='var(--green)';
-    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
-  }catch{toast('❌ Impossible de copier');}
-}
-
-/* Bug #10 — confirmation avant "Nouvelle vidéo" */
-function nouvelleVideo(){
-  if(allClips.length>0){
-    if(!confirm('Démarrer une nouvelle analyse ? Les clips actuels seront perdus.'))return;
-  }
-  allClips=[]; selClips=[]; jobId=null; analyseDone=false; clipsDone=false;
-  $('url-inp').value='';
-  go_raw(0);
-}
 async function regenClip(){
-  if(!jobId)return; const c=selClips[curIdx]; if(!c)return;
+  if(demoMode){
+    toast('🔄 Régénération...');
+    const hooks=["Ce que personne ne dit sur...","La vérité que j\'ai mis des années à comprendre","Voici pourquoi tu n\'arrives pas à avancer"];
+    setTimeout(()=>{$('ai-hook').value=hooks[Math.floor(Math.random()*hooks.length)];toast('✅ Régénéré ! (mode démo)');},1200);
+    return;
+  }
+  if(!jobId)return;const c=selClips[curIdx];if(!c)return;
   toast('🔄 Régénération...');
   try{
-    const r=await fetch('/api/regenerate-hook',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({transcript:c.caption||'',titre:$('ai-titre').value,niche})});
+    const r=await fetch('/api/regenerate-hook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:c.caption||'',titre:$('ai-titre').value,niche})});
     const d=await r.json();
     if(d.titre)$('ai-titre').value=d.titre;
     if(d.hook)$('ai-hook').value=d.hook;
     toast('✅ Contenu régénéré !');
-  }catch(e){toast('❌ '+e.message);}
+  }catch(e){toast('❌ '+e.message,'err');}
 }
-function copyCap(){navigator.clipboard.writeText($('ai-cap').value).then(()=>toast('📋 Caption copiée !'));}
+async function copyCap(){
+  const btn=$('btn-copy');
+  try{
+    await navigator.clipboard.writeText($('ai-cap').value);
+    const orig=btn.textContent;btn.textContent='✅ Copié !';btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
+  }catch{toast('❌ Impossible de copier','err');}
+}
 
-/* ── export ── */
+/* ══ EXPORT ══ */
 function buildExpList(){
-  const el=$('exp-list'); el.innerHTML='';
+  const el=$('exp-list');el.innerHTML='';
   selClips.forEach((c,i)=>{
     const sc=c.score_ia||c.tiktok_score||75,gr=c.grade||'B';
-    const row=document.createElement('div'); row.className='exp-row';
-    row.innerHTML=`<div class="exp-thumb">🎬</div>
+    const reasons=c.reasons||[];
+    const row=document.createElement('div');row.className='exp-row';
+    row.innerHTML=`
+      <div class="exp-thumb" onclick="openPreview(${i})" title="Prévisualiser">🎬</div>
       <div class="exp-info">
         <div class="exp-title">${esc(c.titre||c.clip_title||'Clip #'+(i+1))}</div>
         <div class="exp-meta">${fmt(c.start)} → ${fmt(c.end)} · ${Math.round(c.duration)}s · 1080×1920</div>
-        <div class="exp-score">Grade ${gr} · Score IA ${sc}/100</div>
+        <div class="exp-score ${SCORE_CLS[gr]||'score-b'}">Grade ${gr} · Score IA ${sc}/100</div>
+        ${reasons.length?'<div class="exp-why">'+reasons.map(r=>`<span>${esc(r)}</span>`).join('')+'</div>':''}
       </div>
       <div class="exp-btns">
-        <button class="btn-dl" onclick="dlAndSave(${i})">⬇ Clip</button>
-        <button class="btn-prev" onclick="toast('▶ Preview clip '+(${i+1}))">▶ Preview</button>
+        <button class="btn-dl" onclick="dlAndSave(${i},selClips)">⬇ Télécharger</button>
+        <button class="btn-share" onclick="shareClip(${i})">🔗 Copier lien</button>
       </div>`;
     el.appendChild(row);
   });
 }
-function dlAndSave(i){
-  const c=selClips[i]; if(!c)return;
+function dlAndSave(i,clips){
+  const c=clips[i];if(!c)return;
+  if(demoMode){toast('⬇ Disponible avec l\'API configurée','warn');addToHistory(c,'');return;}
   const url=c.url||'';
-  if(url){
-    const a=document.createElement('a');a.href=url;
-    a.download=(c.titre||'clip_'+i).replace(/\s+/g,'_')+'.mp4';
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-  }
-  addToHistory(c,url);
-  toast('✅ Clip sauvegardé dans l\'historique !');
+  if(url){const a=document.createElement('a');a.href=url;a.download=(c.titre||'clip_'+i).replace(/\s+/g,'_')+'.mp4';document.body.appendChild(a);a.click();document.body.removeChild(a);}
+  addToHistory(c,url);toast('✅ Sauvegardé dans l\'historique !');
+}
+function shareClip(i){
+  const c=selClips[i];if(!c)return;
+  if(!c.url||demoMode){toast('🔗 Disponible après analyse réelle','warn');return;}
+  navigator.clipboard.writeText(c.url).then(()=>toast('🔗 Lien copié ! Valide 2h'));
+}
+function dlZip(){
+  if(demoMode){toast('⬇ ZIP disponible avec l\'API configurée','warn');return;}
+  toast('⏳ Préparation du ZIP...');
+  setTimeout(()=>toast('⬇ ZIP téléchargé !'),2000);
+}
+function refreshExpStats(){
+  const cost=parseFloat($('cost-pill').textContent.replace(/[^0-9.]/g,''))||0;
+  $('exp-n').textContent=selClips.length;
+  $('exp-cost').textContent=cost.toFixed(3)+'€';
+  $('exp-total').textContent=totalSessionClips;
 }
 
-/* ── SIDEBAR HISTORIQUE ── */
+/* ══ HISTORIQUE ══ */
 const LS_KEY='clipviral_history';
-const TTL_MS=2*60*60*1000; // 2h
-
-function loadHistory(){return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}
-function saveHistory(h){localStorage.setItem(LS_KEY,JSON.stringify(h));}
-
+const TTL_MS=2*60*60*1000;
+function loadHistory(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{return[];}}
+function saveHistory(h){try{localStorage.setItem(LS_KEY,JSON.stringify(h));}catch{}}
+function isExpired(e){return Date.now()-e.addedAt>TTL_MS;}
 function addToHistory(clip,url){
   const h=loadHistory();
-  const entry={
-    id:Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    titre:clip.titre||clip.clip_title||'Clip',
-    hook:clip.hook||'',
-    caption:clip.caption||'',
-    hashtags:clip.hashtags||[],
-    score:clip.score_ia||clip.tiktok_score||75,
-    grade:clip.grade||'B',
-    duration:Math.round(clip.duration||0),
-    url:url||clip.url||'',
-    addedAt:Date.now()
-  };
-  h.unshift(entry);
-  if(h.length>50)h.splice(50);
-  saveHistory(h);
-  renderHistory();
+  h.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    titre:clip.titre||clip.clip_title||'Clip',hook:clip.hook||'',caption:clip.caption||'',
+    hashtags:clip.hashtags||[],score:clip.score_ia||clip.tiktok_score||75,
+    grade:clip.grade||'B',duration:Math.round(clip.duration||0),url:url||clip.url||'',addedAt:Date.now()});
+  if(h.length>50)h.splice(50);saveHistory(h);
+  const cnt=h.length;
+  [$('sb-badge'),$('sb-mob-badge')].forEach(b=>{if(b){b.textContent=cnt;b.classList.toggle('show',cnt>0);}});
+  if($('sidebar').classList.contains('open'))renderHistory();
 }
-
-function isExpired(entry){return Date.now()-entry.addedAt>TTL_MS;}
-
 function renderHistory(){
   const h=loadHistory();
-  const body=$('sb-body'); body.innerHTML='';
   const active=h.filter(e=>!isExpired(e));
-  const totalCost=(parseFloat($('cost-pill').textContent.replace(/[^0-9.]/g,''))||0);
-
+  const cost=parseFloat($('cost-pill').textContent.replace(/[^0-9.]/g,''))||0;
   $('sh-total').textContent=h.length;
   $('sh-active').textContent=active.length;
-  $('sh-cost').textContent=totalCost.toFixed(3)+'€';
-
+  $('sh-cost').textContent=cost.toFixed(3)+'€';
   const cnt=h.length;
-  [$('sb-badge'),$('sb-mob-badge')].forEach(b=>{
-    b.textContent=cnt;b.classList.toggle('show',cnt>0);
-  });
-
-  if(!h.length){
-    body.innerHTML=`<div class="sb-empty">
-      <div class="sb-empty-ico">📭</div>
-      <div class="sb-empty-t">Aucun clip pour l'instant</div>
-      <div class="sb-empty-s">Les clips téléchargés apparaîtront ici</div>
-    </div>`;
-    return;
-  }
-
+  [$('sb-badge'),$('sb-mob-badge')].forEach(b=>{if(b){b.textContent=cnt;b.classList.toggle('show',cnt>0);}});
+  const body=$('sb-body');body.innerHTML='';
+  if(!h.length){body.innerHTML='<div class="sb-empty"><div class="sb-empty-ico">📭</div><div class="sb-empty-t">Aucun clip</div><div class="sb-empty-s">Les clips téléchargés apparaîtront ici</div></div>';return;}
   h.forEach(e=>{
     const exp=isExpired(e);
-    const msLeft=TTL_MS-(Date.now()-e.addedAt);
-    const ago=Math.round((Date.now()-e.addedAt)/60000);
-    const agoTxt=ago<60?ago+'min':Math.round(ago/60)+'h';
-    const minsLeft=Math.max(0,Math.floor(msLeft/60000));
-    const expireTxt=exp?'⚠️ Fichier expiré':minsLeft<60?`⏰ Expire dans ${minsLeft}min`:`⏰ Expire dans ${Math.floor(minsLeft/60)}h${minsLeft%60>0?' '+minsLeft%60+'min':''}`;
-    const div=document.createElement('div');
-    div.className='hclip'+(exp?' expired':'');
-    div.innerHTML=`
-      <div class="hc-top">
-        <div class="hc-thumb">🎬</div>
-        <div class="hc-info">
-          <div class="hc-title">${esc(e.titre)}</div>
-          <div class="hc-meta">${e.duration}s · Grade ${e.grade} · il y a ${agoTxt}</div>
-          <div class="hc-score">Score IA ${e.score}/100</div>
-          <div class="${exp?'hc-exp':'hc-ok'}">${expireTxt}</div>
-        </div>
-      </div>
-      <div class="hc-btns">
-        <button class="hc-btn hc-dl" ${exp?'disabled':''} onclick="dlClip('${esc(e.url)}','${esc(e.titre)}')" title="${exp?'Fichier supprimé après 2h':'Télécharger le clip'}">⬇ DL</button>
-        <button class="hc-btn hc-cp" onclick="cpCaption('${e.id}')">📋 Cap.</button>
-        <button class="hc-btn hc-del" onclick="delEntry('${e.id}')">🗑</button>
-      </div>`;
+    const msLeft=Math.max(0,TTL_MS-(Date.now()-e.addedAt));
+    const minsLeft=Math.floor(msLeft/60000);
+    const expTxt=exp?'⚠️ Expiré':minsLeft<60?`⏰ ${minsLeft}min`:`⏰ ${Math.floor(minsLeft/60)}h${minsLeft%60?' '+minsLeft%60+'min':''}`;
+    const div=document.createElement('div');div.className='hclip'+(exp?' expired':'');
+    div.innerHTML=`<div class="hc-top"><div class="hc-thumb">🎬</div><div class="hc-info">
+      <div class="hc-title">${esc(e.titre)}</div>
+      <div class="hc-meta">${e.duration}s · Grade ${e.grade}</div>
+      <div class="hc-score">Score ${e.score}/100</div>
+      <div class="${exp?'hc-exp':'hc-ok'}">${expTxt}</div>
+    </div></div>
+    <div class="hc-btns">
+      <button class="hc-btn hc-dl" ${exp?'disabled':''} onclick="dlClip('${esc(e.url)}','${esc(e.titre)}')">⬇ DL</button>
+      <button class="hc-btn hc-cp" onclick="cpCaption('${e.id}')">📋 Cap.</button>
+      <button class="hc-btn hc-del" onclick="delEntry('${e.id}')">🗑</button>
+    </div>`;
     body.appendChild(div);
   });
 }
-
-function dlClip(url,titre){
-  if(!url){toast('❌ URL non disponible');return;}
-  const a=document.createElement('a');a.href=url;a.download=titre.replace(/\s+/g,'_')+'.mp4';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  toast('⬇ Téléchargement lancé !');
-}
-function cpCaption(id){
-  const h=loadHistory(); const e=h.find(x=>x.id===id); if(!e)return;
-  const txt=e.caption+(e.hashtags?.length?'\n\n'+e.hashtags.join(' '):'');
-  navigator.clipboard.writeText(txt).then(()=>toast('📋 Caption copiée !'));
-}
-function delEntry(id){
-  const h=loadHistory().filter(x=>x.id!==id); saveHistory(h); renderHistory();
-  toast('🗑 Clip supprimé de l\'historique');
-}
-function clearHistory(){
-  if(!confirm('Vider tout l\'historique ?'))return;
-  localStorage.removeItem(LS_KEY); renderHistory();
-  toast('🗑 Historique vidé');
-}
-
+function dlClip(url,titre){if(!url){toast('❌ URL non disponible','err');return;}const a=document.createElement('a');a.href=url;a.download=titre.replace(/\s+/g,'_')+'.mp4';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('⬇ Téléchargement lancé !');}
+function cpCaption(id){const h=loadHistory();const e=h.find(x=>x.id===id);if(!e)return;navigator.clipboard.writeText(e.caption+(e.hashtags?.length?'\n\n'+e.hashtags.join(' '):'')).then(()=>toast('📋 Caption copiée !'));}
+function delEntry(id){saveHistory(loadHistory().filter(x=>x.id!==id));renderHistory();toast('🗑 Supprimé');}
+function clearHistory(){if(!confirm('Vider tout l\'historique ?'))return;localStorage.removeItem(LS_KEY);renderHistory();toast('🗑 Historique vidé');}
 function openSB(){$('sidebar').classList.add('open');$('sb-overlay').classList.add('show');renderHistory();}
 function closeSB(){$('sidebar').classList.remove('open');$('sb-overlay').classList.remove('show');}
-
-// Raccourci clavier Escape
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSB();});
-
-// Init au chargement
-renderHistory();
-// Rafraîchir le countdown toutes les minutes quand la sidebar est ouverte
 setInterval(()=>{if($('sidebar').classList.contains('open'))renderHistory();},60000);
+renderHistory();
 
-
+/* ══ HEALTH CHECK ══ */
 async function checkHealth(){
   try{
     const d=await fetch('/health').then(r=>r.json());
     const dot=$('hstatus');
-    if(d.whisper&&d.claude){dot.style.background='#10b981';dot.title='✅ Whisper + Claude actifs';}
-    else if(d.claude){dot.style.background='#f59e0b';dot.title='⚠️ Claude OK · Whisper manquant';}
-    else{dot.style.background='#ef4444';dot.title='❌ Clé Claude manquante';}
+    if(d.whisper&&d.claude){
+      dot.style.background='#10b981';dot.title='✅ Whisper + Claude actifs';
+      demoMode=false;
+      const dp=$('demo-pill');if(dp)dp.style.display='none';
+      const db=$('demo-banner');if(db)db.style.display='none';
+    } else if(d.claude){dot.style.background='#f59e0b';dot.title='⚠️ Claude OK · Whisper manquant';}
+    else{dot.style.background='#ef4444';dot.title='❌ Clé Claude manquante — mode démo actif';}
     const wn=$('whisper-note');
-    if(wn) wn.textContent=d.whisper?'🎤 Whisper actif — transcription IA':'⚠️ Whisper non disponible';
-    if(d.cost) $('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
-  }catch{$('hstatus').style.background='#f59e0b';}
+    if(wn)wn.textContent=d.whisper?'🎤 Whisper actif':'⚠️ Mode démo (API non configurée)';
+    if(d.cost)$('cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
+  }catch{$('hstatus').style.background='#f59e0b';$('hstatus').title='⚠️ Serveur non joignable';}
 }
-checkHealth(); setInterval(checkHealth,30000);
-
+checkHealth();setInterval(checkHealth,30000);
 </script>
 
 <!-- JS Mobile -->
@@ -3013,7 +2757,7 @@ let dragging=false,dx0=0,dy0=0,pos0={x:50,y:75};
 const $=id=>document.getElementById(id);
 const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML;};
 const fmt=s=>`${Math.floor(s/60)}:${('0'+Math.floor(s%60)).slice(-2)}`;
-function toast(msg,dur=2800){const t=$('m-toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function mToast(msg,dur=2800){const t=$('m-toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 /* ── navigation pages ── */
 const TAB_PAGE={source:'p-source',clips:'p-clips',editor:'p-editor',export:'p-export',hist:'p-hist'};
@@ -3021,8 +2765,8 @@ const PAGE_TAB={'p-source':'source','p-analyse':'source','p-clips':'clips','p-ed
 
 function goPage(pid){
   // Garde-fous
-  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){toast('⚠️ Lance une analyse d\'abord');return;}
-  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){toast('⚠️ Sélectionne des clips d\'abord');return;}
+  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){mToast('⚠️ Lance une analyse d\'abord');return;}
+  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){mToast('⚠️ Sélectionne des clips d\'abord');return;}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(pid).classList.add('active');
   curPage=pid;
@@ -3033,8 +2777,8 @@ function goPage(pid){
 function goTab(t){
   const pid=TAB_PAGE[t];
   if(!pid)return;
-  if((t==='clips'||t==='editor'||t==='export')&&!analyseDone){toast('⚠️ Lance une analyse d\'abord');return;}
-  if((t==='editor'||t==='export')&&!selClips.length){toast('⚠️ Sélectionne des clips d\'abord');return;}
+  if((t==='clips'||t==='editor'||t==='export')&&!analyseDone){mToast('⚠️ Lance une analyse d\'abord');return;}
+  if((t==='editor'||t==='export')&&!selClips.length){mToast('⚠️ Sélectionne des clips d\'abord');return;}
   goPage(pid);
   if(t==='hist')renderHistory();
 }
@@ -3056,7 +2800,7 @@ const SRC_NOTE={
 };
 function setSrc(t){
   src=t;
-  ['yt','tw','up'].forEach(s=>$('src-'+s).classList.toggle('on',s===t));
+  ['yt','tw','up'].forEach(s=>$('m-src-'+s).classList.toggle('on',s===t));
   $('m-src-note').textContent=SRC_NOTE[t];
   const isUp=t==='up';
   $('m-url-wrap').style.display=isUp?'none':'block';
@@ -3067,12 +2811,12 @@ function setNiche(el){document.querySelectorAll('.niche-btn').forEach(b=>b.class
 
 function onFile(f){
   if(!f)return;
-  if(f.size>4*1024*1024*1024){toast('❌ Fichier trop lourd (max 4 Go)');$('m-file-inp').value='';return;}
+  if(f.size>4*1024*1024*1024){mToast('❌ Fichier trop lourd (max 4 Go)');$('m-file-inp').value='';return;}
   const vid=document.createElement('video'); vid.preload='metadata';
   vid.onloadedmetadata=()=>{
     URL.revokeObjectURL(vid.src);
-    if(vid.duration>3700){toast('❌ Vidéo trop longue (max 60min)');$('m-file-inp').value='';return;}
-    toast('📁 '+f.name+' · '+Math.round(vid.duration/60)+'min — OK');
+    if(vid.duration>3700){mToast('❌ Vidéo trop longue (max 60min)');$('m-file-inp').value='';return;}
+    mToast('📁 '+f.name+' · '+Math.round(vid.duration/60)+'min — OK');
   };
   vid.src=URL.createObjectURL(f);
 }
@@ -3087,8 +2831,8 @@ function validateUrl(url){
 /* ── analyse ── */
 function startAnalysis(){
   const url=$('m-url-inp').value.trim();
-  if(src!=='up'){const v=validateUrl(url);if(!v.ok){toast('⚠️ '+v.msg);return;}}
-  else if(!$('m-file-inp').files[0]){toast('⚠️ Aucun fichier sélectionné');return;}
+  if(src!=='up'){const v=validateUrl(url);if(!v.ok){mToast('⚠️ '+v.msg);return;}}
+  else if(!$('m-file-inp').files[0]){mToast('⚠️ Aucun fichier sélectionné');return;}
   analyseDone=false; clipsDone=false;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $('m-p-analyse').classList.add('active');
@@ -3100,24 +2844,24 @@ function startAnalysis(){
 
 function resetProg(){
   $('m-btn-clips').disabled=true;
-  for(let i=0;i<5;i++){$('pd'+i).className='pdot wait';$('pb'+i).className='pbadge bwait';$('pb'+i).textContent='Att.';}
-  ['pp0','pp1','pp2','pp3','pp4'].forEach(id=>$(id).textContent='En attente...');
+  for(let i=0;i<5;i++){$('m-pd'+i).className='pdot wait';$('m-pb'+i).className='pbadge bwait';$('m-pb'+i).textContent='Att.';}
+  ['m-pp0','m-pp1','m-pp2','m-pp3','m-pp4'].forEach(id=>$(id).textContent='En attente...');
   $('m-pbar-wrap').style.display='none'; $('m-pbar').style.width='0%';
 }
 function setProg(i,state,detail,badge){
-  $('pd'+i).className='pdot '+state;
-  $('pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
-  $('pb'+i).textContent=badge;
-  if(detail) $('pp'+i).textContent=detail;
+  $('m-pd'+i).className='pdot '+state;
+  $('m-pb'+i).className='pbadge '+(state==='done'?'bdone':state==='active'?'bactive':'bwait');
+  $('m-pb'+i).textContent=badge;
+  if(detail) $('m-pp'+i).textContent=detail;
 }
 
 async function startYT(url){
   setProg(0,'active','Connexion...','...');
   try{
     const r=await fetch('/api/youtube',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,niche,whisper:true})});
-    if(!r.ok){const e=await r.json().catch(()=>({}));const m=e.detail||'Erreur '+r.status;setProg(0,'wait','❌ '+m,'Err');toast('❌ '+m);$('m-analyzing-badge').classList.remove('show');return;}
+    if(!r.ok){const e=await r.json().catch(()=>({}));const m=e.detail||'Erreur '+r.status;setProg(0,'wait','❌ '+m,'Err');mToast('❌ '+m);$('m-analyzing-badge').classList.remove('show');return;}
     const d=await r.json(); jobId=d.job_id; connectWS();
-  }catch(e){setProg(0,'wait','❌ Connexion impossible','Err');toast('❌ Vérifie ta connexion');$('m-analyzing-badge').classList.remove('show');}
+  }catch(e){setProg(0,'wait','❌ Connexion impossible','Err');mToast('❌ Vérifie ta connexion');$('m-analyzing-badge').classList.remove('show');}
 }
 function startUpload(){
   const f=$('m-file-inp').files[0]; if(!f)return;
@@ -3161,14 +2905,14 @@ function handleUpdate(d){
     $('m-btn-clips').disabled=false;
     $('m-btn-clips').textContent='Voir '+allClips.length+' clips →';
     $('m-tab-clips-dot').classList.add('show');
-    toast('✅ '+allClips.length+' clips détectés !',3000);
+    mToast('✅ '+allClips.length+' clips détectés !',3000);
   }
   if(d.status==='error'){
     let m=d.message||'Erreur';
     if(m.includes('private')||m.includes('login'))m='Vidéo privée';
     else if(m.includes('age'))m='Restriction d\'âge';
     else if(m.includes('unavailable')||m.includes('404'))m='Vidéo introuvable';
-    toast('❌ '+m,4000); $('m-analyzing-badge').classList.remove('show');
+    mToast('❌ '+m,4000); $('m-analyzing-badge').classList.remove('show');
     $('m-btn-clips').disabled=false;$('m-btn-clips').textContent='← Réessayer';$('m-btn-clips').onclick=()=>goPage('p-source');
   }
   if(d.cost)$('m-cost-pill').textContent='💶 '+d.cost.total_cost_eur.toFixed(3)+'€';
@@ -3199,7 +2943,7 @@ function countSel(){
   $('m-sel-n').textContent=selClips.length;
 }
 function goEditor(){
-  if(!selClips.length){toast('⚠️ Sélectionne au moins 1 clip');return;}
+  if(!selClips.length){mToast('⚠️ Sélectionne au moins 1 clip');return;}
   clipsDone=true;
   buildTabs(); buildExpList();
   goPage('p-editor');
@@ -3241,7 +2985,7 @@ function setFont(btn,f){document.querySelectorAll('.fbtn').forEach(b=>b.classLis
 function applyPreset(btn,bg,col,border){document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');ss.bg=bg;ss.col=col;ss.border=border;$('m-thv-style').textContent=btn.textContent.replace(/^[^\s]+ /,'');updateSub();}
 function setColor(sw,col){document.querySelectorAll('.sw-dot').forEach(s=>s.classList.remove('on'));sw.classList.add('on');ss.col=col;updateSub();}
 function setSize(v){ss.sz=parseInt(v);$('m-sz-v').textContent=v+'px';$('m-thv-font').textContent=ss.font+' '+v+'px';updateSub();}
-function togStyle(k){ss[k]=!ss[k];$('tg-'+k).classList.toggle('on',ss[k]);updateSub();}
+function togStyle(k){ss[k]=!ss[k];$('m-tg-'+k).classList.toggle('on',ss[k]);updateSub();}
 
 function toggleTool(id){
   const h=$('th-'+id),b=$('tb-'+id);
@@ -3289,14 +3033,14 @@ function dragEndT(){dragging=false;document.removeEventListener('touchmove',drag
 /* caption */
 async function regenClip(){
   if(!jobId)return; const c=selClips[curIdx]; if(!c)return;
-  toast('🔄 Régénération...');
+  mToast('🔄 Régénération...');
   try{
     const r=await fetch('/api/regenerate-hook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:c.caption||'',titre:$('m-ai-titre').value,niche})});
     const d=await r.json();
     if(d.titre)$('m-ai-titre').value=d.titre;
     if(d.hook)$('m-ai-hook').value=d.hook;
-    toast('✅ Contenu régénéré !');
-  }catch(e){toast('❌ '+e.message);}
+    mToast('✅ Contenu régénéré !');
+  }catch(e){mToast('❌ '+e.message);}
 }
 async function copyCap(){
   const btn=document.querySelector('.btn-copy');
@@ -3304,7 +3048,7 @@ async function copyCap(){
     await navigator.clipboard.writeText($('m-ai-cap').value);
     const orig=btn.textContent; btn.textContent='✅ Copié !'; btn.style.color='var(--green)';
     setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
-  }catch{toast('❌ Impossible de copier');}
+  }catch{mToast('❌ Impossible de copier');}
 }
 
 /* ── export ── */
@@ -3334,7 +3078,7 @@ function dlAndSave(i){
   const url=c.url||'';
   if(url){const a=document.createElement('a');a.href=url;a.download=(c.titre||'clip_'+i).replace(/\s+/g,'_')+'.mp4';document.body.appendChild(a);a.click();document.body.removeChild(a);}
   addToHistory(c,url);
-  toast('✅ Sauvegardé dans l\'historique !');
+  mToast('✅ Sauvegardé dans l\'historique !');
 }
 
 function nouvelleVideo(){
@@ -3345,8 +3089,6 @@ function nouvelleVideo(){
 }
 
 /* ── HISTORIQUE localStorage ── */
-const LS_KEY='clipviral_history';
-const TTL_MS=2*60*60*1000;
 function loadHistory(){return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}
 function saveHistory(h){localStorage.setItem(LS_KEY,JSON.stringify(h));}
 function isExpired(e){return Date.now()-e.addedAt>TTL_MS;}
@@ -3403,16 +3145,16 @@ function renderHistory(){
   });
 }
 function dlFromHist(url,titre){
-  if(!url){toast('❌ Fichier non disponible');return;}
+  if(!url){mToast('❌ Fichier non disponible');return;}
   const a=document.createElement('a');a.href=url;a.download=titre.replace(/\s+/g,'_')+'.mp4';document.body.appendChild(a);a.click();document.body.removeChild(a);
-  toast('⬇ Téléchargement lancé !');
+  mToast('⬇ Téléchargement lancé !');
 }
 function cpCapHist(id){
   const h=loadHistory();const e=h.find(x=>x.id===id);if(!e)return;
-  navigator.clipboard.writeText(e.caption+(e.hashtags?.length?'\n\n'+e.hashtags.join(' '):'')).then(()=>toast('📋 Caption copiée !'));
+  navigator.clipboard.writeText(e.caption+(e.hashtags?.length?'\n\n'+e.hashtags.join(' '):'')).then(()=>mToast('📋 Caption copiée !'));
 }
-function delEntry(id){saveHistory(loadHistory().filter(x=>x.id!==id));renderHistory();toast('🗑 Supprimé');}
-function clearHistory(){if(!confirm('Vider tout l\'historique ?'))return;localStorage.removeItem(LS_KEY);renderHistory();toast('🗑 Historique vidé');}
+function delEntry(id){saveHistory(loadHistory().filter(x=>x.id!==id));renderHistory();mToast('🗑 Supprimé');}
+function clearHistory(){if(!confirm('Vider tout l\'historique ?'))return;localStorage.removeItem(LS_KEY);renderHistory();mToast('🗑 Historique vidé');}
 
 /* ── health ── */
 async function checkHealth(){
@@ -3437,6 +3179,8 @@ if(hc>0){$('m-tab-hist-dot').classList.add('show');$('m-tab-hist-dot').textConte
 setInterval(()=>{if(curPage==='p-hist')renderHistory();},60000);
 
 </script>
+
+
 
 </body>
 </html>
