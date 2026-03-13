@@ -1784,9 +1784,21 @@ const TAB_PAGE={source:'p-source',clips:'p-clips',editor:'p-editor',export:'p-ex
 const PAGE_TAB={'p-source':'source','p-analyse':'source','p-clips':'clips','p-editor':'editor','p-export':'export','p-hist':'hist'};
 
 function goPage(pid){
-  // Garde-fous
-  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){toast('⚠️ Lance une analyse d\'abord');return;}
-  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){toast('⚠️ Sélectionne des clips d\'abord');return;}
+  // Injecter données démo si besoin
+  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){
+    const DEMO_MOB=[
+      {titre:"La discipline bat la motivation",hook:"Ce que personne ne te dit...",caption:"#mindset #discipline #motivation",hashtags:["#mindset","#discipline"],score_ia:94,grade:"A",start:245,end:274,duration:29,url:""},
+      {titre:"Comment j'ai gagné 10 000€ en ligne",hook:"J'avais 22 ans et zéro expérience...",caption:"#business #entrepreneur #argent",hashtags:["#business","#argent"],score_ia:91,grade:"A",start:512,end:545,duration:33,url:""},
+      {titre:"La vraie raison tu procrastines",hook:"Ce n'est pas de la paresse...",caption:"#psychologie #mindset #viral",hashtags:["#psychologie","#mindset"],score_ia:88,grade:"A",start:78,end:108,duration:30,url:""},
+      {titre:"Ce conseil m'a coûté 50 000€",hook:"Mon mentor me l'avait dit...",caption:"#business #lecon #argent",hashtags:["#business","#lecon"],score_ia:85,grade:"B",start:890,end:930,duration:40,url:""}
+    ];
+    allClips=DEMO_MOB; analyseDone=true; buildClips();
+    if($('m-btn-clips')){$('m-btn-clips').disabled=false;$('m-btn-clips').textContent='Voir '+allClips.length+' clips →';}
+    if($('m-tab-clips-dot'))$('m-tab-clips-dot').classList.add('show');
+  }
+  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){
+    selClips=allClips.slice(0,3); clipsDone=true; buildTabs(); buildExpList();
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(pid).classList.add('active');
   curPage=pid;
@@ -1797,8 +1809,7 @@ function goPage(pid){
 function goTab(t){
   const pid=TAB_PAGE[t];
   if(!pid)return;
-  if((t==='clips'||t==='editor'||t==='export')&&!analyseDone){toast('⚠️ Lance une analyse d\'abord');return;}
-  if((t==='editor'||t==='export')&&!selClips.length){toast('⚠️ Sélectionne des clips d\'abord');return;}
+  // Navigation libre — goPage gère l'injection démo
   goPage(pid);
   if(t==='hist')renderHistory();
 }
@@ -2764,9 +2775,21 @@ const TAB_PAGE={source:'p-source',clips:'p-clips',editor:'p-editor',export:'p-ex
 const PAGE_TAB={'p-source':'source','p-analyse':'source','p-clips':'clips','p-editor':'editor','p-export':'export','p-hist':'hist'};
 
 function goPage(pid){
-  // Garde-fous
-  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){mToast('⚠️ Lance une analyse d\'abord');return;}
-  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){mToast('⚠️ Sélectionne des clips d\'abord');return;}
+  // Démo : injecter données si besoin
+  if((pid==='p-clips'||pid==='p-editor'||pid==='p-export')&&!analyseDone){
+    const DM=[
+      {titre:"La discipline bat la motivation",hook:"Ce que personne ne te dit...",caption:"#mindset #discipline",hashtags:["#mindset","#discipline"],score_ia:94,grade:"A",start:245,end:274,duration:29,url:""},
+      {titre:"Comment j'ai gagné 10 000€",hook:"J'avais 22 ans...",caption:"#business #argent",hashtags:["#business"],score_ia:91,grade:"A",start:512,end:545,duration:33,url:""},
+      {titre:"La vraie raison tu procrastines",hook:"Ce n'est pas la paresse...",caption:"#psychologie #mindset",hashtags:["#mindset"],score_ia:88,grade:"A",start:78,end:108,duration:30,url:""},
+      {titre:"Ce conseil m'a coûté 50k€",hook:"Mon mentor me l'avait dit...",caption:"#business #lecon",hashtags:["#business"],score_ia:85,grade:"B",start:890,end:930,duration:40,url:""}
+    ];
+    allClips=DM; analyseDone=true; buildClips();
+    if($('m-btn-clips')){$('m-btn-clips').disabled=false;$('m-btn-clips').textContent='Voir '+allClips.length+' clips →';}
+    if($('m-tab-clips-dot'))$('m-tab-clips-dot').classList.add('show');
+  }
+  if((pid==='p-editor'||pid==='p-export')&&!selClips.length){
+    selClips=allClips.slice(0,3); clipsDone=true; buildTabs(); buildExpList();
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(pid).classList.add('active');
   curPage=pid;
@@ -2777,8 +2800,7 @@ function goPage(pid){
 function goTab(t){
   const pid=TAB_PAGE[t];
   if(!pid)return;
-  if((t==='clips'||t==='editor'||t==='export')&&!analyseDone){mToast('⚠️ Lance une analyse d\'abord');return;}
-  if((t==='editor'||t==='export')&&!selClips.length){mToast('⚠️ Sélectionne des clips d\'abord');return;}
+  // Navigation libre — goPage gère l'injection démo
   goPage(pid);
   if(t==='hist')renderHistory();
 }
