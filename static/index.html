@@ -1052,15 +1052,13 @@ async function checkHealth(){
     const dot=$('hstatus');
     if(d.whisper&&d.claude){
       dot.style.background='#10b981'; dot.title='✅ Whisper + Claude actifs';
-      // Mode réel : cacher démo
       demoMode=false;
       $('demo-badge').style.display='none';
       $('demo-banner').style.display='none';
-    } else if(d.claude){
-      dot.style.background='#f59e0b'; dot.title='⚠️ Claude OK · Whisper manquant';
-      demoMode=false;
     } else {
-      dot.style.background='#ef4444'; dot.title='❌ Clé Claude manquante → mode démo';
+      // Whisper absent OU Claude absent → mode démo pour navigation libre
+      dot.style.background=d.claude?'#f59e0b':'#ef4444';
+      dot.title=d.claude?'⚠️ Claude OK · Whisper manquant → mode démo':'❌ Clé Claude manquante → mode démo';
       demoMode=true;
       $('demo-badge').style.display='inline-block';
       $('demo-banner').style.display='flex';
