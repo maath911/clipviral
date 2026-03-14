@@ -645,19 +645,14 @@ function toast(msg,type='ok',dur=2800){
 
 /* ── NAVIGATION ── */
 function go(n){
-  // En mode démo : injecter données fictives si besoin
-  if(demoMode){
-    if(n>=2&&!allClips.length){
-      allClips=DEMO; buildClips();
-      $('btn-clips').disabled=false;
-      $('btn-clips').textContent='Voir '+DEMO.length+' clips →';
-    }
-    if(n>=3&&!selClips.length){
-      selClips=DEMO.slice(0,3); buildTabs(); buildExpList();
-    }
-  } else {
-    if(n>=2&&!allClips.length){toast('⚠️ Lance d\'abord une analyse','warn');return;}
-    if(n>=3&&!selClips.length){toast('⚠️ Sélectionne au moins 1 clip','warn');return;}
+  // Navigation toujours libre — injecter données démo si pas de clips réels
+  if(n>=2&&!allClips.length){
+    allClips=DEMO; buildClips();
+    $('btn-clips').disabled=false;
+    $('btn-clips').textContent='Voir '+DEMO.length+' clips →';
+  }
+  if(n>=3&&!selClips.length){
+    selClips=allClips.slice(0,3); buildTabs(); buildExpList();
   }
   _goRaw(n);
 }
